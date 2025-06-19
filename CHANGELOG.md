@@ -5,29 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2024-01-XX
+## [1.0.0] - 2025-01-03
 
 ### 🎉 Initial Release
 
 #### ✨ Features
 
 - **Key Validation Engine**: Comprehensive Flutter key detection and validation
+
   - Support for `ValueKey` and `Key` declarations
   - Support for `find.byValueKey`, `find.bySemanticsLabel`, `find.byTooltip` finders
   - Regex-based pattern matching for accurate key detection
 
 - **Project Dependency Validation**
+
   - Automatic detection of `integration_test` dependency
   - Automatic detection of `appium_flutter_server` dependency
   - Validation of proper integration test setup
 
 - **CLI Interface**
+
   - `--keys` flag for specifying YAML key definitions
   - `--path` flag for custom project paths
   - `--strict` mode for catching extra keys
   - `--verbose` flag for detailed output
 
 - **YAML Configuration Support**
+
   - Simple key list format
   - Support for dynamic keys with placeholders
   - Comments and organization support
@@ -96,4 +100,4 @@ flutter_keycheck --keys expected_keys.yaml
 
 ---
 
-*For the complete list of changes, see the [commit history](https://github.com/1nk1/flutter_keycheck/commits/main).*
+_For the complete list of changes, see the [commit history](https://github.com/1nk1/flutter_keycheck/commits/main)._

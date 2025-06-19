@@ -40,7 +40,7 @@ keys:
   - user_profile_card
 ```
 
-2. **Run the validator:**
+1. **Run the validator:**
 
 ```bash
 flutter_keycheck --keys expected_keys.yaml
@@ -178,7 +178,7 @@ dev_dependencies:
   appium_flutter_server: '>=0.0.27 <1.0.0'
 ```
 
-2. Create integration_test/appium_test.dart:
+1. Create integration_test/appium_test.dart:
 
 ```dart
 import 'package:appium_flutter_server/appium_flutter_server.dart';
@@ -189,7 +189,7 @@ void main() {
 }
 ```
 
-3. Build your app for testing:
+1. Build your app for testing:
 
 ```bash
 # Android

@@ -171,14 +171,14 @@ For complete Appium Flutter integration testing setup, follow the official docum
 
 ### Quick Setup Steps
 
-1. **Add dependency to pubspec.yaml:**
+1. Add dependency to pubspec.yaml:
 
 ```yaml
 dev_dependencies:
   appium_flutter_server: '>=0.0.27 <1.0.0'
 ```
 
-2. **Create integration_test/appium_test.dart:**
+2. Create integration_test/appium_test.dart:
 
 ```dart
 import 'package:appium_flutter_server/appium_flutter_server.dart';
@@ -189,7 +189,7 @@ void main() {
 }
 ```
 
-3. **Build your app for testing:**
+3. Build your app for testing:
 
 ```bash
 # Android
@@ -201,10 +201,10 @@ flutter build ios integration_test/appium_test.dart --simulator
 
 ### What flutter_keycheck validates
 
-✅ **Widget Keys** - ValueKey and Key declarations in your widgets
-✅ **Test Finders** - find.byValueKey, find.bySemanticsLabel, find.byTooltip usage
-✅ **Dependencies** - Required integration_test and appium_flutter_server packages
-✅ **Test Setup** - Proper integration test file structure
+✅ Widget Keys - ValueKey and Key declarations in your widgets
+✅ Test Finders - find.byValueKey, find.bySemanticsLabel, find.byTooltip usage
+✅ Dependencies - Required integration_test and appium_flutter_server packages
+✅ Test Setup - Proper integration test file structure
 
 ## 🔧 Integration with CI/CD
 
@@ -312,5 +312,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📦 [appium_flutter_server package](https://pub.dev/packages/appium_flutter_server)
 - 🔧 [Flutter Integration Testing](https://docs.flutter.dev/testing/integration-tests)
 - 🎯 [Flutter Testing Best Practices](https://docs.flutter.dev/testing)
-
-# flutter_keycheck

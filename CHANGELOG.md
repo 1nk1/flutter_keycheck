@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🎉 Initial Release
 
 #### ✨ Features
+
 - **Key Validation Engine**: Comprehensive Flutter key detection and validation
   - Support for `ValueKey` and `Key` declarations
   - Support for `find.byValueKey`, `find.bySemanticsLabel`, `find.byTooltip` finders
@@ -38,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - File path reporting for found keys
 
 #### 🛠️ Technical Features
+
 - Cross-platform compatibility (Windows, macOS, Linux)
 - Recursive directory scanning
 - Efficient regex-based key detection
@@ -45,24 +47,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unit test coverage
 
 #### 📦 Package Structure
+
 - Clean library API with `KeyChecker` class
 - Separated CLI and core functionality
 - Example project with integration tests
 - Comprehensive documentation
 
 #### 🧪 Testing & Quality
+
 - Unit tests for core functionality
 - Integration test examples
 - Linting with `package:lints`
 - Code coverage reporting
 
 ### 🚀 Getting Started
+
 ```bash
 dart pub global activate flutter_keycheck
 flutter_keycheck --keys expected_keys.yaml
 ```
 
 ### 📋 Requirements
+
 - Dart SDK >= 3.2.0
 - Flutter project with integration tests (for full validation)
 
@@ -71,6 +77,7 @@ flutter_keycheck --keys expected_keys.yaml
 ## Future Roadmap
 
 ### 🔮 Planned Features (v1.1.0+)
+
 - [ ] Auto-generation of `expected_keys.yaml` from existing code
 - [ ] Support for additional finder methods (`find.text`, `find.byIcon`)
 - [ ] HTML/Markdown report generation
@@ -80,6 +87,7 @@ flutter_keycheck --keys expected_keys.yaml
 - [ ] Integration with popular CI/CD platforms
 
 ### 💡 Ideas Under Consideration
+
 - JSON configuration format support
 - Key usage analytics and statistics
 - Integration with Flutter Inspector

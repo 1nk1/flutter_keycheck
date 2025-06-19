@@ -1,0 +1,4 @@
+keys:
+  # Keys that actually exist in the CLI codebase for self-testing
+  - integration_test
+  - appium_flutter_server

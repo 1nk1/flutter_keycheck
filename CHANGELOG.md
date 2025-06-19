@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.1] - 2025-01-03
 
-### 🐛 Bug Fixes
+🐛 Bug Fixes
 
 - Fixed release date in changelog from placeholder to actual date
 

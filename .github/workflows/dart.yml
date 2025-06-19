@@ -62,7 +62,7 @@ jobs:
       - name: Test CLI tool
         run: |
           dart compile exe bin/flutter_keycheck.dart -o flutter_keycheck
-          ./flutter_keycheck --keys keys/expected_keys.yaml --verbose
+          ./flutter_keycheck --keys keys/cli_test_keys.yaml --verbose
 
   publish-dry-run:
     runs-on: ubuntu-latest

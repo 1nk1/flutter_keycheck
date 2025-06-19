@@ -1,23 +1,8 @@
+// Example Flutter widget code with ValueKey usage
+// This is a sample showing how to add keys to Flutter widgets
+
+/*
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const LoginScreen(),
-    );
-  }
-}
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -25,34 +10,32 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
+      appBar: AppBar(title: const Text('Login')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // Email field with ValueKey
             TextField(
               key: const ValueKey('email_field'),
-              decoration: const InputDecoration(
-                labelText: 'Email',
-              ),
+              decoration: const InputDecoration(labelText: 'Email'),
             ),
-            const SizedBox(height: 16),
+
+            // Password field with ValueKey
             TextField(
               key: const ValueKey('password_field'),
-              decoration: const InputDecoration(
-                labelText: 'Password',
-              ),
+              decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
             ),
-            const SizedBox(height: 24),
+
+            // Login button with ValueKey
             ElevatedButton(
               key: const ValueKey('login_button'),
               onPressed: () {},
               child: const Text('Login'),
             ),
-            const SizedBox(height: 16),
+
+            // Signup button with ValueKey
             TextButton(
               key: const ValueKey('signup_button'),
               onPressed: () {},
@@ -64,3 +47,18 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+
+// Integration test example
+class LoginTest {
+  void testLogin() async {
+    // Find widgets by ValueKey
+    await tester.tap(find.byValueKey('email_field'));
+    await tester.enterText(find.byValueKey('email_field'), 'test@example.com');
+
+    await tester.tap(find.byValueKey('password_field'));
+    await tester.enterText(find.byValueKey('password_field'), 'password123');
+
+    await tester.tap(find.byValueKey('login_button'));
+  }
+}
+*/

@@ -66,55 +66,56 @@ flutter_keycheck --keys expected_keys.yaml --verbose
 
 ### Command Line Options
 
-| Option | Short | Description | Default |
-|--------|-------|-------------|---------|
-| `--keys` | `-k` | Path to keys file (.yaml) | **required** |
-| `--path` | `-p` | Project source root | `.` |
-| `--strict` | `-s` | Fail if there are extra keys in code | `false` |
-| `--verbose` | `-v` | Show detailed output | `false` |
-| `--help` | `-h` | Show help message | - |
+| Option      | Short | Description                                          | Default      |
+| ----------- | ----- | ---------------------------------------------------- | ------------ |
+| `--keys`    | `-k`  | Path to keys file (.yaml)                            | **required** |
+| `--path`    | `-p`  | Project source root                                  | `.`          |
+| `--strict`  | `-s`  | Fail if integration_test/appium_test.dart is missing | `false`      |
+| `--verbose` | `-v`  | Show detailed output                                 | `false`      |
+| `--help`    | `-h`  | Show help message                                    | -            |
 
 ## 📊 Example Output
 
-```
+```md
 🎯 [flutter_keycheck] 🔍 Scanning project...
 
-🧩  Keys Check
+🧩 Keys Check
 ────────────────────────────────────────────
-❌  Missing Keys:
-   ⛔️  login_button
-   ⛔️  forgot_password_link
+❌ Missing Keys:
+⛔️ login_button
+⛔️ forgot_password_link
 
-🧼  Extra Keys:
-   💡  debug_menu_button
-   💡  temp_test_key
+🧼 Extra Keys:
+💡 debug_menu_button
+💡 temp_test_key
 
-🔎  Found Keys:
-   ✔️  password_input_field
-       └── lib/screens/auth/login_screen.dart
-   ✔️  submit_button
-       └── lib/widgets/forms/auth_form.dart
-       └── integration_test/auth_test.dart
+🔎 Found Keys:
+✔️ password_input_field
+└── lib/screens/auth/login_screen.dart
+✔️ submit_button
+└── lib/widgets/forms/auth_form.dart
+└── integration_test/auth_test.dart
 
-📦  Dependencies
+📦 Dependencies
 ────────────────────────────────────────────
-✔️  integration_test found in pubspec.yaml ✅
-✔️  appium_flutter_server found in pubspec.yaml ✅
+✔️ integration_test found in pubspec.yaml ✅
+✔️ appium_flutter_server found in pubspec.yaml ✅
 
-🧪  Integration Test Setup
+🧪 Integration Test Setup
 ────────────────────────────────────────────
-✔️  Found integration_test/appium_test.dart ✅
-✔️  Appium Flutter Driver initialized ✅
+✔️ Found integration_test/appium_test.dart ✅
+✔️ Appium Flutter Driver initialized ✅
 
-🚨  Final Verdict
+🚨 Final Verdict
 ────────────────────────────────────────────
-❌  Project is NOT ready for automation build.
-    Missing 2 required keys. Please add them to your widgets.
+❌ Project is NOT ready for automation build.
+Missing 2 required keys. Please add them to your widgets.
 ```
 
 ## 🔑 Supported Key Types
 
 ### 1. Widget Keys
+
 ```dart
 // ValueKey
 TextField(key: const ValueKey('email_input'))
@@ -125,6 +126,7 @@ Container(key: const Key('user_avatar'))
 ```
 
 ### 2. Test Finders
+
 ```dart
 // Integration tests
 await tester.tap(find.byValueKey('login_button'));
@@ -140,6 +142,7 @@ await tester.tap(find.byTooltip('Help Information'));
 ## 📝 Configuration
 
 ### YAML Format
+
 ```yaml
 keys:
   # Static keys
@@ -152,12 +155,12 @@ keys:
   - game_level_{levelId}
 
   # Semantic labels
-  - "Welcome Message"
-  - "Error Dialog"
+  - 'Welcome Message'
+  - 'Error Dialog'
 
   # Tooltips
-  - "Help Button"
-  - "Settings Menu"
+  - 'Help Button'
+  - 'Settings Menu'
 ```
 
 ## 🧪 Appium Flutter Integration Setup
@@ -166,15 +169,17 @@ For complete Appium Flutter integration testing setup, follow the official docum
 
 **📖 [Appium Flutter Integration Driver Setup Guide](https://github.com/AppiumTestDistribution/appium-flutter-integration-driver?tab=readme-ov-file)**
 
-### Quick Setup Steps:
+### Quick Setup Steps
 
 1. **Add dependency to pubspec.yaml:**
+
 ```yaml
 dev_dependencies:
   appium_flutter_server: '>=0.0.27 <1.0.0'
 ```
 
 2. **Create integration_test/appium_test.dart:**
+
 ```dart
 import 'package:appium_flutter_server/appium_flutter_server.dart';
 import 'package:your_app/main.dart';
@@ -185,6 +190,7 @@ void main() {
 ```
 
 3. **Build your app for testing:**
+
 ```bash
 # Android
 ./gradlew app:assembleDebug -Ptarget=`pwd`/../integration_test/appium_test.dart
@@ -193,7 +199,7 @@ void main() {
 flutter build ios integration_test/appium_test.dart --simulator
 ```
 
-### What flutter_keycheck validates:
+### What flutter_keycheck validates
 
 ✅ **Widget Keys** - ValueKey and Key declarations in your widgets
 ✅ **Test Finders** - find.byValueKey, find.bySemanticsLabel, find.byTooltip usage
@@ -203,6 +209,7 @@ flutter build ios integration_test/appium_test.dart --simulator
 ## 🔧 Integration with CI/CD
 
 ### GitHub Actions
+
 ```yaml
 name: Flutter Key Check
 on: [push, pull_request]
@@ -220,6 +227,7 @@ jobs:
 ```
 
 ### Pre-commit Hook
+
 ```bash
 #!/bin/sh
 # .git/hooks/pre-commit
@@ -233,11 +241,13 @@ fi
 ## 🛠️ Development
 
 ### Running Tests
+
 ```bash
 dart test
 ```
 
 ### Running from Source
+
 ```bash
 dart run bin/flutter_keycheck.dart --keys keys/testing_keys.yaml
 ```
@@ -245,6 +255,7 @@ dart run bin/flutter_keycheck.dart --keys keys/testing_keys.yaml
 ## 💡 Best Practices
 
 1. **Organize Keys by Feature**
+
    ```yaml
    keys:
      # Authentication
@@ -258,6 +269,7 @@ dart run bin/flutter_keycheck.dart --keys keys/testing_keys.yaml
    ```
 
 2. **Use Descriptive Names**
+
    ```dart
    // ✅ Good
    ValueKey('user_profile_edit_button')
@@ -267,6 +279,7 @@ dart run bin/flutter_keycheck.dart --keys keys/testing_keys.yaml
    ```
 
 3. **Keep Keys Consistent**
+
    ```dart
    // Use consistent naming convention
    ValueKey('login_email_field')
@@ -299,4 +312,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📦 [appium_flutter_server package](https://pub.dev/packages/appium_flutter_server)
 - 🔧 [Flutter Integration Testing](https://docs.flutter.dev/testing/integration-tests)
 - 🎯 [Flutter Testing Best Practices](https://docs.flutter.dev/testing)
+
 # flutter_keycheck

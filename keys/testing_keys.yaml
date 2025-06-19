@@ -1,0 +1,35 @@
+keys:
+  # Authentication
+  - login_button
+  - signup_button
+  - email_field
+  - password_field
+  - submit_button
+
+  # Navigation
+  - home_tab
+  - profile_tab
+  - settings_tab
+
+  # Profile
+  - avatar_image
+  - username_field
+  - bio_field
+  - save_profile_button
+
+  # Dynamic List Items
+  - game_card_{gameId}
+  - bottom_bar_item_{label}
+  - item_delete_{id}
+  - item_edit_{id}
+
+  # Tooltips and Labels
+  - settings_help_tooltip
+  - profile_edit_tooltip
+  - accessibility_label_username
+  - accessibility_label_email
+
+  # Settings
+  - theme_toggle
+  - notifications_toggle
+  - language_selector

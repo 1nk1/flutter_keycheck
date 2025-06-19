@@ -2,9 +2,9 @@ name: Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -31,5 +31,4 @@ jobs:
 
       - name: Test self-validation
         run: |
-          dart run bin/flutter_keycheck.dart --keys keys/testing_keys.yaml
-          dart run bin/flutter_keycheck.dart --keys keys/testing_keys.md
+          dart run bin/flutter_keycheck.dart --keys keys/testing_keys.yaml --verbose

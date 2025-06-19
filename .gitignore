@@ -1,0 +1,57 @@
+# https://dart.dev/guides/libraries/private-files
+# Created by `dart pub`
+
+# 🧠 Dart & Flutter
+.dart_tool/
+.packages
+.pub/
+build/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# 🧪 Test coverage
+coverage/
+
+# 📦 Dependency lock files (optional)
+pubspec.lock
+
+# 💥 OS files
+.DS_Store
+Thumbs.db
+
+# 🧪 Output logs
+*.log
+
+# 🧹 Misc
+*.swp
+*.tmp
+*.bak
+*.orig
+
+# 👨‍💻 Executables
+bin/flutter_keycheck.exe
+bin/flutter_keycheck
+
+# ✅ (если используешь fvm)
+.fvm/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Generated files
+*.g.dart
+*.freezed.dart
+
+# macOS
+.DS_Store
+
+# Test
+test/tmp/
+keys/*.md
+
+# Project specific
+example/build/
+example/.dart_tool/
+example/pubspec.lock

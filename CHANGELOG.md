@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2025-01-03
+
+### 🔧 Platform Compatibility
+
+- Added explicit documentation about web/WASM incompatibility
+- Clarified that this is a CLI tool designed for desktop platforms only
+- Improved pub.dev platform support documentation
+
 ## [1.0.5] - 2025-01-03
 
 ### 🤖 Automation

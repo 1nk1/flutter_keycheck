@@ -1,6 +1,6 @@
 name: flutter_keycheck
 description: A CLI tool for verifying presence of ValueKey elements and test dependencies in Flutter projects.
-version: 1.0.5
+version: 1.0.6
 
 homepage: https://github.com/1nk1/flutter_keycheck
 repository: https://github.com/1nk1/flutter_keycheck
@@ -13,6 +13,9 @@ platforms:
   linux:
   macos:
   windows:
+
+# This package is not compatible with web/wasm due to dart:io usage
+# It's a CLI tool designed for desktop platforms only
 
 dependencies:
   args: ^2.4.2

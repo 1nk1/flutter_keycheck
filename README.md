@@ -3,8 +3,11 @@
 [![pub package](https://img.shields.io/pub/v/flutter_keycheck.svg)](https://pub.dev/packages/flutter_keycheck)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Dart](https://img.shields.io/badge/Dart-3.2%2B-blue.svg)](https://dart.dev)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-blue.svg)](https://pub.dev/packages/flutter_keycheck)
 
 A CLI tool to validate Flutter automation keys and integration test dependencies. Ensures your Flutter app is ready for automated testing with proper key coverage.
+
+> **Note:** This is a desktop CLI tool that uses `dart:io` for file system operations. It is not compatible with web/WASM environments by design.
 
 ## 🎯 Features
 
@@ -286,6 +289,22 @@ dart run bin/flutter_keycheck.dart --keys keys/testing_keys.yaml
    ValueKey('login_password_field')
    ValueKey('login_submit_button')
    ```
+
+## 🖥️ Platform Compatibility
+
+This CLI tool is designed for **desktop environments only** and supports:
+
+- ✅ **Linux** (x64)
+- ✅ **macOS** (x64, ARM64)
+- ✅ **Windows** (x64)
+
+**Not supported:**
+
+- ❌ **Web/Browser** - Uses `dart:io` for file system operations
+- ❌ **WebAssembly (WASM)** - Not compatible with web runtime
+- ❌ **Mobile platforms** - Designed as a development tool for desktop
+
+> **Why not web/WASM?** This tool performs file system operations using `dart:io` to scan your Flutter project files, check dependencies in `pubspec.yaml`, and validate integration test setup. These operations are not available in web/WASM environments by design.
 
 ## 🤝 Contributing
 

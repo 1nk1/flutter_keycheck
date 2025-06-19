@@ -35,7 +35,8 @@ void main() {
       }
     ''');
 
-    final integrationTestFile = File(path.join(tempDir.path, 'integration_test', 'app_test.dart'));
+    final integrationTestFile =
+        File(path.join(tempDir.path, 'integration_test', 'app_test.dart'));
     integrationTestFile.createSync(recursive: true);
     integrationTestFile.writeAsStringSync('''
       void main() {
@@ -49,13 +50,15 @@ void main() {
 
     final result = KeyChecker.findKeysInProject(tempDir.path);
 
-    expect(result.keys, containsAll([
-      'email_input',
-      'submit_button',
-      'login_button',
-      'password_field',
-      'help_tooltip'
-    ]));
+    expect(
+        result.keys,
+        containsAll([
+          'email_input',
+          'submit_button',
+          'login_button',
+          'password_field',
+          'help_tooltip'
+        ]));
     expect(result['email_input'], contains(testFile.path));
     expect(result['submit_button'], contains(testFile.path));
     expect(result['login_button'], contains(integrationTestFile.path));
@@ -76,13 +79,15 @@ void main() {
 
     final keys = KeyChecker.loadExpectedKeys(keysFile.path);
 
-    expect(keys, containsAll([
-      'email_input',
-      'submit_button',
-      'password_field',
-      'login_button',
-      'help_tooltip'
-    ]));
+    expect(
+        keys,
+        containsAll([
+          'email_input',
+          'submit_button',
+          'password_field',
+          'login_button',
+          'help_tooltip'
+        ]));
   });
 
   test('validateKeys identifies missing and extra keys', () {
@@ -136,7 +141,8 @@ void main() {
   });
 
   test('checkIntegrationTests verifies test setup', () {
-    final testFile = File(path.join(tempDir.path, 'integration_test', 'appium_test.dart'));
+    final testFile =
+        File(path.join(tempDir.path, 'integration_test', 'appium_test.dart'));
     testFile.createSync(recursive: true);
     testFile.writeAsStringSync('''
       import 'package:appium_flutter_server/appium_flutter_server.dart';

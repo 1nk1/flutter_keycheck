@@ -1,0 +1,20 @@
+keys:
+  # Authentication screen
+  - login_button
+  - signup_button
+  - email_field
+  - password_field
+
+  # Home screen
+  - home_tab
+  - profile_tab
+  - settings_tab
+
+  # Profile screen
+  - edit_profile_button
+  - save_button
+  - avatar_image
+
+  # Settings
+  - theme_toggle
+  - notifications_switch

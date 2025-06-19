@@ -43,14 +43,28 @@ class KeyValidationResult {
 
 /// ANSI color pens for console output
 class ConsoleColors {
+  /// Red color for errors
   static final error = AnsiPen()..red(bold: true);
+
+  /// Green color for success messages
   static final success = AnsiPen()..green();
+
+  /// Yellow color for warnings
   static final warning = AnsiPen()..yellow();
+
+  /// Cyan color for info messages
   static final info = AnsiPen()..cyan();
+
+  /// Blue color for section headers
   static final blue = AnsiPen()..blue(bold: true);
+
+  /// Reset color pen
   static final reset = AnsiPen();
 
+  /// Creates a formatted section header with divider
   static String section(String text) => blue('$text\n${_divider()}');
+
+  /// Creates a horizontal divider line
   static String _divider() => '─' * 44;
 }
 

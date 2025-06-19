@@ -1,6 +1,6 @@
 name: flutter_keycheck
 description: A CLI tool for verifying presence of ValueKey elements and test dependencies in Flutter projects.
-version: 1.0.2
+version: 1.0.3
 
 homepage: https://github.com/1nk1/flutter_keycheck
 repository: https://github.com/1nk1/flutter_keycheck

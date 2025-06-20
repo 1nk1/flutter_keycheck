@@ -4,13 +4,31 @@ import 'package:ansicolor/ansicolor.dart';
 import 'package:path/path.dart' as path;
 import 'package:yaml/yaml.dart';
 
+/// Status of required dependencies in pubspec.yaml
+class DependencyStatus {
+  /// Constructor
+  const DependencyStatus({
+    required this.hasIntegrationTest,
+    required this.hasAppiumServer,
+  });
+
+  /// Whether integration_test dependency is present
+  final bool hasIntegrationTest;
+
+  /// Whether appium_flutter_server dependency is present
+  final bool hasAppiumServer;
+
+  /// Whether all required dependencies are present
+  bool get hasAllDependencies => hasIntegrationTest && hasAppiumServer;
+}
+
 /// Result of key validation containing found and missing keys.
 ///
 /// This class holds the results of validating Flutter automation keys in a project:
 /// - [missingKeys]: Keys that are expected but not found in the code
 /// - [extraKeys]: Keys found in code but not in the specification (when strict mode is enabled)
 /// - [matchedKeys]: Keys found in code with their file locations
-/// - [hasDependencies]: Whether required test dependencies are present
+/// - [dependencyStatus]: Status of required test dependencies
 /// - [hasIntegrationTests]: Whether integration test setup is valid
 class KeyValidationResult {
   /// Keys that are expected but not found in the code
@@ -22,8 +40,8 @@ class KeyValidationResult {
   /// Keys found in code with their file locations
   final Map<String, List<String>> matchedKeys;
 
-  /// Whether required test dependencies are present
-  final bool hasDependencies;
+  /// Status of required test dependencies
+  final DependencyStatus dependencyStatus;
 
   /// Whether integration test setup is valid
   final bool hasIntegrationTests;
@@ -32,9 +50,12 @@ class KeyValidationResult {
     required this.missingKeys,
     required this.extraKeys,
     required this.matchedKeys,
-    required this.hasDependencies,
+    required this.dependencyStatus,
     required this.hasIntegrationTests,
   });
+
+  /// Whether required test dependencies are present (for backward compatibility)
+  bool get hasDependencies => dependencyStatus.hasAllDependencies;
 
   /// Whether the validation passed all checks
   bool get isValid =>
@@ -155,9 +176,14 @@ class KeyChecker {
   /// Required dependencies:
   /// - integration_test (can be in dependencies or dev_dependencies)
   /// - appium_flutter_server (in dev_dependencies)
-  static bool checkDependencies(String projectPath) {
+  static DependencyStatus checkDependencies(String projectPath) {
     final pubspecFile = File(path.join(projectPath, 'pubspec.yaml'));
-    if (!pubspecFile.existsSync()) return false;
+    if (!pubspecFile.existsSync()) {
+      return DependencyStatus(
+        hasIntegrationTest: false,
+        hasAppiumServer: false,
+      );
+    }
 
     final content = loadYaml(pubspecFile.readAsStringSync()) as YamlMap;
     final deps = content['dependencies'] as YamlMap?;
@@ -174,7 +200,10 @@ class KeyChecker {
       hasAppiumServer = devDeps.containsKey('appium_flutter_server');
     }
 
-    return hasIntegrationTest && hasAppiumServer;
+    return DependencyStatus(
+      hasIntegrationTest: hasIntegrationTest,
+      hasAppiumServer: hasAppiumServer,
+    );
   }
 
   /// Checks if integration test files are properly set up.
@@ -242,7 +271,7 @@ class KeyChecker {
       missingKeys: missingKeys,
       extraKeys: extraKeys,
       matchedKeys: foundKeys,
-      hasDependencies: hasDeps,
+      dependencyStatus: hasDeps,
       hasIntegrationTests: hasTests,
     );
   }

@@ -55,3 +55,12 @@ keys/*.md
 example/build/
 example/.dart_tool/
 example/pubspec.lock
+
+# Test YAML files (temporary testing files)
+*_test_keys.yaml
+*_testing_keys.yaml
+test_keys.yaml
+simple_keys.yaml
+expected_keys.yaml
+real_test_keys.yaml
+success_test_keys.yaml

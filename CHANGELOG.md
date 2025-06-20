@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2025-01-03
+
+### ✨ Enhanced Dependency Reporting
+
+- Added detailed dependency status reporting with individual checks
+- New `DependencyStatus` class for granular dependency information
+- Improved dependency output showing specific status for each dependency
+- Enhanced error messages to show exactly which dependencies are missing vs found
+
+### 🔧 Technical Improvements
+
+- Better user experience with clear dependency status indicators
+- Updated tests to work with new dependency status structure
+- Cleaned up temporary test files and improved gitignore
+
+### 🐛 Bug Fixes
+
+- Fixed dependency checking to show individual status instead of generic "missing dependencies"
+- Resolved linting version conflicts (upgraded to lints ^4.0.0)
+
 ## [1.0.6] - 2025-01-03
 
 ### 🔧 Platform Compatibility

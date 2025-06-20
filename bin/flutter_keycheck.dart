@@ -100,15 +100,20 @@ void runChecks(List<String> args) {
 
     // Print dependency status
     print('\n${ConsoleColors.section('📦  Dependencies')}');
-    if (result.hasDependencies) {
+    if (result.dependencyStatus.hasIntegrationTest) {
       print(ConsoleColors.success(
           '✔️  integration_test found in pubspec.yaml ✅'));
+    } else {
+      print(
+          ConsoleColors.error('❌  integration_test not found in pubspec.yaml'));
+    }
+
+    if (result.dependencyStatus.hasAppiumServer) {
       print(ConsoleColors.success(
           '✔️  appium_flutter_server found in pubspec.yaml ✅'));
     } else {
-      print(ConsoleColors.error('❌  Missing required dependencies:'));
-      print(ConsoleColors.error('   • integration_test'));
-      print(ConsoleColors.error('   • appium_flutter_server'));
+      print(ConsoleColors.error(
+          '❌  appium_flutter_server not found in pubspec.yaml'));
     }
 
     // Print integration test status

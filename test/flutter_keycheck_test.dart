@@ -1,7 +1,8 @@
 import 'dart:io';
+
+import 'package:flutter_keycheck/src/checker.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
-import 'package:flutter_keycheck/src/checker.dart';
 
 void main() {
   late Directory tempDir;
@@ -137,7 +138,10 @@ void main() {
         appium_flutter_server: ^1.0.0
     ''');
 
-    expect(KeyChecker.checkDependencies(tempDir.path), isTrue);
+    final result = KeyChecker.checkDependencies(tempDir.path);
+    expect(result.hasIntegrationTest, isTrue);
+    expect(result.hasAppiumServer, isTrue);
+    expect(result.hasAllDependencies, isTrue);
   });
 
   test('checkIntegrationTests verifies test setup', () {

@@ -154,6 +154,73 @@ If you encounter issues during publishing:
 5. Push: `git push origin main --tags`
 6. Publish: `dart pub publish`
 
+## Automated Publishing via GitHub Actions
+
+### Setup
+
+1. **Get pub.dev access token**:
+
+   ```bash
+   dart pub token add https://pub.dev
+   ```
+
+   This will generate a token for your account.
+
+2. **Add GitHub Secret**:
+
+   - Go to your repository Settings → Secrets and variables → Actions
+   - Click "New repository secret"
+   - Name: `PUB_DEV_PUBLISH_ACCESS_TOKEN`
+   - Value: Your pub.dev access token
+
+3. **Create and push a tag**:
+
+   ```bash
+   git tag v2.1.3
+   git push origin v2.1.3
+   ```
+
+4. **GitHub Actions will automatically**:
+   - ✅ Run all tests
+   - ✅ Analyze code
+   - ✅ Verify package
+   - ✅ Publish to pub.dev
+
+### Workflow Files
+
+- `.github/workflows/publish.yml` - Automatic publishing on version tags
+- `.github/workflows/ci.yml` - Continuous integration on push/PR
+
+### Manual Publishing (Fallback)
+
+If you need to publish manually:
+
+```bash
+# Verify everything is ready
+dart analyze
+dart test
+dart pub publish --dry-run
+
+# Publish
+dart pub publish
+```
+
+## Release Process
+
+1. **Update version** in `pubspec.yaml`
+2. **Update CHANGELOG.md** with new version
+3. **Commit changes**:
+   ```bash
+   git add .
+   git commit -m "release: v2.1.3"
+   ```
+4. **Create and push tag**:
+   ```bash
+   git tag v2.1.3
+   git push && git push origin v2.1.3
+   ```
+5. **GitHub Actions handles the rest!** 🚀
+
 ---
 
 Ready to publish? Follow the steps above and make flutter_keycheck available to the Flutter community! 🚀

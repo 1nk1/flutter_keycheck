@@ -514,7 +514,7 @@ Requirements
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) and submit pull requests to our [GitHub repository](https://github.com/adj-dev/flutter_keycheck).
+Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) and submit pull requests to our [GitHub repository](https://github.com/1nk1/flutter_keycheck).
 
 ## 📄 License
 
@@ -523,8 +523,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🔗 Links
 
 - [pub.dev package](https://pub.dev/packages/flutter_keycheck)
-- [GitHub repository](https://github.com/adj-dev/flutter_keycheck)
-- [Issue tracker](https://github.com/adj-dev/flutter_keycheck/issues)
+- [GitHub repository](https://github.com/1nk1/flutter_keycheck)
+- [Issue tracker](https://github.com/1nk1/flutter_keycheck/issues)
 - [Changelog](CHANGELOG.md)
 
 ---

@@ -5,6 +5,12 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2024-12-19
+
+Fixed
+
+- Fixed repository URLs in package metadata to point to correct GitHub repository (1nk1/flutter_keycheck)
+
 ## [2.1.0] - 2024-12-19
 
 ### Added
@@ -185,13 +191,13 @@ No migration required. Existing configurations and CLI usage continue to work un
 
 ## [2.0.1] - 2024-12-18
 
- Fixed
+Fixed
 
 - Fixed configuration loading for edge cases
 - Improved error messages for missing dependencies
 - Enhanced file path resolution
 
- Enhanced
+Enhanced
 
 - Better documentation and examples
 - Improved CLI help output
@@ -201,7 +207,7 @@ No migration required. Existing configurations and CLI usage continue to work un
 
 ## [2.0.0] - 2024-12-17
 
- Added
+Added
 
 - Advanced key filtering with `--include-only` and `--exclude` options
 - Configuration file support with `.flutter_keycheck.yaml`
@@ -209,7 +215,7 @@ No migration required. Existing configurations and CLI usage continue to work un
 - Example folder support for Flutter packages
 - Comprehensive test suite with 37 test cases
 
- Enhanced
+Enhanced
 
 - Complete rewrite with enhanced configuration management
 - Beautiful output formatting with colors and emojis

@@ -1,0 +1,234 @@
+name: Flutter KeyCheck Advanced
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - '**/*.dart'
+      - 'pubspec.yaml'
+      - '.flutter_keycheck.yaml'
+      - '**/expected_keys.yaml'
+  pull_request:
+    paths:
+      - '**/*.dart'
+      - 'pubspec.yaml'
+      - '.flutter_keycheck.yaml'
+      - '**/expected_keys.yaml'
+
+jobs:
+  # Basic validation for all changes
+  keycheck-basic:
+    runs-on: ubuntu-latest
+    name: 🔍 Basic Key Validation
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: 📦 Get dependencies
+        run: dart pub get
+
+      - name: 🔍 Activate flutter_keycheck
+        run: dart pub global activate flutter_keycheck
+
+      - name: 🕵️ Run basic validation
+        run: flutter_keycheck --verbose
+
+  # Strict validation for main/develop branches
+  keycheck-strict:
+    runs-on: ubuntu-latest
+    name: 🚨 Strict Key Validation
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: 📦 Get dependencies
+        run: dart pub get
+
+      - name: 🔍 Activate flutter_keycheck
+        run: dart pub global activate flutter_keycheck
+
+      - name: 🚨 Run strict validation
+        run: flutter_keycheck --strict --fail-on-extra --verbose
+
+  # Generate reports for pull requests
+  keycheck-reports:
+    runs-on: ubuntu-latest
+    name: 📊 Generate Key Reports
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: 📦 Get dependencies
+        run: dart pub get
+
+      - name: 🔍 Activate flutter_keycheck
+        run: dart pub global activate flutter_keycheck
+
+      - name: 📋 Generate JSON Report
+        run: |
+          flutter_keycheck --report json > keycheck_report.json || true
+          echo "JSON report generated"
+        continue-on-error: true
+
+      - name: 📝 Generate Markdown Report
+        run: |
+          flutter_keycheck --report markdown > keycheck_report.md || true
+          echo "Markdown report generated"
+        continue-on-error: true
+
+      - name: 📎 Upload Reports as Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: keycheck-reports-${{ github.event.number }}
+          path: |
+            keycheck_report.json
+            keycheck_report.md
+          retention-days: 30
+
+      - name: 💬 Comment PR with Report
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+
+            try {
+              const report = fs.readFileSync('keycheck_report.md', 'utf8');
+
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🔍 Flutter KeyCheck Report\n\n${report}`
+              });
+            } catch (error) {
+              console.log('Could not read report file:', error.message);
+            }
+
+  # Auto-generate and update keys on main branch
+  keycheck-autogen:
+    runs-on: ubuntu-latest
+    name: 🔑 Auto-generate Keys
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ⚙️ Set up Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: 📦 Get dependencies
+        run: dart pub get
+
+      - name: 🔍 Activate flutter_keycheck
+        run: dart pub global activate flutter_keycheck
+
+      - name: 🔑 Generate Keys File
+        run: |
+          mkdir -p keys
+          flutter_keycheck --generate-keys > keys/auto_generated_keys.yaml
+
+          # Also create a timestamped backup
+          cp keys/auto_generated_keys.yaml "keys/backup_$(date +%Y%m%d_%H%M%S).yaml"
+
+      - name: 🔍 Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code keys/auto_generated_keys.yaml || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: 📤 Commit Generated Keys
+        if: steps.git-check.outputs.changed == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: '🔑 Auto-update generated keys [skip ci]'
+          file_pattern: keys/auto_generated_keys.yaml keys/backup_*.yaml
+
+  # Security scan for sensitive keys
+  keycheck-security:
+    runs-on: ubuntu-latest
+    name: 🔒 Security Key Scan
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: 📦 Get dependencies
+        run: dart pub get
+
+      - name: 🔍 Activate flutter_keycheck
+        run: dart pub global activate flutter_keycheck
+
+      - name: 🔒 Check for sensitive key patterns
+        run: |
+          # Generate current keys and check for sensitive patterns
+          flutter_keycheck --generate-keys > current_keys.yaml
+
+          # Check for potentially sensitive key names
+          if grep -i -E "(password|secret|token|api|key|auth)" current_keys.yaml; then
+            echo "⚠️ Warning: Found potentially sensitive key names"
+            echo "Please review these keys to ensure they don't expose sensitive information"
+            exit 1
+          else
+            echo "✅ No sensitive key patterns detected"
+          fi
+
+  # Performance impact analysis
+  keycheck-performance:
+    runs-on: ubuntu-latest
+    name: ⚡ Performance Impact Analysis
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: 📦 Get dependencies
+        run: dart pub get
+
+      - name: 🔍 Activate flutter_keycheck
+        run: dart pub global activate flutter_keycheck
+
+      - name: ⚡ Analyze key count impact
+        run: |
+          # Generate current keys
+          flutter_keycheck --generate-keys > pr_keys.yaml
+
+          # Check key count
+          KEY_COUNT=$(grep -c "^  - " pr_keys.yaml || echo "0")
+          echo "Total keys found: $KEY_COUNT"
+
+          # Set thresholds
+          if [ "$KEY_COUNT" -gt 1000 ]; then
+            echo "⚠️ Warning: High number of keys ($KEY_COUNT) may impact app performance"
+            echo "Consider reviewing key usage and removing unused keys"
+          elif [ "$KEY_COUNT" -gt 500 ]; then
+            echo "ℹ️ Info: Moderate number of keys ($KEY_COUNT) - consider periodic cleanup"
+          else
+            echo "✅ Key count ($KEY_COUNT) is within acceptable range"
+          fi

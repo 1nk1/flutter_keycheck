@@ -49,22 +49,42 @@ keys:
 flutter_keycheck --keys expected_keys.yaml
 ```
 
-## 📋 Usage
+## 🔧 Configuration
 
-### Basic Usage
+### Configuration File (Recommended)
+
+Create a `.flutter_keycheck.yaml` file in your project root for convenient configuration:
+
+```yaml
+# .flutter_keycheck.yaml
+keys: keys/expected_keys.yaml
+path: .
+strict: true
+verbose: false
+```
+
+Then simply run:
 
 ```bash
-# Check keys in current directory
-flutter_keycheck --keys expected_keys.yaml
+flutter_keycheck
+```
 
-# Check specific project path
-flutter_keycheck --keys keys/production.yaml --path ./my_flutter_app
+**Benefits:**
 
-# Strict mode (fail on extra keys)
-flutter_keycheck --keys expected_keys.yaml --strict
+- ✅ No need to remember CLI arguments
+- ✅ Consistent team configuration
+- ✅ Perfect for CI/CD pipelines
+- ✅ Version control friendly
 
-# Verbose output
-flutter_keycheck --keys expected_keys.yaml --verbose
+### Priority Order
+
+1. **CLI arguments** (highest priority)
+2. **`.flutter_keycheck.yaml` file**
+3. **Default values** (lowest priority)
+
+```bash
+# Config file sets verbose: true, but CLI overrides it
+flutter_keycheck --verbose false
 ```
 
 ### Command Line Options
@@ -76,6 +96,45 @@ flutter_keycheck --keys expected_keys.yaml --verbose
 | `--strict`  | `-s`  | Fail if integration_test/appium_test.dart is missing | `false`      |
 | `--verbose` | `-v`  | Show detailed output                                 | `false`      |
 | `--help`    | `-h`  | Show help message                                    | -            |
+
+## 📋 Usage Examples
+
+### Basic Usage
+
+```bash
+# Using config file (recommended)
+flutter_keycheck
+
+# Direct CLI usage
+flutter_keycheck --keys expected_keys.yaml
+
+# Check specific project path
+flutter_keycheck --keys keys/production.yaml --path ./my_flutter_app
+
+# Strict mode (fail on missing integration tests)
+flutter_keycheck --keys expected_keys.yaml --strict
+
+# Verbose output
+flutter_keycheck --keys expected_keys.yaml --verbose
+```
+
+### With Configuration File
+
+```bash
+# 1. Create config file
+cat > .flutter_keycheck.yaml << EOF
+keys: keys/expected_keys.yaml
+path: .
+strict: true
+verbose: false
+EOF
+
+# 2. Run with default config
+flutter_keycheck
+
+# 3. Override specific settings
+flutter_keycheck --verbose  # Enable verbose while keeping other config
+```
 
 ## 📊 Example Output
 
@@ -331,3 +390,246 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📦 [appium_flutter_server package](https://pub.dev/packages/appium_flutter_server)
 - 🔧 [Flutter Integration Testing](https://docs.flutter.dev/testing/integration-tests)
 - 🎯 [Flutter Testing Best Practices](https://docs.flutter.dev/testing)
+
+## 🏗️ CI Integration
+
+GitHub Actions
+
+Create `.github/workflows/flutter_keycheck.yml`:
+
+```yaml
+name: Flutter KeyCheck
+
+on:
+  push:
+    paths:
+      - '**/*.dart'
+      - 'pubspec.yaml'
+      - '.flutter_keycheck.yaml'
+      - '**/expected_keys.yaml'
+  pull_request:
+
+jobs:
+  keycheck:
+    runs-on: ubuntu-latest
+    name: 🔍 Flutter Key Validation
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: 📦 Get dependencies
+        run: dart pub get
+
+      - name: 🔍 Activate flutter_keycheck
+        run: dart pub global activate flutter_keycheck
+
+      - name: 🕵️ Run flutter_keycheck (basic)
+        run: flutter_keycheck
+
+      - name: 🚨 Run flutter_keycheck (strict mode)
+        run: flutter_keycheck --strict --fail-on-extra
+```
+
+### GitLab CI
+
+Add to your `.gitlab-ci.yml`:
+
+```yaml
+flutter_keycheck:
+  stage: test
+  image: dart:stable
+  script:
+    - dart pub get
+    - dart pub global activate flutter_keycheck
+    - flutter_keycheck --strict
+  only:
+    changes:
+      - '**/*.dart'
+      - 'pubspec.yaml'
+      - '.flutter_keycheck.yaml'
+      - '**/expected_keys.yaml'
+```
+
+### Bitrise
+
+Add step to your `bitrise.yml`:
+
+```yaml
+- script@1:
+    title: Flutter KeyCheck
+    inputs:
+      - content: |
+          #!/usr/bin/env bash
+          set -ex
+          dart pub global activate flutter_keycheck
+          flutter_keycheck --strict --fail-on-extra
+```
+
+### Jenkins
+
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Flutter KeyCheck') {
+            steps {
+                sh '''
+                    dart pub get
+                    dart pub global activate flutter_keycheck
+                    flutter_keycheck --strict
+                '''
+            }
+        }
+    }
+}
+```
+
+## 📊 Advanced Usage
+
+### Generate Reports
+
+```bash
+# JSON report for automation
+flutter_keycheck --report json > keycheck_report.json
+
+# Markdown report for documentation
+flutter_keycheck --report markdown > keycheck_report.md
+```
+
+### Custom Configuration Files
+
+```bash
+# Use custom config file
+flutter_keycheck --config ci/keycheck_config.yaml
+
+# Override config with CLI args
+flutter_keycheck --config my_config.yaml --strict --verbose
+```
+
+### Multiple Environments
+
+```bash
+# Development environment (lenient)
+flutter_keycheck --keys keys/dev_keys.yaml
+
+# Production environment (strict)
+flutter_keycheck --keys keys/prod_keys.yaml --strict --fail-on-extra
+```
+
+## 🎯 Best Practices
+
+### 1. **Organize Your Keys**
+
+```bash
+keys/
+├── expected_keys.yaml          # Main keys for production
+├── dev_keys.yaml              # Development-only keys
+├── test_keys.yaml             # Test-specific keys
+└── generated_keys.yaml        # Auto-generated reference
+```
+
+### 2. **CI Strategy**
+
+- Use basic validation on feature branches
+- Use strict mode (`--strict --fail-on-extra`) on main/develop
+- Generate reports for pull requests
+- Auto-update keys on main branch pushes
+
+### 3. **Configuration Management**
+
+```yaml
+# .flutter_keycheck.yaml for different environments
+keys: keys/expected_keys.yaml
+path: .
+strict: false # Lenient for development
+verbose: true # Detailed feedback
+fail_on_extra: false # Don't fail on experimental keys
+```
+
+### 4. **Key Naming Conventions**
+
+```yaml
+keys:
+  # Screen-based naming
+  - login_screen_email_field
+  - login_screen_password_field
+  - login_screen_submit_button
+
+  # Component-based naming
+  - user_profile_avatar
+  - user_profile_name_text
+  - user_profile_edit_button
+
+  # Action-based naming
+  - save_document_action
+  - delete_item_action
+  - refresh_data_action
+```
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+**Issue**: `keys parameter is required`
+
+```bash
+# Solution: Provide keys file or create config
+flutter_keycheck --keys keys/expected_keys.yaml
+# OR
+echo "keys: keys/expected_keys.yaml" > .flutter_keycheck.yaml
+```
+
+**Issue**: `Keys file does not exist`
+
+```bash
+# Solution: Generate keys from existing project
+flutter_keycheck --generate-keys > keys/expected_keys.yaml
+```
+
+**Issue**: `No ValueKeys found in project`
+
+```bash
+# Solution: Check your search path
+flutter_keycheck --generate-keys --path lib --verbose
+```
+
+### Debug Mode
+
+```bash
+# Enable verbose output for debugging
+flutter_keycheck --verbose
+
+# Check configuration loading
+flutter_keycheck --config my_config.yaml --verbose
+```
+
+## 📝 Examples
+
+Check the `example/` directory for:
+
+- Sample Flutter app with ValueKeys
+- Configuration file examples
+- Expected keys file format
+- CI workflow examples
+
+🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+Made with ❤️ for Flutter developers who want reliable automation testing

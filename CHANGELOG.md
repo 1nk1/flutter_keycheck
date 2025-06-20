@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-01-03
+
+### 🚀 Major Release - Advanced Configuration & CI Integration
+
+#### 🎉 New Features
+
+- **Custom Configuration Files**: `--config` flag for specifying custom config files
+- **Key Generation**: `--generate-keys` flag to auto-generate expected keys from existing project
+- **Fail on Extra Keys**: `--fail-on-extra` flag for strict validation in CI environments
+- **Report Generation**: `--report json|markdown` for generating structured reports
+- **Advanced CI Integration**: Ready-to-use GitHub Actions, GitLab CI, Bitrise, and Jenkins examples
+
+#### ✨ Enhanced Configuration Support
+
+- Added support for `.flutter_keycheck.yaml` configuration files
+- New `FlutterKeycheckConfig` class with `fail_on_extra` support
+- Beautiful colored output when config file is loaded: `📄 Loaded config from .flutter_keycheck.yaml ✅`
+- CLI arguments take priority over config file settings
+- Path validation for keys files and source directories
+
+#### 🔧 CI/CD Ready
+
+- Comprehensive GitHub Actions workflows with security scanning
+- Performance impact analysis for key count
+- Automated key generation and updates
+- Pull request reporting with detailed analysis
+- Multi-environment support (dev/staging/prod)
+
+#### 📊 Advanced Validation
+
+- Enhanced verbose output with configuration details
+- Better error messages with actionable suggestions
+- Graceful handling of missing files and invalid configurations
+- Support for custom config file paths
+
+#### 🧪 Quality Improvements
+
+- Expanded test suite with 19+ comprehensive test cases
+- Documentation for all edge cases and error scenarios
+- Real-world CI integration examples
+- Best practices guide for key organization
+
+#### 📚 Documentation
+
+- Complete CI integration guide with multiple platforms
+- Advanced usage examples and troubleshooting
+- Key naming conventions and organizational patterns
+- Security considerations for sensitive key detection
+
 ## [1.0.7] - 2025-01-03
 
 ### ✨ Enhanced Dependency Reporting
@@ -14,13 +63,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved dependency output showing specific status for each dependency
 - Enhanced error messages to show exactly which dependencies are missing vs found
 
-### 🔧 Technical Improvements
+🔧 Technical Improvements
 
 - Better user experience with clear dependency status indicators
 - Updated tests to work with new dependency status structure
 - Cleaned up temporary test files and improved gitignore
 
-### 🐛 Bug Fixes
+🐛 Bug Fixes
 
 - Fixed dependency checking to show individual status instead of generic "missing dependencies"
 - Resolved linting version conflicts (upgraded to lints ^4.0.0)
@@ -51,7 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.3] - 2025-01-03
 
-### 📚 Documentation
+📚 Documentation
 
 - Added comprehensive dartdoc comments for better API documentation
 - Created example/ directory with sample usage

@@ -7,7 +7,9 @@
 /// - Verify required integration test dependencies
 /// - Support both YAML and Markdown key definition files
 /// - Handle string interpolation for dynamic keys
+/// - Support configuration files (.flutter_keycheck.yaml)
 library;
 
 export 'src/checker.dart';
 export 'src/cli.dart';
+export 'src/config.dart';

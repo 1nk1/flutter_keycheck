@@ -1,0 +1,24 @@
+# .flutter_keycheck.yaml
+# Configuration file for flutter_keycheck CLI tool
+#
+# This file allows you to set default values for CLI arguments.
+# CLI arguments will override these settings when provided.
+
+# Path to the YAML file containing expected keys
+keys: expected_keys.yaml
+
+# Root path of the Flutter project to scan (default: current directory)
+path: sample_flutter_app
+
+# Enable strict mode: fail if integration_test/appium_test.dart is missing
+strict: false
+
+# Enable verbose output for detailed information
+verbose: true
+
+# Fail on extra keys
+fail_on_extra: false
+# Example usage:
+# 1. Place this file in your Flutter project root
+# 2. Run: flutter_keycheck
+# 3. Or override specific settings: flutter_keycheck --verbose

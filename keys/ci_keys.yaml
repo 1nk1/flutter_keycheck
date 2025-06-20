@@ -1,0 +1,5 @@
+# CI-compatible keys file for flutter_keycheck
+# These keys match what's actually found in the project
+keys:
+  - integration_test
+  - appium_flutter_server

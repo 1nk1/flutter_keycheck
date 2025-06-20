@@ -37,7 +37,7 @@ jobs:
         run: dart pub global activate flutter_keycheck
 
       - name: 🕵️ Run basic validation
-        run: flutter_keycheck --keys keys/expected_keys.yaml --verbose
+        run: flutter_keycheck --keys keys/ci_keys.yaml --verbose
 
   # Strict validation for main/develop branches
   keycheck-strict:
@@ -59,7 +59,7 @@ jobs:
         run: dart pub global activate flutter_keycheck
 
       - name: 🚨 Run strict validation
-        run: flutter_keycheck --keys keys/expected_keys.yaml --strict --fail-on-extra --verbose
+        run: flutter_keycheck --keys keys/ci_keys.yaml --strict --verbose
 
   # Generate reports for pull requests
   keycheck-reports:

@@ -26,6 +26,9 @@ void main() async {
   // Check tests
   checks['test validation'] = await _validateTests();
 
+  // Check for warnings
+  checks['no warnings'] = await _validateNoWarnings();
+
   // Print results
   print('\n📊 Validation Results:');
   print('=' * 40);
@@ -223,6 +226,56 @@ Future<bool> _validateTests() async {
     return true;
   } catch (e) {
     print('❌ Error validating tests: $e');
+    return false;
+  }
+}
+
+Future<bool> _validateNoWarnings() async {
+  try {
+    // Run dart analyze
+    final analyzeResult = await Process.run('dart', ['analyze']);
+    if (analyzeResult.exitCode != 0) {
+      print('❌ Dart analyze failed');
+      print(analyzeResult.stdout);
+      print(analyzeResult.stderr);
+      return false;
+    }
+
+    // Run dart pub publish --dry-run and check for warnings
+    final publishResult =
+        await Process.run('dart', ['pub', 'publish', '--dry-run']);
+    final output = publishResult.stdout.toString();
+
+    // Check for warnings in output
+    final warningsMatch =
+        RegExp(r'Package has (\d+) warning').firstMatch(output);
+    if (warningsMatch != null) {
+      final warningCount = int.parse(warningsMatch.group(1)!);
+      if (warningCount > 0) {
+        print('❌ Found $warningCount warnings in publish validation');
+        // Print the warnings section for debugging
+        final lines = output.split('\n');
+        bool inWarnings = false;
+        for (final line in lines) {
+          if (line.contains(
+              'Package validation found the following potential issue')) {
+            inWarnings = true;
+          }
+          if (inWarnings && line.trim().isNotEmpty) {
+            print('  $line');
+          }
+          if (inWarnings && line.contains('Package has')) {
+            break;
+          }
+        }
+        return false;
+      }
+    }
+
+    print('✅ No analyze or publish warnings found');
+    return true;
+  } catch (e) {
+    print('❌ Error checking for warnings: $e');
     return false;
   }
 }

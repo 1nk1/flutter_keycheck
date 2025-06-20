@@ -1,24 +1,117 @@
-# .flutter_keycheck.yaml
-# Configuration file for flutter_keycheck CLI tool
-#
-# This file allows you to set default values for CLI arguments.
-# CLI arguments will override these settings when provided.
+# Flutter KeyCheck Configuration
+# Complete reference for .flutter_keycheck.yaml
 
-# Path to the YAML file containing expected keys
-keys: expected_keys.yaml
+# ============================================================================
+# Basic Configuration
+# ============================================================================
 
-# Root path of the Flutter project to scan (default: current directory)
-path: sample_flutter_app
+# Path to expected keys YAML file (relative to project root)
+keys: keys/expected_keys.yaml
 
-# Enable strict mode: fail if integration_test/appium_test.dart is missing
+# Project path to scan (default: current directory)
+path: .
+
+# Output format: 'human' (default) or 'json'
+report: human
+
+# ============================================================================
+# Validation Modes
+# ============================================================================
+
+# Strict mode: fail if integration_test setup is incomplete
 strict: false
 
-# Enable verbose output for detailed information
-verbose: true
+# Verbose mode: show detailed output including file locations
+verbose: false
 
-# Fail on extra keys
+# Fail if extra keys (not in expected list) are found
 fail_on_extra: false
-# Example usage:
-# 1. Place this file in your Flutter project root
-# 2. Run: flutter_keycheck
-# 3. Or override specific settings: flutter_keycheck --verbose
+
+# ============================================================================
+# Key Filtering (Advanced)
+# ============================================================================
+
+# Include only keys matching these patterns (substring or regex)
+# Useful for QA automation to focus on specific key types
+include_only:
+  - qa_ # Keys starting with 'qa_'
+  - e2e_ # Keys starting with 'e2e_'
+  - _button # Keys ending with '_button'
+  - _field # Keys ending with '_field'
+  - _dropdown # Keys ending with '_dropdown'
+
+# Exclude keys matching these patterns (substring or regex)
+# Useful to filter out business logic keys that change frequently
+exclude:
+  - user.id # Dynamic user IDs
+  - token # Authentication tokens
+  - temp_ # Temporary variables
+  - "\\$\\{.*\\}" # Template variables like ${user.name}
+
+# ============================================================================
+# Tracked Keys (NEW in v2.1.0)
+# ============================================================================
+
+# When specified, only validate these specific keys from the expected list
+# This allows focusing on a critical subset for QA automation
+# If omitted, all keys from expected_keys.yaml are validated
+tracked_keys:
+  - login_submit_button
+  - signup_email_field
+  - card_dropdown
+  - search_input_field
+  - logout_button
+# ============================================================================
+# Usage Examples
+# ============================================================================
+
+# Example 1: QA Automation Focus
+# - Use tracked_keys to validate only critical UI elements
+# - Use include_only to generate keys for QA patterns
+# - Use exclude to filter out dynamic business data
+
+# Example 2: CI/CD Pipeline
+# - Set strict: true to enforce complete integration test setup
+# - Set fail_on_extra: true to catch new keys that need documentation
+# - Use verbose: true for detailed build logs
+
+# Example 3: Package Development
+# - Works automatically with example/ folders
+# - Scans both main project and example application
+# - Validates dependencies in both pubspec.yaml files
+
+# ============================================================================
+# Filter Priority and Combinations
+# ============================================================================
+
+# 1. If tracked_keys is specified:
+#    - Only those keys are validated (subset of expected_keys.yaml)
+#    - include_only/exclude filters are applied to found keys
+#    - Extra keys are any found keys not in tracked_keys
+
+# 2. If tracked_keys is omitted:
+#    - All keys from expected_keys.yaml are validated
+#    - include_only/exclude filters are applied to both expected and found keys
+#    - Extra keys are any found keys not in expected_keys.yaml
+
+# 3. CLI arguments always override config file settings
+
+# ============================================================================
+# Pattern Matching
+# ============================================================================
+
+# Patterns support both substring and regex matching:
+# - Substring: "qa_" matches "qa_login_button"
+# - Regex: "^qa_.*_button$" matches "qa_login_button" but not "qa_field"
+# - Special characters in regex: \\ for \, \\$ for $, etc.
+
+# Examples:
+# include_only:
+#   - "qa_"              # Substring: starts with qa_
+#   - "_button$"         # Regex: ends with _button
+#   - "^e2e_.*_field$"   # Regex: starts with e2e_ and ends with _field
+
+# exclude:
+#   - "temp"             # Substring: contains temp
+#   - "\\$\\{.*\\}"      # Regex: template variables like ${variable}
+#   - "user\\.(id|name)" # Regex: user.id or user.name

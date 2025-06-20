@@ -1,38 +1,49 @@
 name: flutter_keycheck
-description: A CLI tool for verifying presence of ValueKey elements and test dependencies in Flutter projects.
-version: 2.0.3
+description: A powerful CLI tool for validating Flutter automation keys in your codebase. Supports advanced filtering, example folder scanning, and tracked key validation for QA automation workflows.
+version: 2.1.0
+repository: https://github.com/adj-dev/flutter_keycheck
+homepage: https://github.com/adj-dev/flutter_keycheck
+documentation: https://pub.dev/packages/flutter_keycheck
+issue_tracker: https://github.com/adj-dev/flutter_keycheck/issues
 
-homepage: https://github.com/1nk1/flutter_keycheck
-repository: https://github.com/1nk1/flutter_keycheck
-issue_tracker: https://github.com/1nk1/flutter_keycheck/issues
+topics:
+  - flutter
+  - automation
+  - testing
+  - cli
+  - validation
 
 environment:
-  sdk: ">=3.2.0 <4.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
+dependencies:
+  ansicolor: ^2.0.2
+  args: ^2.4.2
+  path: ^1.8.3
+  yaml: ^3.1.2
+
+dev_dependencies:
+  test: ^1.24.9
+  lints: ^3.0.0
+
+executables:
+  flutter_keycheck:
+
+# Funding information
+funding:
+  - https://github.com/sponsors/adj-dev
+
+# Screenshots for pub.dev (if you have any)
+# screenshots:
+#   - description: 'CLI output showing key validation results'
+#     path: screenshots/cli_output.png
+#   - description: 'Configuration file example'
+#     path: screenshots/config_example.png
+
+# Platforms supported
 platforms:
   linux:
   macos:
   windows:
-
-# This package is not compatible with web/wasm due to dart:io usage
-# It's a CLI tool designed for desktop platforms only
-
-dependencies:
-  args: ^2.4.2
-  yaml: ^3.1.2
-  path: ^1.8.3
-  glob: ^2.1.2
-  ansicolor: ^2.0.1
-  cli_util: ^0.4.1
-
-dev_dependencies:
-  lints: ^4.0.0
-  test: ^1.25.0
-
-  # Integration testing dependencies (for testing only)
-  # integration_test:
-  #   sdk: flutter
-  # appium_flutter_server: ^0.0.27
-
-executables:
-  flutter_keycheck: flutter_keycheck
+# What gets published to pub.dev
+# The .pubignore file controls what gets excluded

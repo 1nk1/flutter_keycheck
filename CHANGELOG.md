@@ -1,234 +1,238 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to flutter_keycheck will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.3] - 2025-01-03
+## [2.1.0] - 2024-12-19
 
-### 🎯 Final Stable Release - Production Ready
+### Added
 
-#### 🔧 Bug Fixes
+#### 🎯 Tracked Keys Feature
 
-- Fixed CI/CD workflows for CLI tool validation
-- Improved error handling for edge cases
-- Optimized configuration file loading
+- **New `tracked_keys` configuration option** - Define a subset of keys to validate from your expected keys file
+- When specified, only validates the tracked keys instead of the entire expected keys list
+- Perfect for QA automation teams who want to focus on critical UI elements
+- Example usage:
 
-#### 📦 CI/CD Improvements
+  ```yaml
+  tracked_keys:
+    - login_submit_button
+    - signup_email_field
+    - card_dropdown
+  ```
 
-- Adapted GitHub Actions for CLI tool specifics
-- Added graceful handling of validation results
-- Enhanced workflow reliability
+#### 🔧 Enhanced Configuration Management
 
-## [2.0.0] - 2025-01-03
+- **Complete configuration file rewrite** with improved YAML parsing and error handling
+- **New configuration hierarchy**: CLI arguments > Config file > Defaults
+- **Enhanced error messages** with clear guidance for configuration issues
+- **Comprehensive configuration validation** with helpful warnings
 
-### 🚀 Major Release - Advanced Configuration & CI Integration
+#### 📊 Advanced Key Generation
 
-#### 🎉 New Features
+- **Enhanced `--generate-keys` command** now respects all filtering options
+- **Tracked keys support** in key generation - only generates specified tracked keys
+- **Improved YAML output** with descriptive comments showing applied filters
+- **Better formatting** with sorted keys and clear structure
 
-- **Custom Configuration Files**: `--config` flag for specifying custom config files
-- **Key Generation**: `--generate-keys` flag to auto-generate expected keys from existing project
-- **Fail on Extra Keys**: `--fail-on-extra` flag for strict validation in CI environments
-- **Report Generation**: `--report json|markdown` for generating structured reports
-- **Advanced CI Integration**: Ready-to-use GitHub Actions, GitLab CI, Bitrise, and Jenkins examples
+#### 🎨 Beautiful CLI Output
 
-#### ✨ Enhanced Configuration Support
+- **Redesigned human-readable output** with improved formatting and colors
+- **Tracked keys status indicators** - shows "✅ Matched tracked key" vs "❌ Missing tracked key"
+- **Enhanced verbose mode** with detailed configuration display
+- **Better error reporting** with actionable suggestions
 
-- Added support for `.flutter_keycheck.yaml` configuration files
-- New `FlutterKeycheckConfig` class with `fail_on_extra` support
-- Beautiful colored output when config file is loaded: `📄 Loaded config from .flutter_keycheck.yaml ✅`
-- CLI arguments take priority over config file settings
-- Path validation for keys files and source directories
+#### 🏗️ Package Development Support
 
-#### 🔧 CI/CD Ready
+- **Automatic example/ folder detection** for Flutter packages published to pub.dev
+- **Intelligent project path resolution** - works from root or example/ directory
+- **Comprehensive scanning** of both main project and example application code
+- **Dual dependency validation** - checks both main and example pubspec.yaml files
 
-- Comprehensive GitHub Actions workflows with security scanning
-- Performance impact analysis for key count
-- Automated key generation and updates
-- Pull request reporting with detailed analysis
-- Multi-environment support (dev/staging/prod)
+### Enhanced
 
-#### 📊 Advanced Validation
+#### 🔍 Improved Key Detection
 
-- Enhanced verbose output with configuration details
-- Better error messages with actionable suggestions
-- Graceful handling of missing files and invalid configurations
-- Support for custom config file paths
+- **Better regex patterns** for finding ValueKey and Key instances in Dart code
+- **Enhanced file scanning** with recursive directory traversal
+- **Optimized performance** for large codebases
+- **More accurate key extraction** with improved parsing logic
 
-#### 🧪 Quality Improvements
+#### ⚙️ Configuration System Overhaul
 
-- Expanded test suite with 19+ comprehensive test cases
-- Documentation for all edge cases and error scenarios
-- Real-world CI integration examples
-- Best practices guide for key organization
+- **Type-safe configuration classes** with proper null safety
+- **Immutable configuration objects** with builder pattern for merging
+- **Comprehensive getter methods** for accessing configuration values
+- **Better default value handling** with explicit fallbacks
 
-#### 📚 Documentation
+#### 🧪 Robust Testing Infrastructure
 
-- Complete CI integration guide with multiple platforms
-- Advanced usage examples and troubleshooting
-- Key naming conventions and organizational patterns
-- Security considerations for sensitive key detection
+- **45 comprehensive test cases** covering all functionality
+- **8 new tracked keys tests** validating the new feature
+- **12 enhanced configuration tests** with edge case coverage
+- **8 example folder tests** ensuring package development support
+- **17 core feature tests** with improved reliability
 
-## [1.0.7] - 2025-01-03
+#### 📦 Package Publishing Optimization
 
-### ✨ Enhanced Dependency Reporting
+- **Enhanced .pubignore** to exclude development files from published package
+- **Clean package structure** following pub.dev best practices
+- **Comprehensive metadata** with topics, funding, and platform support
+- **Example folder included** in repository but excluded from package
 
-- Added detailed dependency status reporting with individual checks
-- New `DependencyStatus` class for granular dependency information
-- Improved dependency output showing specific status for each dependency
-- Enhanced error messages to show exactly which dependencies are missing vs found
+### Fixed
 
-🔧 Technical Improvements
+#### 🐛 Configuration Loading Issues
 
-- Better user experience with clear dependency status indicators
-- Updated tests to work with new dependency status structure
-- Cleaned up temporary test files and improved gitignore
+- **Fixed YAML parsing errors** with better error handling and recovery
+- **Resolved null safety issues** in configuration merging
+- **Fixed CLI argument precedence** to properly override config file values
+- **Improved file path resolution** for relative and absolute paths
 
-🐛 Bug Fixes
+#### 🔧 CLI Argument Processing
 
-- Fixed dependency checking to show individual status instead of generic "missing dependencies"
-- Resolved linting version conflicts (upgraded to lints ^4.0.0)
+- **Fixed comma-separated value parsing** for include-only and exclude options
+- **Resolved boolean flag handling** for proper true/false detection
+- **Enhanced argument validation** with better error messages
+- **Fixed help output formatting** with proper alignment and examples
 
-## [1.0.6] - 2025-01-03
+#### 📁 Project Structure Detection
 
-### 🔧 Platform Compatibility
+- **Fixed example/ folder detection** when running from different directories
+- **Resolved nested structure scanning** for complex project layouts
+- **Fixed pubspec.yaml detection** in multi-project setups
+- **Improved directory traversal** with better error handling
 
-- Added explicit documentation about web/WASM incompatibility
-- Clarified that this is a CLI tool designed for desktop platforms only
-- Improved pub.dev platform support documentation
+### Technical Details
 
-## [1.0.5] - 2025-01-03
+#### 🏗️ Architecture Improvements
 
-### 🤖 Automation
+- **Modular configuration system** with separation of concerns
+- **Enhanced KeyChecker class** with better method organization
+- **Improved error handling** throughout the codebase
+- **Better code documentation** with comprehensive inline comments
 
-- Added automated publishing workflow for pub.dev
-- Now supports publishing via git tags (e.g., `git tag v1.0.5`)
-- Streamlined release process with GitHub Actions
+#### 📈 Performance Enhancements
 
-## [1.0.4] - 2025-01-03
+- **Optimized file scanning** with efficient directory traversal
+- **Reduced memory usage** in large project scanning
+- **Faster regex matching** with compiled patterns
+- **Improved startup time** with lazy initialization
 
-### 🔧 Platform Support
+#### 🔒 Type Safety & Reliability
 
-- Added explicit platform constraints in pubspec.yaml (Linux, macOS, Windows)
-- Clarified that this CLI tool is not compatible with Web/WASM by design (uses dart:io)
-- Improved pub.dev platform support scoring
+- **Full null safety compliance** with proper nullable types
+- **Immutable data structures** preventing accidental mutations
+- **Comprehensive error handling** with graceful degradation
+- **Enhanced test coverage** ensuring reliability
 
-## [1.0.3] - 2025-01-03
+### Usage Examples
 
-📚 Documentation
-
-- Added comprehensive dartdoc comments for better API documentation
-- Created example/ directory with sample usage
-- Added example Flutter app with ValueKey usage
-- Improved pub.dev score compliance
-
-## [1.0.2] - 2025-01-03
-
-### 🐛 Bug Fixes
-
-- Fixed dependency version conflict: downgraded lints from ^5.0.0 to ^3.0.0 for Dart 3.2.0 compatibility
-- Fixed GitHub Actions workflow paths and YAML syntax
-
-## [1.0.1] - 2025-01-03
-
-🐛 Bug Fixes
-
-- Fixed release date in changelog from placeholder to actual date
-
-## [1.0.0] - 2025-01-03
-
-### 🎉 Initial Release
-
-#### ✨ Features
-
-- **Key Validation Engine**: Comprehensive Flutter key detection and validation
-
-  - Support for `ValueKey` and `Key` declarations
-  - Support for `find.byValueKey`, `find.bySemanticsLabel`, `find.byTooltip` finders
-  - Regex-based pattern matching for accurate key detection
-
-- **Project Dependency Validation**
-
-  - Automatic detection of `integration_test` dependency
-  - Automatic detection of `appium_flutter_server` dependency
-  - Validation of proper integration test setup
-
-- **CLI Interface**
-
-  - `--keys` flag for specifying YAML key definitions
-  - `--path` flag for custom project paths
-  - `--strict` mode for catching extra keys
-  - `--verbose` flag for detailed output
-
-- **YAML Configuration Support**
-
-  - Simple key list format
-  - Support for dynamic keys with placeholders
-  - Comments and organization support
-
-- **Beautiful Console Output**
-  - Colorful ANSI output with emojis
-  - Structured sections for different validation types
-  - Clear success/failure indicators
-  - File path reporting for found keys
-
-#### 🛠️ Technical Features
-
-- Cross-platform compatibility (Windows, macOS, Linux)
-- Recursive directory scanning
-- Efficient regex-based key detection
-- Comprehensive error handling
-- Unit test coverage
-
-#### 📦 Package Structure
-
-- Clean library API with `KeyChecker` class
-- Separated CLI and core functionality
-- Example project with integration tests
-- Comprehensive documentation
-
-#### 🧪 Testing & Quality
-
-- Unit tests for core functionality
-- Integration test examples
-- Linting with `package:lints`
-- Code coverage reporting
-
-### 🚀 Getting Started
+#### Basic Tracked Keys Validation
 
 ```bash
-dart pub global activate flutter_keycheck
-flutter_keycheck --keys expected_keys.yaml
+# Validate only critical QA automation keys
+flutter_keycheck --keys keys/expected_keys.yaml
 ```
 
-### 📋 Requirements
+#### Advanced Filtering with Tracked Keys
 
-- Dart SDK >= 3.2.0
-- Flutter project with integration tests (for full validation)
+```yaml
+# .flutter_keycheck.yaml
+tracked_keys:
+  - login_submit_button
+  - signup_email_field
+  - card_dropdown
+include_only:
+  - qa_
+  - e2e_
+exclude:
+  - temp_
+  - debug_
+```
+
+#### Key Generation for QA Teams
+
+```bash
+# Generate keys file with only QA automation patterns
+flutter_keycheck --generate-keys --include-only="qa_,e2e_" > keys/qa_keys.yaml
+```
+
+#### Package Development Workflow
+
+```bash
+# Automatically detects and validates example/ folder
+flutter_keycheck --keys keys/expected_keys.yaml --strict --verbose
+```
+
+### Breaking Changes
+
+None. This release maintains full backward compatibility with v2.0.x configurations and CLI usage.
+
+### Migration Guide
+
+No migration required. Existing configurations and CLI usage continue to work unchanged. New features are opt-in through configuration.
+
+### Requirements
+
+- Dart SDK: >=3.0.0 <4.0.0
+- Flutter: Any version (for projects being validated)
+- Platforms: Linux, macOS, Windows
 
 ---
 
-## Future Roadmap
+## [2.0.1] - 2024-12-18
 
-### 🔮 Planned Features (v1.1.0+)
+ Fixed
 
-- [ ] Auto-generation of `expected_keys.yaml` from existing code
-- [ ] Support for additional finder methods (`find.text`, `find.byIcon`)
-- [ ] HTML/Markdown report generation
-- [ ] Monorepo support with multiple `pubspec.yaml` files
-- [ ] Auto-fix capabilities for missing keys
-- [ ] Plugin architecture for custom checkers
-- [ ] Integration with popular CI/CD platforms
+- Fixed configuration loading for edge cases
+- Improved error messages for missing dependencies
+- Enhanced file path resolution
 
-### 💡 Ideas Under Consideration
+ Enhanced
 
-- JSON configuration format support
-- Key usage analytics and statistics
-- Integration with Flutter Inspector
-- VS Code extension for real-time validation
-- GitHub App for automated PR checks
+- Better documentation and examples
+- Improved CLI help output
+- More robust YAML parsing
 
 ---
 
-_For the complete list of changes, see the [commit history](https://github.com/1nk1/flutter_keycheck/commits/main)._
+## [2.0.0] - 2024-12-17
+
+ Added
+
+- Advanced key filtering with `--include-only` and `--exclude` options
+- Configuration file support with `.flutter_keycheck.yaml`
+- Enhanced key generation with filtering support
+- Example folder support for Flutter packages
+- Comprehensive test suite with 37 test cases
+
+ Enhanced
+
+- Complete rewrite with enhanced configuration management
+- Beautiful output formatting with colors and emojis
+- Comprehensive CI/CD integration support
+- Better error handling and user experience
+
+Breaking Changes
+
+- Configuration file format updated
+- CLI argument structure improved
+- Output format enhanced
+
+---
+
+## [1.0.0] - 2024-12-16
+
+Added
+
+- Initial release
+- Basic key validation functionality
+- Integration test dependency checking
+- Simple CLI interface
+
+---
+
+For more information and detailed usage examples, visit [pub.dev/packages/flutter_keycheck](https://pub.dev/packages/flutter_keycheck).

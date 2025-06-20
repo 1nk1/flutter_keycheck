@@ -1,0 +1,133 @@
+# Flutter KeyCheck .pubignore
+
+# Excludes development files from published package on pub.dev
+
+# ============================================================================
+
+# EXAMPLE AND DEVELOPMENT FOLDERS
+
+# ============================================================================
+
+# Example folder (included in repo for pub.dev standards, excluded from package)
+
+example/
+
+# Test files and directories
+
+test/
+
+# Development tools and configuration
+
+.github/
+.dart_tool/
+.vscode/
+.idea/
+\*.iml
+
+# ============================================================================
+
+# DEVELOPMENT DOCUMENTATION
+
+# ============================================================================
+
+# Development and publishing documentation
+
+PUBLISHING.md
+
+# ============================================================================
+
+# DEVELOPMENT KEYS AND CONFIGURATION
+
+# ============================================================================
+
+# Test keys used for development (not needed in published package)
+
+keys/ci_keys.yaml
+keys/cli_test_keys.yaml
+keys/testing_keys.yaml
+
+# ============================================================================
+
+# VERSION CONTROL AND IDE FILES
+
+# ============================================================================
+
+# Git files
+
+.gitignore
+.git/
+
+# Editor configuration
+
+.editorconfig
+
+# ============================================================================
+
+# BUILD AND CACHE FILES
+
+# ============================================================================
+
+# Build artifacts
+
+build/
+.packages
+pubspec.lock
+
+# Cache and temporary files
+
+.dart_tool/
+_.log
+_.tmp
+
+# ============================================================================
+
+# PLATFORM-SPECIFIC FILES
+
+# ============================================================================
+
+# macOS
+
+.DS_Store
+
+# Windows
+
+Thumbs.db
+desktop.ini
+
+# Linux
+
+\*~
+
+# ============================================================================
+
+# NOTES
+
+# ============================================================================
+
+# What gets published
+
+# - lib/ (source code)
+
+# - bin/ (executable)
+
+# - pubspec.yaml (package configuration)
+
+# - README.md (documentation)
+
+# - CHANGELOG.md (version history)
+
+# - LICENSE (license file)
+
+# - analysis_options.yaml (linting rules)
+
+# What gets excluded
+
+# - example/ (development examples)
+
+# - test/ (unit tests)
+
+# - .github/ (CI/CD configuration)
+
+# - Development keys and configuration
+
+# - IDE and version control files

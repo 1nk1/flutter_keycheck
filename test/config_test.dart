@@ -18,196 +18,280 @@ import 'package:test/test.dart';
 /// 6. Error handling (invalid YAML, empty files)
 /// 7. Debug output (toString)
 void main() {
-  late Directory tempDir;
+  group('FlutterKeycheckConfig', () {
+    late Directory tempDir;
 
-  setUp(() {
-    tempDir =
-        Directory.systemTemp.createTempSync('flutter_keycheck_config_test_');
-  });
+    setUp(() {
+      tempDir = Directory.systemTemp.createTempSync('flutter_keycheck_test_');
+    });
 
-  tearDown(() {
-    if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
-    }
-  });
+    tearDown(() {
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
 
-  /// Test Case 1: Missing config file
-  ///
-  /// This is the most common scenario - user hasn't created a config file yet.
-  /// The CLI should gracefully handle this and rely on CLI arguments.
-  test('loadFromFile returns null when config file does not exist', () {
-    final config = FlutterKeycheckConfig.loadFromFile(tempDir.path);
-    expect(config, isNull);
-  });
+    group('defaults', () {
+      test('should create default configuration', () {
+        final config = FlutterKeycheckConfig.defaults();
 
-  /// Test Case 2: Valid configuration file
-  ///
-  /// Example of a complete .flutter_keycheck.yaml file:
-  /// ```yaml
-  /// keys: test_keys.yaml
-  /// path: ./src
-  /// strict: true
-  /// verbose: false
-  /// ```
-  test('loadFromFile loads valid configuration from file', () {
-    final configFile = File(path.join(tempDir.path, '.flutter_keycheck.yaml'));
-    configFile.writeAsStringSync('''
-keys: test_keys.yaml
-path: ./src
+        expect(config.keys, equals('keys/expected_keys.yaml'));
+        expect(config.projectPath, equals('.'));
+        expect(config.strict, equals(false));
+        expect(config.verbose, equals(false));
+        expect(config.failOnExtra, equals(false));
+        expect(config.includeOnly, isNull);
+        expect(config.exclude, isNull);
+        expect(config.trackedKeys, isNull);
+        expect(config.report, equals('human'));
+      });
+    });
+
+    group('loadFromFile', () {
+      test('should return null for non-existent file', () {
+        final configPath = path.join(tempDir.path, 'non_existent.yaml');
+        final config = FlutterKeycheckConfig.loadFromFile(configPath);
+        expect(config, isNull);
+      });
+
+      test('should load basic config from file', () {
+        final configFile = File(path.join(tempDir.path, 'config.yaml'));
+        configFile.writeAsStringSync('''
+keys: custom_keys.yaml
+path: ./custom_path
 strict: true
-verbose: false
-    ''');
+verbose: true
+fail_on_extra: true
+report: json
+''');
 
-    final config = FlutterKeycheckConfig.loadFromFile(tempDir.path);
-    expect(config, isNotNull);
-    expect(config!.keys, equals('test_keys.yaml'));
-    expect(config.path, equals('./src'));
-    expect(config.strict, isTrue);
-    expect(config.verbose, isFalse);
-  });
+        final config = FlutterKeycheckConfig.loadFromFile(configFile.path);
+        expect(config, isNotNull);
+        expect(config!.keys, equals('custom_keys.yaml'));
+        expect(config.projectPath, equals('./custom_path'));
+        expect(config.strict, equals(true));
+        expect(config.verbose, equals(true));
+        expect(config.failOnExtra, equals(true));
+        expect(config.report, equals('json'));
+      });
 
-  /// Test Case 3: Partial configuration file
-  ///
-  /// Users often create minimal config files with only the required fields.
-  /// Example:
-  /// ```yaml
-  /// keys: test_keys.yaml
-  /// strict: true
-  /// ```
-  /// Missing fields should be null and get defaults later.
-  test('loadFromFile handles partial configuration', () {
-    final configFile = File(path.join(tempDir.path, '.flutter_keycheck.yaml'));
-    configFile.writeAsStringSync('''
-keys: test_keys.yaml
-strict: true
-    ''');
+      test('should load config with include_only list', () {
+        final configFile = File(path.join(tempDir.path, 'config.yaml'));
+        configFile.writeAsStringSync('''
+include_only:
+  - qa_
+  - e2e_
+  - _field
+''');
 
-    final config = FlutterKeycheckConfig.loadFromFile(tempDir.path);
-    expect(config, isNotNull);
-    expect(config!.keys, equals('test_keys.yaml'));
-    expect(config.path, isNull); // Should be null, will get default later
-    expect(config.strict, isTrue);
-    expect(config.verbose, isNull); // Should be null, will get default later
-  });
+        final config = FlutterKeycheckConfig.loadFromFile(configFile.path);
+        expect(config, isNotNull);
+        expect(config!.includeOnly, equals(['qa_', 'e2e_', '_field']));
+      });
 
-  /// Test Case 4: CLI Override Priority
-  ///
-  /// This demonstrates the merge functionality where CLI arguments
-  /// take priority over config file values.
-  ///
-  /// Example usage:
-  /// ```bash
-  /// # Config file has keys: config_keys.yaml
-  /// # But CLI overrides with different keys file
-  /// flutter_keycheck --keys cli_keys.yaml --strict
-  /// ```
-  test('mergeWith prioritizes provided values over config values', () {
-    final config = FlutterKeycheckConfig(
-      keys: 'config_keys.yaml',
-      path: './config_path',
-      strict: false,
-      verbose: true,
-    );
+      test('should load config with exclude list', () {
+        final configFile = File(path.join(tempDir.path, 'config.yaml'));
+        configFile.writeAsStringSync('''
+exclude:
+  - token
+  - user.id
+  - status
+''');
 
-    final merged = config.mergeWith(
-      keys: 'cli_keys.yaml', // CLI override
-      strict: true, // CLI override
-      // path and verbose remain from config
-    );
+        final config = FlutterKeycheckConfig.loadFromFile(configFile.path);
+        expect(config, isNotNull);
+        expect(config!.exclude, equals(['token', 'user.id', 'status']));
+      });
 
-    expect(merged.keys, equals('cli_keys.yaml')); // CLI overrides
-    expect(merged.path, equals('./config_path')); // Config value kept
-    expect(merged.strict, isTrue); // CLI overrides
-    expect(merged.verbose, isTrue); // Config value kept
-  });
+      test('should load config with tracked_keys list', () {
+        final configFile = File(path.join(tempDir.path, 'config.yaml'));
+        configFile.writeAsStringSync('''
+tracked_keys:
+  - login_submit_button
+  - signup_email_field
+  - card_dropdown
+''');
 
-  /// Test Case 5: Default Values Application
-  ///
-  /// This tests the final resolution of configuration with default values.
-  /// All configurations eventually get resolved to concrete values.
-  test('getResolvedConfig applies defaults and validates required fields', () {
-    final config = FlutterKeycheckConfig(
-      keys: 'test_keys.yaml',
-      // path, strict, verbose not provided - should get defaults
-    );
+        final config = FlutterKeycheckConfig.loadFromFile(configFile.path);
+        expect(config, isNotNull);
+        expect(
+            config!.trackedKeys,
+            equals([
+              'login_submit_button',
+              'signup_email_field',
+              'card_dropdown'
+            ]));
+      });
 
-    final resolved = config.getResolvedConfig();
-    expect(resolved['keys'], equals('test_keys.yaml'));
-    expect(resolved['path'], equals('.')); // Default value
-    expect(resolved['strict'], isFalse); // Default value
-    expect(resolved['verbose'], isFalse); // Default value
-  });
+      test('should handle invalid YAML gracefully', () {
+        final configFile = File(path.join(tempDir.path, 'config.yaml'));
+        configFile.writeAsStringSync('invalid: yaml: content: [');
 
-  /// Test Case 6: Required Field Validation
-  ///
-  /// The 'keys' field is mandatory - if it's missing, the config should fail.
-  /// This prevents users from running the tool without specifying what to check.
-  test('getResolvedConfig throws when keys is missing', () {
-    final config = FlutterKeycheckConfig(
-      // keys not provided - this should fail
-      path: './src',
-      strict: true,
-      verbose: false,
-    );
+        final config = FlutterKeycheckConfig.loadFromFile(configFile.path);
+        expect(config, isNull);
+      });
 
-    expect(() => config.getResolvedConfig(), throwsArgumentError);
-  });
+      test('should handle empty file gracefully', () {
+        final configFile = File(path.join(tempDir.path, 'config.yaml'));
+        configFile.writeAsStringSync('');
 
-  /// Test Case 7: Invalid YAML Handling
-  ///
-  /// Real-world scenario: Users might create malformed YAML files.
-  /// The tool should gracefully handle this and provide helpful feedback.
-  ///
-  /// Example of invalid YAML:
-  /// ```yaml
-  /// invalid: yaml: content:
-  ///   - missing
-  ///     - proper
-  ///   structure
-  /// ```
-  test('loadFromFile handles invalid YAML gracefully', () {
-    final configFile = File(path.join(tempDir.path, '.flutter_keycheck.yaml'));
-    configFile.writeAsStringSync('''
-invalid: yaml: content:
-  - missing
-    - proper
-  structure
-    ''');
+        final config = FlutterKeycheckConfig.loadFromFile(configFile.path);
+        expect(config, isNull);
+      });
+    });
 
-    // Should not throw, but return null and print error
-    final config = FlutterKeycheckConfig.loadFromFile(tempDir.path);
-    expect(config, isNull);
-  });
+    group('mergeWith', () {
+      test('should merge CLI arguments with config', () {
+        final baseConfig = const FlutterKeycheckConfig(
+          keys: 'base_keys.yaml',
+          projectPath: './base_path',
+          strict: false,
+        );
 
-  /// Test Case 8: Empty File Handling
-  ///
-  /// Another real-world scenario: Users create empty config files.
-  /// Should be handled gracefully.
-  test('loadFromFile handles empty file gracefully', () {
-    final configFile = File(path.join(tempDir.path, '.flutter_keycheck.yaml'));
-    configFile.writeAsStringSync('');
+        final merged = baseConfig.mergeWith(
+          keys: 'cli_keys.yaml',
+          strict: true,
+          verbose: true,
+        );
 
-    final config = FlutterKeycheckConfig.loadFromFile(tempDir.path);
-    expect(config, isNull);
-  });
+        expect(merged.keys, equals('cli_keys.yaml')); // CLI overrides
+        expect(merged.projectPath, equals('./base_path')); // Base preserved
+        expect(merged.strict, equals(true)); // CLI overrides
+        expect(merged.verbose, equals(true)); // CLI adds
+      });
 
-  /// Test Case 9: Debug Information
-  ///
-  /// The toString method should provide useful debug information
-  /// for troubleshooting configuration issues.
-  test('toString provides useful debug information', () {
-    final config = FlutterKeycheckConfig(
-      keys: 'test_keys.yaml',
-      path: './src',
-      strict: true,
-      verbose: false,
-    );
+      test('should handle null values correctly', () {
+        final baseConfig = const FlutterKeycheckConfig(
+          keys: 'base_keys.yaml',
+          verbose: true,
+        );
 
-    final string = config.toString();
-    expect(string, contains('test_keys.yaml'));
-    expect(string, contains('./src'));
-    expect(string, contains('true'));
-    expect(string, contains('false'));
+        final merged = baseConfig.mergeWith(
+          projectPath: './new_path',
+        );
+
+        expect(merged.keys, equals('base_keys.yaml')); // Preserved
+        expect(merged.projectPath, equals('./new_path')); // Added
+        expect(merged.verbose, equals(true)); // Preserved
+      });
+
+      test('should merge filtering options', () {
+        final baseConfig = const FlutterKeycheckConfig(
+          includeOnly: ['base_'],
+          exclude: ['base_exclude'],
+        );
+
+        final merged = baseConfig.mergeWith(
+          includeOnly: ['cli_'],
+          exclude: ['cli_exclude'],
+          trackedKeys: ['tracked_key'],
+        );
+
+        expect(merged.includeOnly, equals(['cli_'])); // CLI overrides
+        expect(merged.exclude, equals(['cli_exclude'])); // CLI overrides
+        expect(merged.trackedKeys, equals(['tracked_key'])); // CLI adds
+      });
+    });
+
+    group('getter methods', () {
+      test('getKeysPath should handle relative paths', () {
+        final config = const FlutterKeycheckConfig(
+          keys: 'keys/test.yaml',
+          projectPath: './project',
+        );
+
+        final keysPath = config.getKeysPath();
+        expect(keysPath, equals('./project/keys/test.yaml'));
+      });
+
+      test('getKeysPath should handle absolute paths', () {
+        final config = const FlutterKeycheckConfig(
+          keys: '/absolute/path/keys.yaml',
+          projectPath: './project',
+        );
+
+        final keysPath = config.getKeysPath();
+        expect(keysPath, equals('/absolute/path/keys.yaml'));
+      });
+
+      test('getKeysPath should use defaults when keys is null', () {
+        final config = const FlutterKeycheckConfig(
+          projectPath: './project',
+        );
+
+        final keysPath = config.getKeysPath();
+        expect(keysPath, equals('./project/keys/expected_keys.yaml'));
+      });
+
+      test('boolean getters should return correct defaults', () {
+        const config = FlutterKeycheckConfig();
+
+        expect(config.isStrict(), equals(false));
+        expect(config.isVerbose(), equals(false));
+        expect(config.shouldFailOnExtra(), equals(false));
+        expect(config.hasTrackedKeys(), equals(false));
+      });
+
+      test('boolean getters should return configured values', () {
+        const config = FlutterKeycheckConfig(
+          strict: true,
+          verbose: true,
+          failOnExtra: true,
+          trackedKeys: ['key1', 'key2'],
+        );
+
+        expect(config.isStrict(), equals(true));
+        expect(config.isVerbose(), equals(true));
+        expect(config.shouldFailOnExtra(), equals(true));
+        expect(config.hasTrackedKeys(), equals(true));
+      });
+
+      test('list getters should return empty lists for null values', () {
+        const config = FlutterKeycheckConfig();
+
+        expect(config.getIncludeOnly(), equals([]));
+        expect(config.getExclude(), equals([]));
+        expect(config.getTrackedKeys(), isNull);
+      });
+
+      test('list getters should return configured values', () {
+        const config = FlutterKeycheckConfig(
+          includeOnly: ['qa_', 'e2e_'],
+          exclude: ['token', 'user.id'],
+          trackedKeys: ['login_button', 'signup_field'],
+        );
+
+        expect(config.getIncludeOnly(), equals(['qa_', 'e2e_']));
+        expect(config.getExclude(), equals(['token', 'user.id']));
+        expect(
+            config.getTrackedKeys(), equals(['login_button', 'signup_field']));
+      });
+
+      test('getReportFormat should return default and configured values', () {
+        const defaultConfig = FlutterKeycheckConfig();
+        const jsonConfig = FlutterKeycheckConfig(report: 'json');
+
+        expect(defaultConfig.getReportFormat(), equals('human'));
+        expect(jsonConfig.getReportFormat(), equals('json'));
+      });
+    });
+
+    group('toString', () {
+      test('should provide readable string representation', () {
+        const config = FlutterKeycheckConfig(
+          keys: 'test_keys.yaml',
+          projectPath: './test_path',
+          strict: true,
+          trackedKeys: ['key1', 'key2'],
+        );
+
+        final str = config.toString();
+        expect(str, contains('test_keys.yaml'));
+        expect(str, contains('./test_path'));
+        expect(str, contains('true'));
+        expect(str, contains('[key1, key2]'));
+      });
+    });
   });
 }
 

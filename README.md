@@ -1,635 +1,532 @@
-# Flutter Key Integration Validator
+# Flutter KeyCheck
 
 [![pub package](https://img.shields.io/pub/v/flutter_keycheck.svg)](https://pub.dev/packages/flutter_keycheck)
+[![Dart SDK Version](https://badgen.net/pub/sdk-version/flutter_keycheck)](https://pub.dev/packages/flutter_keycheck)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Dart](https://img.shields.io/badge/Dart-3.2%2B-blue.svg)](https://dart.dev)
-[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-blue.svg)](https://pub.dev/packages/flutter_keycheck)
 
-A CLI tool to validate Flutter automation keys and integration test dependencies. Ensures your Flutter app is ready for automated testing with proper key coverage.
+A powerful CLI tool for validating Flutter automation keys in your codebase. Perfect for QA automation teams, CI/CD pipelines, and Flutter package development.
 
-> **Note:** This is a desktop CLI tool that uses `dart:io` for file system operations. It is not compatible with web/WASM environments by design.
+## ✨ Features
 
-## 🎯 Features
+### 🎯 Tracked Keys Validation (NEW in v2.1.0)
 
-- **Key Validation**: Validates Flutter key usage in source code
-  - `ValueKey` declarations
-  - `Key` declarations
-  - `find.byValueKey` finders
-  - `find.bySemanticsLabel` finders
-  - `find.byTooltip` finders
-- **Dependency Check**: Verifies required test dependencies
-- **Integration Test Setup**: Validates test file structure
-- **Colorful Output**: Beautiful console output with emojis
-- **Flexible Configuration**: YAML-based key definitions
-- **CI/CD Ready**: Perfect for automation pipelines
+- **Focus on critical UI elements** - Define a subset of keys to validate for QA automation
+- **Flexible validation scope** - Choose which keys matter most for your testing workflow
+- **Smart filtering** - Combine tracked keys with include/exclude patterns
+
+### 🔍 Advanced Key Filtering
+
+- **Include-only patterns** - Focus on specific key types like `qa_*`, `e2e_*`, `*_button`
+- **Exclude patterns** - Filter out noise like dynamic IDs, tokens, and business logic keys
+- **Regex support** - Use complex patterns for precise filtering
+- **Substring matching** - Simple pattern matching for common use cases
+
+### 🏗️ Flutter Package Support
+
+- **Automatic example/ folder detection** - Seamlessly handles pub.dev package structure
+- **Intelligent path resolution** - Works from root, example/, or nested directories
+- **Comprehensive scanning** - Validates both main project and example code
+- **Dual dependency checking** - Verifies test dependencies in all relevant pubspec.yaml files
+
+### ⚙️ Flexible Configuration
+
+- **YAML configuration files** - Store settings in `.flutter_keycheck.yaml`
+- **CLI argument override** - Command-line arguments take priority over config files
+- **Multiple output formats** - Human-readable or JSON output for automation
+
+### 🧪 Integration Test Validation
+
+- **Dependency verification** - Ensures `integration_test` and `appium_flutter_server` are present
+- **Test setup validation** - Checks for proper Appium Flutter Driver initialization
+- **Strict mode** - Enforce complete test setup for CI/CD environments
 
 ## 📦 Installation
+
+### Global Installation
 
 ```bash
 dart pub global activate flutter_keycheck
 ```
 
-## 🚀 Quick Start
-
-1. **Create a keys configuration file:**
-
-```yaml
-# expected_keys.yaml
-keys:
-  - login_button
-  - password_field
-  - submit_button
-  - help_tooltip
-  - user_profile_card
-```
-
-1. **Run the validator:**
-
-```bash
-flutter_keycheck --keys expected_keys.yaml
-```
-
-## 🔧 Configuration
-
-### Configuration File (Recommended)
-
-Create a `.flutter_keycheck.yaml` file in your project root for convenient configuration:
-
-```yaml
-# .flutter_keycheck.yaml
-keys: keys/expected_keys.yaml
-path: .
-strict: true
-verbose: false
-```
-
-Then simply run:
-
-```bash
-flutter_keycheck
-```
-
-**Benefits:**
-
-- ✅ No need to remember CLI arguments
-- ✅ Consistent team configuration
-- ✅ Perfect for CI/CD pipelines
-- ✅ Version control friendly
-
-### Priority Order
-
-1. **CLI arguments** (highest priority)
-2. **`.flutter_keycheck.yaml` file**
-3. **Default values** (lowest priority)
-
-```bash
-# Config file sets verbose: true, but CLI overrides it
-flutter_keycheck --verbose false
-```
-
-### Command Line Options
-
-| Option      | Short | Description                                          | Default      |
-| ----------- | ----- | ---------------------------------------------------- | ------------ |
-| `--keys`    | `-k`  | Path to keys file (.yaml)                            | **required** |
-| `--path`    | `-p`  | Project source root                                  | `.`          |
-| `--strict`  | `-s`  | Fail if integration_test/appium_test.dart is missing | `false`      |
-| `--verbose` | `-v`  | Show detailed output                                 | `false`      |
-| `--help`    | `-h`  | Show help message                                    | -            |
-
-## 📋 Usage Examples
-
-### Basic Usage
-
-```bash
-# Using config file (recommended)
-flutter_keycheck
-
-# Direct CLI usage
-flutter_keycheck --keys expected_keys.yaml
-
-# Check specific project path
-flutter_keycheck --keys keys/production.yaml --path ./my_flutter_app
-
-# Strict mode (fail on missing integration tests)
-flutter_keycheck --keys expected_keys.yaml --strict
-
-# Verbose output
-flutter_keycheck --keys expected_keys.yaml --verbose
-```
-
-### With Configuration File
-
-```bash
-# 1. Create config file
-cat > .flutter_keycheck.yaml << EOF
-keys: keys/expected_keys.yaml
-path: .
-strict: true
-verbose: false
-EOF
-
-# 2. Run with default config
-flutter_keycheck
-
-# 3. Override specific settings
-flutter_keycheck --verbose  # Enable verbose while keeping other config
-```
-
-## 📊 Example Output
-
-```md
-🎯 [flutter_keycheck] 🔍 Scanning project...
-
-🧩 Keys Check
-────────────────────────────────────────────
-❌ Missing Keys:
-⛔️ login_button
-⛔️ forgot_password_link
-
-🧼 Extra Keys:
-💡 debug_menu_button
-💡 temp_test_key
-
-🔎 Found Keys:
-✔️ password_input_field
-└── lib/screens/auth/login_screen.dart
-✔️ submit_button
-└── lib/widgets/forms/auth_form.dart
-└── integration_test/auth_test.dart
-
-📦 Dependencies
-────────────────────────────────────────────
-✔️ integration_test found in pubspec.yaml ✅
-✔️ appium_flutter_server found in pubspec.yaml ✅
-
-🧪 Integration Test Setup
-────────────────────────────────────────────
-✔️ Found integration_test/appium_test.dart ✅
-✔️ Appium Flutter Driver initialized ✅
-
-🚨 Final Verdict
-────────────────────────────────────────────
-❌ Project is NOT ready for automation build.
-Missing 2 required keys. Please add them to your widgets.
-```
-
-## 🔑 Supported Key Types
-
-### 1. Widget Keys
-
-```dart
-// ValueKey
-TextField(key: const ValueKey('email_input'))
-ElevatedButton(key: const ValueKey('login_button'))
-
-// Regular Key
-Container(key: const Key('user_avatar'))
-```
-
-### 2. Test Finders
-
-```dart
-// Integration tests
-await tester.tap(find.byValueKey('login_button'));
-await tester.enterText(find.byValueKey('email_input'), 'test@example.com');
-
-// Semantic labels
-await tester.tap(find.bySemanticsLabel('Submit Form'));
-
-// Tooltips
-await tester.tap(find.byTooltip('Help Information'));
-```
-
-## 📝 Configuration
-
-### YAML Format
-
-```yaml
-keys:
-  # Static keys
-  - login_button
-  - password_field
-  - submit_button
-
-  # Dynamic keys (with placeholders)
-  - user_card_{userId}
-  - game_level_{levelId}
-
-  # Semantic labels
-  - 'Welcome Message'
-  - 'Error Dialog'
-
-  # Tooltips
-  - 'Help Button'
-  - 'Settings Menu'
-```
-
-## 🧪 Appium Flutter Integration Setup
-
-For complete Appium Flutter integration testing setup, follow the official documentation:
-
-**📖 [Appium Flutter Integration Driver Setup Guide](https://github.com/AppiumTestDistribution/appium-flutter-integration-driver?tab=readme-ov-file)**
-
-### Quick Setup Steps
-
-1. Add dependency to pubspec.yaml:
+### Project Dependency
 
 ```yaml
 dev_dependencies:
-  appium_flutter_server: '>=0.0.27 <1.0.0'
+  flutter_keycheck: ^2.1.0
 ```
 
-1. Create integration_test/appium_test.dart:
+## 🚀 Quick Start
+
+### 1. Generate Keys from Your Project
+
+```bash
+# Generate all keys found in your project
+flutter_keycheck --generate-keys > keys/expected_keys.yaml
+
+# Generate only QA automation keys
+flutter_keycheck --generate-keys --include-only="qa_,e2e_" > keys/qa_keys.yaml
+```
+
+### 2. Validate Keys
+
+```bash
+# Basic validation
+flutter_keycheck --keys keys/expected_keys.yaml
+
+# Strict validation for CI/CD
+flutter_keycheck --keys keys/expected_keys.yaml --strict --fail-on-extra
+```
+
+### 3. Use Configuration File
+
+Create `.flutter_keycheck.yaml` in your project root:
+
+```yaml
+keys: keys/expected_keys.yaml
+strict: false
+verbose: false
+fail_on_extra: false
+
+# Focus on critical QA automation keys
+tracked_keys:
+  - login_submit_button
+  - signup_email_field
+  - card_dropdown
+
+# Filter patterns for key generation and validation
+include_only:
+  - qa_
+  - e2e_
+  - _button
+  - _field
+
+exclude:
+  - user.id
+  - token
+  - temp_
+```
+
+Then run:
+
+```bash
+flutter_keycheck
+```
+
+## 📚 Comprehensive Guide
+
+### Tracked Keys Feature
+
+The tracked keys feature allows you to focus validation on a critical subset of your UI automation keys. This is perfect for QA teams who want to ensure specific elements are always present without being overwhelmed by every key in the codebase.
+
+#### Example Workflow
+
+1. **Generate all keys** from your project:
+
+```bash
+flutter_keycheck --generate-keys > keys/all_keys.yaml
+```
+
+1. **Create a tracked keys configuration** focusing on critical elements:
+
+```yaml
+# .flutter_keycheck.yaml
+keys: keys/all_keys.yaml
+tracked_keys:
+  - login_submit_button
+  - signup_email_field
+  - payment_confirm_button
+  - logout_button
+```
+
+1. **Validate only tracked keys**:
+
+```bash
+flutter_keycheck
+```
+
+Output:
+
+```bash
+🔍 Flutter KeyCheck Results
+
+📌 Tracking 4 specific keys
+
+✅ Matched tracked keys (3):
+  - login_submit_button
+  - signup_email_field
+  - logout_button
+
+❌ Missing tracked keys (1):
+  - payment_confirm_button
+
+🎉 All checks passed!
+```
+
+### Advanced Filtering
+
+#### Include-Only Patterns
+
+Focus on specific key types:
+
+```bash
+# Only QA automation keys
+flutter_keycheck --include-only="qa_,e2e_"
+
+# Only buttons and fields
+flutter_keycheck --include-only="_button,_field"
+
+# Regex patterns
+flutter_keycheck --include-only="^qa_.*_button$"
+```
+
+#### Exclude Patterns
+
+Filter out noise and dynamic content:
+
+```bash
+# Exclude dynamic user data
+flutter_keycheck --exclude="user.id,token,session"
+
+# Exclude temporary and debug keys
+flutter_keycheck --exclude="temp_,debug_,dev_"
+
+# Exclude template variables (regex)
+flutter_keycheck --exclude="\$\{.*\}"
+```
+
+#### Combined Filtering
+
+```yaml
+# .flutter_keycheck.yaml
+include_only:
+  - qa_
+  - e2e_
+  - automation_
+exclude:
+  - temp_
+  - debug_
+  - user\..*
+tracked_keys:
+  - qa_login_button
+  - qa_signup_field
+  - e2e_checkout_flow
+```
+
+### Flutter Package Development
+
+Flutter KeyCheck automatically detects and handles packages with example/ folders, which is the standard structure for packages published to pub.dev.
+
+#### Supported Structures
+
+```bash
+my_package/
+├── lib/                    # Main package code
+├── example/
+│   ├── lib/               # Example app code
+│   ├── integration_test/  # Example integration tests
+│   └── pubspec.yaml       # Example dependencies
+├── integration_test/      # Package integration tests
+├── pubspec.yaml           # Package dependencies
+└── .flutter_keycheck.yaml # Configuration
+```
+
+#### Automatic Detection
+
+- **Run from anywhere**: Works from root directory or example/ subdirectory
+- **Comprehensive scanning**: Validates keys in both main package and example app
+- **Dependency validation**: Checks test dependencies in both pubspec.yaml files
+- **Integration test detection**: Finds tests in both locations
+
+#### Example Commands
+
+```bash
+# From package root - scans both main and example
+flutter_keycheck --generate-keys
+
+# From example directory - automatically detects package structure
+cd example && flutter_keycheck --config=../.flutter_keycheck.yaml
+
+# Validate package for publishing
+flutter_keycheck --strict --fail-on-extra
+```
+
+### Integration Test Validation
+
+Flutter KeyCheck validates your Appium Flutter Driver setup:
+
+#### Requirements
+
+- `integration_test` dependency in `dev_dependencies`
+- `appium_flutter_server` dependency in `dev_dependencies`
+- Integration test files in `integration_test/` directory
+- Proper Appium Flutter Driver initialization
+
+#### Example Integration Test Setup
 
 ```dart
+// integration_test/appium_test.dart
+import 'package:flutter_test/flutter_test.dart';
 import 'package:appium_flutter_server/appium_flutter_server.dart';
-import 'package:your_app/main.dart';
+import 'package:my_app/main.dart' as app;
 
 void main() {
-  initializeTest(app: const MyApp());
+  group('App Integration Tests', () {
+    setUpAll(() async {
+      await initializeTest();
+    });
+
+    testWidgets('login flow', (WidgetTester tester) async {
+      app.main();
+      await tester.pumpAndSettle();
+
+      // Your test code using ValueKey elements
+      await tester.tap(find.byValueKey('login_submit_button'));
+      await tester.pumpAndSettle();
+    });
+  });
 }
 ```
 
-1. Build your app for testing:
+### CLI Reference
 
-```bash
-# Android
-./gradlew app:assembleDebug -Ptarget=`pwd`/../integration_test/appium_test.dart
+#### Command-Line Options
 
-# iOS Simulator
-flutter build ios integration_test/appium_test.dart --simulator
-```
+| Option            | Description                               | Example                           |
+| ----------------- | ----------------------------------------- | --------------------------------- |
+| `--keys`          | Path to expected keys YAML file           | `--keys keys/expected_keys.yaml`  |
+| `--path`          | Project path to scan                      | `--path ./my_flutter_app`         |
+| `--strict`        | Fail if integration test setup incomplete | `--strict`                        |
+| `--verbose`       | Show detailed output                      | `--verbose`                       |
+| `--fail-on-extra` | Fail if extra keys found                  | `--fail-on-extra`                 |
+| `--generate-keys` | Generate keys file from project           | `--generate-keys`                 |
+| `--include-only`  | Include only matching patterns            | `--include-only="qa_,e2e_"`       |
+| `--exclude`       | Exclude matching patterns                 | `--exclude="temp_,debug_"`        |
+| `--config`        | Configuration file path                   | `--config .flutter_keycheck.yaml` |
+| `--report`        | Output format (human/json)                | `--report json`                   |
 
-### What flutter_keycheck validates
-
-✅ Widget Keys - ValueKey and Key declarations in your widgets
-✅ Test Finders - find.byValueKey, find.bySemanticsLabel, find.byTooltip usage
-✅ Dependencies - Required integration_test and appium_flutter_server packages
-✅ Test Setup - Proper integration test file structure
-
-## 🔧 Integration with CI/CD
-
-### GitHub Actions
+#### Configuration File Reference
 
 ```yaml
-name: Flutter Key Check
+# Basic settings
+keys: keys/expected_keys.yaml # Path to expected keys file
+path: . # Project path to scan
+strict: false # Strict validation mode
+verbose: false # Verbose output
+fail_on_extra: false # Fail on extra keys
+report: human # Output format
+
+# Advanced filtering
+include_only: # Include only matching patterns
+  - qa_
+  - e2e_
+  - _button
+  - _field
+
+exclude: # Exclude matching patterns
+  - user.id
+  - token
+  - temp_
+  - debug_
+
+# Tracked keys (NEW in v2.1.0)
+tracked_keys: # Focus on specific keys
+  - login_submit_button
+  - signup_email_field
+  - card_dropdown
+```
+
+## Usage Examples
+
+### QA Automation Workflow
+
+```bash
+# 1. Generate QA-specific keys
+flutter_keycheck --generate-keys --include-only="qa_,e2e_" > keys/qa_keys.yaml
+
+# 2. Create tracked keys config for critical elements
+cat > .flutter_keycheck.yaml << EOF
+keys: keys/qa_keys.yaml
+tracked_keys:
+  - qa_login_button
+  - qa_signup_field
+  - qa_payment_button
+fail_on_extra: true
+EOF
+
+# 3. Validate in CI/CD pipeline
+flutter_keycheck --strict
+```
+
+### CI/CD Integration
+
+#### GitHub Actions
+
+```yaml
+name: Flutter KeyCheck
+
 on: [push, pull_request]
 
 jobs:
-  key-check:
+  keycheck:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: dart-lang/setup-dart@v1
       - name: Install flutter_keycheck
         run: dart pub global activate flutter_keycheck
-      - name: Validate keys
-        run: flutter_keycheck --keys expected_keys.yaml --strict
+      - name: Validate automation keys
+        run: flutter_keycheck --strict --fail-on-extra
 ```
 
-### Pre-commit Hook
+#### GitLab CI
+
+```yaml
+keycheck:
+  stage: test
+  image: dart:stable
+  script:
+    - dart pub global activate flutter_keycheck
+    - flutter_keycheck --strict --fail-on-extra
+```
+
+### Package Development
 
 ```bash
-#!/bin/sh
-# .git/hooks/pre-commit
-flutter_keycheck --keys expected_keys.yaml --strict
-if [ $? -ne 0 ]; then
-  echo "❌ Key validation failed. Please fix the issues above."
-  exit 1
-fi
+# Generate keys for package and example
+flutter_keycheck --generate-keys > keys/expected_keys.yaml
+
+# Validate package structure
+flutter_keycheck --strict --verbose
+
+# Test from example directory
+cd example && flutter_keycheck --config=../.flutter_keycheck.yaml
 ```
 
-## 🛠️ Development
+## 🎨 Output Examples
 
-### Running Tests
+### Human-Readable (Default)
 
 ```bash
-dart test
+🔍 Flutter KeyCheck Results
+
+📌 Tracking 3 specific keys
+
+✅ Matched tracked keys (2):
+  - login_submit_button
+    📍 lib/screens/login_screen.dart
+  - signup_email_field
+    📍 lib/screens/signup_screen.dart
+
+❌ Missing tracked keys (1):
+  - card_dropdown
+
+✅ Required dependencies found
+✅ Integration test setup complete
+
+💥 Some checks failed
 ```
 
-### Running from Source
+### JSON Output
 
 ```bash
-dart run bin/flutter_keycheck.dart --keys keys/testing_keys.yaml
+flutter_keycheck --report json
 ```
 
-## 💡 Best Practices
+```json
+{
+  "matched_keys": {
+    "login_submit_button": ["lib/screens/login_screen.dart"],
+    "signup_email_field": ["lib/screens/signup_screen.dart"]
+  },
+  "missing_keys": ["card_dropdown"],
+  "extra_keys": [],
+  "dependencies": {
+    "integration_test": true,
+    "appium_flutter_server": true
+  },
+  "integration_tests": true,
+  "tracked_keys": ["login_submit_button", "signup_email_field", "card_dropdown"]
+}
+```
 
-1. **Organize Keys by Feature**
+## 🛠️ Troubleshooting
 
-   ```yaml
-   keys:
-     # Authentication
-     - login_button
-     - signup_link
-     - password_field
+### Common Issues
 
-     # Profile
-     - edit_profile_button
-     - save_changes_button
-   ```
+#### "No keys found in project"
 
-2. **Use Descriptive Names**
+- Ensure your Flutter widgets use `ValueKey` or `Key` with string values
+- Check that you're scanning the correct directory with `--path`
+- Use `--verbose` to see which files are being scanned
 
-   ```dart
-   // ✅ Good
-   ValueKey('user_profile_edit_button')
+#### "Missing dependencies"
 
-   // ❌ Avoid
-   ValueKey('btn1')
-   ```
+Add required dependencies to your `pubspec.yaml`:
 
-3. **Keep Keys Consistent**
+```yaml
+dev_dependencies:
+  integration_test:
+    sdk: flutter
+  appium_flutter_server: ^0.0.27
+```
 
-   ```dart
-   // Use consistent naming convention
-   ValueKey('login_email_field')
-   ValueKey('login_password_field')
-   ValueKey('login_submit_button')
-   ```
+#### "Integration test setup incomplete"
 
-## 🖥️ Platform Compatibility
+Ensure your integration tests import and initialize Appium Flutter Server:
 
-This CLI tool is designed for **desktop environments only** and supports:
+```dart
+import 'package:appium_flutter_server/appium_flutter_server.dart';
 
-- ✅ **Linux** (x64)
-- ✅ **macOS** (x64, ARM64)
-- ✅ **Windows** (x64)
+void main() {
+  setUpAll(() async {
+    await initializeTest();
+  });
+}
+```
 
-**Not supported:**
+### Best Practices
 
-- ❌ **Web/Browser** - Uses `dart:io` for file system operations
-- ❌ **WebAssembly (WASM)** - Not compatible with web runtime
-- ❌ **Mobile platforms** - Designed as a development tool for desktop
+1. **Use descriptive key names**: `login_submit_button` instead of `button1`
+2. **Consistent naming patterns**: Use prefixes like `qa_`, `e2e_`, `test_`
+3. **Avoid dynamic keys**: Don't use variables in key values
+4. **Regular validation**: Run in CI/CD to catch missing keys early
+5. **Track critical paths**: Use tracked_keys for essential user journeys
 
-> **Why not web/WASM?** This tool performs file system operations using `dart:io` to scan your Flutter project files, check dependencies in `pubspec.yaml`, and validate integration test setup. These operations are not available in web/WASM environments by design.
+## 📦 Package Information
+
+### Excluded from Package
+
+The published package excludes development files to keep it lightweight:
+
+```bash
+example/         # Example code (repo only)
+test/            # Test files
+.github/         # CI workflows
+.vscode/         # Editor settings
+.dart_tool/      # Build artifacts
+```
+
+Requirements
+
+- **Dart SDK**: >=3.0.0 <4.0.0
+- **Platforms**: Linux, macOS, Windows
+- **Flutter**: Any version (for projects being validated)
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) and submit pull requests to our [GitHub repository](https://github.com/adj-dev/flutter_keycheck).
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## 🔗 Links
 
-- Built for Flutter automation testing
-- Inspired by the need for reliable UI test coverage
-- Perfect for CI/CD integration
-- Works seamlessly with [Appium Flutter Integration Driver](https://github.com/AppiumTestDistribution/appium-flutter-integration-driver)
-
-## 📚 Resources
-
-- 📖 [Appium Flutter Integration Driver](https://github.com/AppiumTestDistribution/appium-flutter-integration-driver)
-- 📦 [appium_flutter_server package](https://pub.dev/packages/appium_flutter_server)
-- 🔧 [Flutter Integration Testing](https://docs.flutter.dev/testing/integration-tests)
-- 🎯 [Flutter Testing Best Practices](https://docs.flutter.dev/testing)
-
-## 🏗️ CI Integration
-
-GitHub Actions
-
-Create `.github/workflows/flutter_keycheck.yml`:
-
-```yaml
-name: Flutter KeyCheck
-
-on:
-  push:
-    paths:
-      - '**/*.dart'
-      - 'pubspec.yaml'
-      - '.flutter_keycheck.yaml'
-      - '**/expected_keys.yaml'
-  pull_request:
-
-jobs:
-  keycheck:
-    runs-on: ubuntu-latest
-    name: 🔍 Flutter Key Validation
-
-    steps:
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
-
-      - name: ⚙️ Set up Dart SDK
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-
-      - name: 📦 Get dependencies
-        run: dart pub get
-
-      - name: 🔍 Activate flutter_keycheck
-        run: dart pub global activate flutter_keycheck
-
-      - name: 🕵️ Run flutter_keycheck (basic)
-        run: flutter_keycheck
-
-      - name: 🚨 Run flutter_keycheck (strict mode)
-        run: flutter_keycheck --strict --fail-on-extra
-```
-
-### GitLab CI
-
-Add to your `.gitlab-ci.yml`:
-
-```yaml
-flutter_keycheck:
-  stage: test
-  image: dart:stable
-  script:
-    - dart pub get
-    - dart pub global activate flutter_keycheck
-    - flutter_keycheck --strict
-  only:
-    changes:
-      - '**/*.dart'
-      - 'pubspec.yaml'
-      - '.flutter_keycheck.yaml'
-      - '**/expected_keys.yaml'
-```
-
-### Bitrise
-
-Add step to your `bitrise.yml`:
-
-```yaml
-- script@1:
-    title: Flutter KeyCheck
-    inputs:
-      - content: |
-          #!/usr/bin/env bash
-          set -ex
-          dart pub global activate flutter_keycheck
-          flutter_keycheck --strict --fail-on-extra
-```
-
-### Jenkins
-
-```groovy
-pipeline {
-    agent any
-    stages {
-        stage('Flutter KeyCheck') {
-            steps {
-                sh '''
-                    dart pub get
-                    dart pub global activate flutter_keycheck
-                    flutter_keycheck --strict
-                '''
-            }
-        }
-    }
-}
-```
-
-## 📊 Advanced Usage
-
-### Generate Reports
-
-```bash
-# JSON report for automation
-flutter_keycheck --report json > keycheck_report.json
-
-# Markdown report for documentation
-flutter_keycheck --report markdown > keycheck_report.md
-```
-
-### Custom Configuration Files
-
-```bash
-# Use custom config file
-flutter_keycheck --config ci/keycheck_config.yaml
-
-# Override config with CLI args
-flutter_keycheck --config my_config.yaml --strict --verbose
-```
-
-### Multiple Environments
-
-```bash
-# Development environment (lenient)
-flutter_keycheck --keys keys/dev_keys.yaml
-
-# Production environment (strict)
-flutter_keycheck --keys keys/prod_keys.yaml --strict --fail-on-extra
-```
-
-## 🎯 Best Practices
-
-### 1. **Organize Your Keys**
-
-```bash
-keys/
-├── expected_keys.yaml          # Main keys for production
-├── dev_keys.yaml              # Development-only keys
-├── test_keys.yaml             # Test-specific keys
-└── generated_keys.yaml        # Auto-generated reference
-```
-
-### 2. **CI Strategy**
-
-- Use basic validation on feature branches
-- Use strict mode (`--strict --fail-on-extra`) on main/develop
-- Generate reports for pull requests
-- Auto-update keys on main branch pushes
-
-### 3. **Configuration Management**
-
-```yaml
-# .flutter_keycheck.yaml for different environments
-keys: keys/expected_keys.yaml
-path: .
-strict: false # Lenient for development
-verbose: true # Detailed feedback
-fail_on_extra: false # Don't fail on experimental keys
-```
-
-### 4. **Key Naming Conventions**
-
-```yaml
-keys:
-  # Screen-based naming
-  - login_screen_email_field
-  - login_screen_password_field
-  - login_screen_submit_button
-
-  # Component-based naming
-  - user_profile_avatar
-  - user_profile_name_text
-  - user_profile_edit_button
-
-  # Action-based naming
-  - save_document_action
-  - delete_item_action
-  - refresh_data_action
-```
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-**Issue**: `keys parameter is required`
-
-```bash
-# Solution: Provide keys file or create config
-flutter_keycheck --keys keys/expected_keys.yaml
-# OR
-echo "keys: keys/expected_keys.yaml" > .flutter_keycheck.yaml
-```
-
-**Issue**: `Keys file does not exist`
-
-```bash
-# Solution: Generate keys from existing project
-flutter_keycheck --generate-keys > keys/expected_keys.yaml
-```
-
-**Issue**: `No ValueKeys found in project`
-
-```bash
-# Solution: Check your search path
-flutter_keycheck --generate-keys --path lib --verbose
-```
-
-### Debug Mode
-
-```bash
-# Enable verbose output for debugging
-flutter_keycheck --verbose
-
-# Check configuration loading
-flutter_keycheck --config my_config.yaml --verbose
-```
-
-## 📝 Examples
-
-Check the `example/` directory for:
-
-- Sample Flutter app with ValueKeys
-- Configuration file examples
-- Expected keys file format
-- CI workflow examples
-
-🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- [pub.dev package](https://pub.dev/packages/flutter_keycheck)
+- [GitHub repository](https://github.com/adj-dev/flutter_keycheck)
+- [Issue tracker](https://github.com/adj-dev/flutter_keycheck/issues)
+- [Changelog](CHANGELOG.md)
 
 ---
 
-Made with ❤️ for Flutter developers who want reliable automation testing
+Made with ❤️ for the Flutter community

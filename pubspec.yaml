@@ -29,10 +29,6 @@ dev_dependencies:
 executables:
   flutter_keycheck:
 
-# Funding information
-funding:
-  - https://github.com/sponsors/adj-dev
-
 # Screenshots for pub.dev (if you have any)
 # screenshots:
 #   - description: 'CLI output showing key validation results'

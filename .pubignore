@@ -33,6 +33,7 @@ test/
 # Development and publishing documentation
 
 PUBLISHING.md
+PUBLISHING_GUIDE.md
 
 # ============================================================================
 
@@ -75,9 +76,9 @@ pubspec.lock
 
 # Cache and temporary files
 
-.dart_tool/
-_.log
-_.tmp
+.dart*tool/
+*.log
+\_.tmp
 
 # ============================================================================
 

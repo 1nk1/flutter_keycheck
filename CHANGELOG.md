@@ -122,7 +122,7 @@ Fixed
 - **Comprehensive metadata** with topics, funding, and platform support
 - **Example folder included** in repository but excluded from package
 
-### Fixed
+Fixed
 
 #### 🐛 Configuration Loading Issues
 

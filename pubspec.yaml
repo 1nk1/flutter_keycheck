@@ -14,7 +14,7 @@ topics:
   - validation
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.5.0 <4.0.0"
 
 dependencies:
   ansicolor: ^2.0.2
@@ -24,7 +24,7 @@ dependencies:
 
 dev_dependencies:
   test: ^1.24.9
-  lints: ^3.0.0
+  lints: ^6.0.0
 
 executables:
   flutter_keycheck:

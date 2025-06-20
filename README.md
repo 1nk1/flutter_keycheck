@@ -1,8 +1,10 @@
 # Flutter KeyCheck
 
 [![pub package](https://img.shields.io/pub/v/flutter_keycheck.svg)](https://pub.dev/packages/flutter_keycheck)
+[![pub points](https://img.shields.io/pub/points/flutter_keycheck)](https://pub.dev/packages/flutter_keycheck/score)
 [![Dart SDK Version](https://badgen.net/pub/sdk-version/flutter_keycheck)](https://pub.dev/packages/flutter_keycheck)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Actions](https://github.com/1nk1/flutter_keycheck/workflows/Dart/badge.svg)](https://github.com/1nk1/flutter_keycheck/actions)
 
 A powerful CLI tool for validating Flutter automation keys in your codebase. Perfect for QA automation teams, CI/CD pipelines, and Flutter package development.
 
@@ -370,23 +372,96 @@ jobs:
   keycheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
       - name: Install flutter_keycheck
         run: dart pub global activate flutter_keycheck
       - name: Validate automation keys
         run: flutter_keycheck --strict --fail-on-extra
+      - name: Upload key validation report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: keycheck-report
+          path: keycheck-report.json
 ```
 
 #### GitLab CI
 
 ```yaml
+stages:
+  - test
+  - validate
+
 keycheck:
-  stage: test
+  stage: validate
   image: dart:stable
-  script:
+  before_script:
     - dart pub global activate flutter_keycheck
-    - flutter_keycheck --strict --fail-on-extra
+  script:
+    - flutter_keycheck --strict --fail-on-extra --report json > keycheck-report.json
+  artifacts:
+    when: always
+    reports:
+      junit: keycheck-report.json
+    expire_in: 1 week
+  only:
+    - merge_requests
+    - main
+```
+
+#### Azure DevOps
+
+```yaml
+- task: DartInstaller@0
+  displayName: 'Install Dart SDK'
+  inputs:
+    dartVersion: 'stable'
+
+- script: |
+    dart pub global activate flutter_keycheck
+    flutter_keycheck --strict --fail-on-extra
+  displayName: 'Validate Flutter Keys'
+  continueOnError: false
+
+- task: PublishTestResults@2
+  condition: always()
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'keycheck-report.xml'
+    testRunTitle: 'Flutter KeyCheck Results'
+```
+
+#### CircleCI
+
+```yaml
+version: 2.1
+
+orbs:
+  dart: circleci/dart@1.0.0
+
+jobs:
+  keycheck:
+    executor: dart/dart
+    steps:
+      - checkout
+      - dart/install-dart
+      - run:
+          name: Install flutter_keycheck
+          command: dart pub global activate flutter_keycheck
+      - run:
+          name: Validate automation keys
+          command: flutter_keycheck --strict --fail-on-extra
+      - store_artifacts:
+          path: keycheck-report.json
+          destination: keycheck-report
+
+workflows:
+  test-and-validate:
+    jobs:
+      - keycheck
 ```
 
 ### Package Development

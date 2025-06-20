@@ -205,20 +205,24 @@ dart pub publish --dry-run
 dart pub publish
 ```
 
-## Release Process
+Release Process
 
 1. **Update version** in `pubspec.yaml`
 2. **Update CHANGELOG.md** with new version
 3. **Commit changes**:
+
    ```bash
    git add .
    git commit -m "release: v2.1.3"
    ```
+
 4. **Create and push tag**:
+
    ```bash
    git tag v2.1.3
    git push && git push origin v2.1.3
    ```
+
 5. **GitHub Actions handles the rest!** 🚀
 
 ---

@@ -16,8 +16,32 @@ on:
       - '**/expected_keys.yaml'
 
 jobs:
+  # Run tests first
+  test:
+    runs-on: ubuntu-latest
+    name: 🧪 Run Tests
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: 📦 Get dependencies
+        run: dart pub get
+
+      - name: 🧪 Run tests
+        run: dart test
+
+      - name: 📊 Analyze code
+        run: dart analyze
+
   # Basic validation for all changes
   keycheck-basic:
+    needs: test
     runs-on: ubuntu-latest
     name: 🔍 Basic Key Validation
 
@@ -41,6 +65,7 @@ jobs:
 
   # Strict validation for main/develop branches
   keycheck-strict:
+    needs: test
     runs-on: ubuntu-latest
     name: 🚨 Strict Key Validation
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
@@ -63,6 +88,7 @@ jobs:
 
   # Generate reports for pull requests
   keycheck-reports:
+    needs: test
     runs-on: ubuntu-latest
     name: 📊 Generate Key Reports
     if: github.event_name == 'pull_request'

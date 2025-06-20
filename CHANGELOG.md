@@ -5,19 +5,26 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.1.2] - 2024-12-19
+## [2.1.3] - 2025-12-19
+
+Fixed
+
+- Fixed changelog dates (corrected year from 2024 to 2025)
+- Added GitHub Actions for automated publishing
+
+## [2.1.2] - 2025-12-19
 
 Fixed
 
 - Fixed repository URLs in package metadata to point to correct GitHub repository (1nk1/flutter_keycheck)
 
-## [2.1.1] - 2024-12-19
+## [2.1.1] - 2025-12-19
 
 Fixed
 
 - Fixed repository URLs in package metadata to point to correct GitHub repository (1nk1/flutter_keycheck)
 
-## [2.1.0] - 2024-12-19
+## [2.1.0] - 2025-12-19
 
 ### Added
 
@@ -195,7 +202,7 @@ No migration required. Existing configurations and CLI usage continue to work un
 
 ---
 
-## [2.0.1] - 2024-12-18
+## [2.0.1] - 2025-12-18
 
 Fixed
 
@@ -211,7 +218,7 @@ Enhanced
 
 ---
 
-## [2.0.0] - 2024-12-17
+## [2.0.0] - 2025-12-17
 
 Added
 
@@ -236,7 +243,7 @@ Breaking Changes
 
 ---
 
-## [1.0.0] - 2024-12-16
+## [1.0.0] - 2025-12-16
 
 Added
 

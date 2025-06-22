@@ -16,10 +16,10 @@ echo ""
 
 # Run the validation
 echo "🔍 Running key validation..."
-echo "Command: flutter_keycheck --keys expected_keys.yaml --path sample_flutter_app --verbose"
+echo "Command: flutter_keycheck --path sample_flutter_app --verbose"
 echo ""
 
-flutter_keycheck --keys expected_keys.yaml --path sample_flutter_app --verbose
+flutter_keycheck --path sample_flutter_app --verbose
 
 echo ""
 echo "📝 This example demonstrates how flutter_keycheck works:"

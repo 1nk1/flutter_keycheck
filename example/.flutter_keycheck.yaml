@@ -6,10 +6,10 @@
 # ============================================================================
 
 # Path to expected keys YAML file (relative to project root)
-keys: keys/expected_keys.yaml
+keys: expected_keys.yaml
 
 # Project path to scan (default: current directory)
-path: .
+path: sample_flutter_app
 
 # Output format: 'human' (default) or 'json'
 report: human

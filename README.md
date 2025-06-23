@@ -10,14 +10,23 @@ A powerful CLI tool for validating Flutter automation keys in your codebase. Per
 
 ## ✨ Features
 
+### 🔑 KeyConstants Support (NEW in v2.1.9)
+
+- **Modern key patterns** - Detects `Key(KeyConstants.*)` and `ValueKey(KeyConstants.*)` usage
+- **Dynamic key methods** - Supports `KeyConstants.*Key()` method patterns
+- **KeyConstants validation** - Validates KeyConstants class structure and usage
+- **Usage analysis** - Comprehensive reports on traditional vs modern key patterns
+- **Migration recommendations** - Suggests improvements for key management
+
 ### 🎯 Tracked Keys Validation (NEW in v2.1.0)
 
 - **Focus on critical UI elements** - Define a subset of keys to validate for QA automation
 - **Flexible validation scope** - Choose which keys matter most for your testing workflow
 - **Smart filtering** - Combine tracked keys with include/exclude patterns
 
-### 🔍 Advanced Key Filtering
+### 🔍 Advanced Key Filtering & Tagging
 
+- **AQA/E2E tagging support** - Organize keys by testing purpose (`aqa_*` for general automation, `e2e_*` for critical flows)
 - **Include-only patterns** - Focus on specific key types like `qa_*`, `e2e_*`, `*_button`
 - **Exclude patterns** - Filter out noise like dynamic IDs, tokens, and business logic keys
 - **Regex support** - Use complex patterns for precise filtering
@@ -65,8 +74,8 @@ dev_dependencies:
 # Generate all keys found in your project
 flutter_keycheck --generate-keys > keys/expected_keys.yaml
 
-# Generate only QA automation keys
-flutter_keycheck --generate-keys --include-only="qa_,e2e_" > keys/qa_keys.yaml
+# Generate only AQA automation keys
+flutter_keycheck --generate-keys --include-only="aqa_,e2e_" > keys/automation_keys.yaml
 ```
 
 ### 2. Validate Keys
@@ -89,15 +98,15 @@ strict: false
 verbose: false
 fail_on_extra: false
 
-# Focus on critical QA automation keys
+# Focus on critical automation keys
 tracked_keys:
-  - login_submit_button
-  - signup_email_field
-  - card_dropdown
+  - e2e_login_submit_button
+  - aqa_signup_email_field
+  - e2e_checkout_process
 
 # Filter patterns for key generation and validation
 include_only:
-  - qa_
+  - aqa_
   - e2e_
   - _button
   - _field
@@ -114,7 +123,220 @@ Then run:
 flutter_keycheck
 ```
 
+### 4. KeyConstants Analysis
+
+```bash
+# Validate KeyConstants class structure
+flutter_keycheck --validate-key-constants
+
+# Generate KeyConstants usage report
+flutter_keycheck --key-constants-report
+```
+
+## 🏷️ AQA/E2E Tagging Strategy
+
+Flutter KeyCheck supports organized tagging for different testing purposes, making it easier to manage keys across QA automation workflows.
+
+### Tagging Conventions
+
+#### AQA Tags (`aqa_*`)
+
+- **Purpose**: General UI testing, validation, regression testing
+- **Scope**: All testable UI elements
+- **Examples**: `aqa_email_field`, `aqa_submit_button`, `aqa_error_message`
+
+#### E2E Tags (`e2e_*`)
+
+- **Purpose**: Critical user journeys, smoke testing
+- **Scope**: Key business process elements only
+- **Examples**: `e2e_login_flow`, `e2e_checkout_process`, `e2e_payment_button`
+
+### Implementation Example
+
+```dart
+class LoginScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // AQA: General UI testing
+        TextField(
+          key: const ValueKey('aqa_email_field'),
+          decoration: const InputDecoration(labelText: 'Email'),
+        ),
+        TextField(
+          key: const ValueKey('aqa_password_field'),
+          decoration: const InputDecoration(labelText: 'Password'),
+        ),
+
+        // E2E: Critical business flow
+        ElevatedButton(
+          key: const ValueKey('e2e_login_submit_button'),
+          onPressed: _handleLogin,
+          child: const Text('Login'),
+        ),
+
+        // AQA: Error state testing
+        if (_hasError)
+          Container(
+            key: const ValueKey('aqa_error_message_container'),
+            child: const Text('Login failed'),
+          ),
+      ],
+    );
+  }
+}
+```
+
+### Configuration by Tags
+
+Create separate configurations for different testing scenarios:
+
+```yaml
+# .flutter_keycheck_aqa.yaml - For comprehensive UI testing
+keys: keys/aqa_keys.yaml
+include_only: [aqa_]
+strict: false
+fail_on_extra: false
+
+# .flutter_keycheck_e2e.yaml - For critical flow testing
+keys: keys/e2e_keys.yaml
+include_only: [e2e_]
+strict: true
+fail_on_extra: true
+```
+
+### Usage Commands
+
+```bash
+# Generate keys by testing purpose
+flutter_keycheck --generate-keys --include-only="aqa_" > keys/aqa_keys.yaml
+flutter_keycheck --generate-keys --include-only="e2e_" > keys/e2e_keys.yaml
+
+# Validate by configuration
+flutter_keycheck --config .flutter_keycheck_aqa.yaml
+flutter_keycheck --config .flutter_keycheck_e2e.yaml --strict
+
+# JSON reports for CI/CD
+flutter_keycheck --config .flutter_keycheck_e2e.yaml --report json
+```
+
+For detailed examples and best practices, see [AQA/E2E Usage Guide](example/AQA_E2E_USAGE.md).
+
 ## 📚 Comprehensive Guide
+
+### KeyConstants Support
+
+Flutter KeyCheck now supports modern KeyConstants patterns for better key management and organization.
+
+#### Supported Patterns
+
+```dart
+// KeyConstants class definition
+class KeyConstants {
+  // Static constants
+  static const String loginButton = 'login_button';
+  static const String emailField = 'email_field';
+
+  // Dynamic key methods
+  static Key gameCardKey(String gameId) => Key('game_card_$gameId');
+  static Key userProfileKey(int userId) => Key('user_profile_$userId');
+}
+
+// Usage in widgets
+Widget build(BuildContext context) {
+  return Column(
+    children: [
+      // Modern KeyConstants usage (detected)
+      TextField(key: const Key(KeyConstants.emailField)),
+      ElevatedButton(
+        key: const ValueKey(KeyConstants.loginButton),
+        onPressed: () {},
+        child: Text('Login'),
+      ),
+
+      // Traditional usage (still supported)
+      TextField(key: const ValueKey('old_style_key')),
+    ],
+  );
+}
+
+// Usage in tests
+testWidgets('login test', (tester) async {
+  // Modern finder usage (detected)
+  await tester.tap(find.byValueKey(KeyConstants.loginButton));
+
+  // Traditional finder usage (still supported)
+  await tester.tap(find.byValueKey('old_style_key'));
+});
+```
+
+#### KeyConstants Validation
+
+```bash
+# Validate KeyConstants class structure
+flutter_keycheck --validate-key-constants
+```
+
+Output:
+
+```bash
+🔍 KeyConstants Validation
+
+✅ KeyConstants class found
+   📁 Location: lib/constants/key_constants.dart
+
+📋 Static constants (8):
+   • loginButton
+   • emailField
+   • passwordField
+   • signupButton
+   • logoutButton
+   • homeTab
+   • profileTab
+   • settingsTab
+
+⚙️  Dynamic methods (4):
+   • gameCardKey
+   • userProfileKey
+   • categoryButtonKey
+   • notificationKey
+```
+
+#### Usage Analysis Report
+
+```bash
+# Generate comprehensive usage report
+flutter_keycheck --key-constants-report
+```
+
+Output:
+
+```bash
+🔑 KeyConstants Analysis Report
+
+📊 Total keys found: 25
+
+📝 Traditional string-based keys (15):
+   • old_login_button
+   • legacy_email_field
+   • temp_password_input
+   ...
+
+🏗️  KeyConstants static keys (8):
+   • loginButton
+   • emailField
+   • passwordField
+   ...
+
+⚡ KeyConstants dynamic methods (2):
+   • gameCardKey
+   • userProfileKey
+
+💡 Recommendations:
+   • Found 15 traditional string-based keys that could be migrated to KeyConstants
+   • Consider standardizing dynamic key method naming patterns
+```
 
 ### Tracked Keys Feature
 
@@ -504,23 +726,72 @@ cd example && flutter_keycheck --config=../.flutter_keycheck.yaml
 ### JSON Output
 
 ```bash
+# Standard key validation in JSON format
 flutter_keycheck --report json
+
+# KeyConstants analysis in JSON format
+flutter_keycheck --key-constants-report --json-key-constants
+flutter_keycheck --validate-key-constants --json-key-constants
 ```
+
+#### Standard Validation JSON Structure
 
 ```json
 {
-  "matched_keys": {
-    "login_submit_button": ["lib/screens/login_screen.dart"],
-    "signup_email_field": ["lib/screens/signup_screen.dart"]
+  "timestamp": "2025-12-23T10:05:59.811115",
+  "summary": {
+    "total_expected_keys": 18,
+    "found_keys": 10,
+    "missing_keys": 8,
+    "extra_keys": 2,
+    "validation_passed": false
   },
-  "missing_keys": ["card_dropdown"],
-  "extra_keys": [],
+  "missing_keys": ["avatar_image", "edit_profile_button"],
+  "extra_keys": ["emailField", "passwordField"],
+  "found_keys": {
+    "login_button": {
+      "key": "login_button",
+      "locations": ["lib/main.dart", "lib/widgets.dart"],
+      "location_count": 2
+    }
+  },
   "dependencies": {
-    "integration_test": true,
-    "appium_flutter_server": true
+    "integration_test": false,
+    "appium_flutter_server": false,
+    "all_dependencies_present": false
   },
-  "integration_tests": true,
-  "tracked_keys": ["login_submit_button", "signup_email_field", "card_dropdown"]
+  "integration_test_setup": {
+    "has_integration_tests": false,
+    "setup_complete": false
+  },
+  "tracked_keys": null
+}
+```
+
+#### KeyConstants Analysis JSON Structure
+
+```json
+{
+  "timestamp": "2025-12-23T10:06:11.364861",
+  "analysis_type": "key_constants_report",
+  "summary": {
+    "total_keys_found": 10,
+    "traditional_keys_count": 7,
+    "constant_keys_count": 3,
+    "dynamic_keys_count": 0
+  },
+  "traditional_keys": ["email_field", "password_field", "login_button"],
+  "constant_keys": ["loginButton", "emailField", "passwordField"],
+  "dynamic_keys": [],
+  "key_constants_validation": {
+    "hasKeyConstants": true,
+    "constantsFound": ["loginButton", "emailField", "passwordField"],
+    "methodsFound": [],
+    "filePath": "lib/key_constants.dart"
+  },
+  "recommendations": [
+    "Found 7 traditional string-based keys that could be migrated to KeyConstants"
+  ]
 }
 ```
 

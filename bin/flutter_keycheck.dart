@@ -1,5 +1,6 @@
 #!/usr/bin/env dart
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:ansicolor/ansicolor.dart';
@@ -28,6 +29,12 @@ void main(List<String> arguments) async {
         defaultsTo: '.flutter_keycheck.yaml')
     ..addOption('report',
         help: 'Output format: human (default) or json', defaultsTo: 'human')
+    ..addFlag('key-constants-report',
+        help: 'Generate KeyConstants usage analysis report')
+    ..addFlag('validate-key-constants',
+        help: 'Validate KeyConstants class structure and usage')
+    ..addFlag('json-key-constants',
+        help: 'Output KeyConstants analysis in JSON format')
     ..addFlag('help',
         abbr: 'h', help: 'Show this help message', negatable: false);
 
@@ -103,6 +110,25 @@ void main(List<String> arguments) async {
       print(
           'Use --keys to specify a keys file or --generate-keys to create one');
       exit(1);
+    }
+
+    // Handle KeyConstants specific operations
+    if (results['key-constants-report'] as bool) {
+      if (results['json-key-constants'] as bool) {
+        _outputKeyConstantsJsonReport(finalConfig.getProjectPath());
+      } else {
+        _showKeyConstantsReport(finalConfig.getProjectPath());
+      }
+      exit(0);
+    }
+
+    if (results['validate-key-constants'] as bool) {
+      if (results['json-key-constants'] as bool) {
+        _outputKeyConstantsJsonValidation(finalConfig.getProjectPath());
+      } else {
+        _showKeyConstantsValidation(finalConfig.getProjectPath());
+      }
+      exit(0);
     }
 
     // Show active configuration in verbose mode
@@ -258,13 +284,41 @@ void _outputHumanReport(
 }
 
 void _outputJsonReport(KeyValidationResult result) {
-  // Implementation for JSON output would go here
-  print('JSON output not yet implemented');
+  final jsonOutput = {
+    'timestamp': DateTime.now().toIso8601String(),
+    'summary': {
+      'total_expected_keys':
+          result.missingKeys.length + result.matchedKeys.length,
+      'found_keys': result.matchedKeys.length,
+      'missing_keys': result.missingKeys.length,
+      'extra_keys': result.extraKeys.length,
+      'validation_passed': result.isValid,
+    },
+    'missing_keys': result.missingKeys.toList()..sort(),
+    'extra_keys': result.extraKeys.toList()..sort(),
+    'found_keys': result.matchedKeys.map((key, locations) => MapEntry(key, {
+          'key': key,
+          'locations': locations,
+          'location_count': locations.length,
+        })),
+    'dependencies': {
+      'integration_test': result.dependencyStatus.hasIntegrationTest,
+      'appium_flutter_server': result.dependencyStatus.hasAppiumServer,
+      'all_dependencies_present': result.dependencyStatus.hasAllDependencies,
+    },
+    'integration_test_setup': {
+      'has_integration_tests': result.hasIntegrationTests,
+      'setup_complete': result.hasIntegrationTests,
+    },
+    'tracked_keys': result.trackedKeys,
+  };
+
+  print(const JsonEncoder.withIndent('  ').convert(jsonOutput));
 }
 
 void _showHelp(ArgParser parser) {
   print('''
-Flutter KeyCheck v2.1.0 - Validate automation keys in Flutter projects
+Flutter KeyCheck v2.2.0 - Validate automation keys in Flutter projects
 
 USAGE:
   flutter_keycheck [options]
@@ -274,6 +328,12 @@ ${parser.usage}
 EXAMPLES:
   # Basic validation
   flutter_keycheck --keys keys/expected_keys.yaml
+
+  # JSON output for CI/CD integration
+  flutter_keycheck --keys keys.yaml --report json
+
+  # KeyConstants analysis
+  flutter_keycheck --key-constants-report --json-key-constants
 
   # Generate keys with QA filtering
   flutter_keycheck --generate-keys --include-only="qa_,e2e_" > keys/qa_keys.yaml
@@ -309,4 +369,145 @@ CONFIGURATION:
 
 For more information, visit: https://pub.dev/packages/flutter_keycheck
 ''');
+}
+
+void _showKeyConstantsReport(String projectPath) {
+  final blue = AnsiPen()..blue(bold: true);
+  final green = AnsiPen()..green();
+  final yellow = AnsiPen()..yellow();
+  final cyan = AnsiPen()..cyan();
+
+  print(blue('🔑 KeyConstants Analysis Report'));
+  print('');
+
+  final report = KeyChecker.generateKeyReport(projectPath);
+
+  print('📊 Total keys found: ${report['totalKeysFound']}');
+
+  final traditionalKeys = report['traditionalKeys'] as List<String>;
+  final constantKeys = report['constantKeys'] as List<String>;
+  final dynamicKeys = report['dynamicKeys'] as List<String>;
+
+  if (traditionalKeys.isNotEmpty) {
+    print('\n📝 Traditional string-based keys (${traditionalKeys.length}):');
+    for (final key in traditionalKeys) {
+      print(yellow('   • $key'));
+    }
+  }
+
+  if (constantKeys.isNotEmpty) {
+    print('\n🏗️  KeyConstants static keys (${constantKeys.length}):');
+    for (final key in constantKeys) {
+      print(green('   • $key'));
+    }
+  }
+
+  if (dynamicKeys.isNotEmpty) {
+    print('\n⚡ KeyConstants dynamic methods (${dynamicKeys.length}):');
+    for (final key in dynamicKeys) {
+      print(cyan('   • $key'));
+    }
+  }
+
+  final recommendations = report['recommendations'] as List<String>;
+  if (recommendations.isNotEmpty) {
+    print('\n💡 Recommendations:');
+    for (final recommendation in recommendations) {
+      print(blue('   • $recommendation'));
+    }
+  }
+
+  print('');
+}
+
+void _showKeyConstantsValidation(String projectPath) {
+  final blue = AnsiPen()..blue(bold: true);
+  final green = AnsiPen()..green();
+  final yellow = AnsiPen()..yellow();
+  final red = AnsiPen()..red();
+  final cyan = AnsiPen()..cyan();
+
+  print(blue('🔍 KeyConstants Validation'));
+  print('');
+
+  final validation = KeyChecker.validateKeyConstants(projectPath);
+
+  if (validation['hasKeyConstants'] as bool) {
+    print(green('✅ KeyConstants class found'));
+    print(cyan('   📁 Location: ${validation['filePath']}'));
+
+    final constants = validation['constantsFound'] as List<String>;
+    final methods = validation['methodsFound'] as List<String>;
+
+    if (constants.isNotEmpty) {
+      print('\n📋 Static constants (${constants.length}):');
+      for (final constant in constants) {
+        print(green('   • $constant'));
+      }
+    }
+
+    if (methods.isNotEmpty) {
+      print('\n⚙️  Dynamic methods (${methods.length}):');
+      for (final method in methods) {
+        print(cyan('   • $method'));
+      }
+    }
+
+    if (constants.isEmpty && methods.isEmpty) {
+      print(yellow('⚠️  KeyConstants class is empty'));
+    }
+  } else {
+    print(red('❌ KeyConstants class not found'));
+    print(yellow(
+        '💡 Consider creating a KeyConstants class for better key management'));
+  }
+
+  print('');
+}
+
+void _outputKeyConstantsJsonReport(String projectPath) {
+  final report = KeyChecker.generateKeyReport(projectPath);
+
+  final jsonOutput = {
+    'timestamp': DateTime.now().toIso8601String(),
+    'analysis_type': 'key_constants_report',
+    'summary': {
+      'total_keys_found': report['totalKeysFound'],
+      'traditional_keys_count': (report['traditionalKeys'] as List).length,
+      'constant_keys_count': (report['constantKeys'] as List).length,
+      'dynamic_keys_count': (report['dynamicKeys'] as List).length,
+    },
+    'traditional_keys': report['traditionalKeys'],
+    'constant_keys': report['constantKeys'],
+    'dynamic_keys': report['dynamicKeys'],
+    'key_constants_validation': report['keyConstantsValidation'],
+    'recommendations': report['recommendations'],
+  };
+
+  print(const JsonEncoder.withIndent('  ').convert(jsonOutput));
+}
+
+void _outputKeyConstantsJsonValidation(String projectPath) {
+  final validation = KeyChecker.validateKeyConstants(projectPath);
+
+  final jsonOutput = {
+    'timestamp': DateTime.now().toIso8601String(),
+    'analysis_type': 'key_constants_validation',
+    'validation_result': {
+      'has_key_constants': validation['hasKeyConstants'],
+      'file_path': validation['filePath'],
+      'constants_found': validation['constantsFound'],
+      'methods_found': validation['methodsFound'],
+      'constants_count': (validation['constantsFound'] as List).length,
+      'methods_count': (validation['methodsFound'] as List).length,
+      'is_empty': (validation['constantsFound'] as List).isEmpty &&
+          (validation['methodsFound'] as List).isEmpty,
+    },
+    'details': {
+      'constants': validation['constantsFound'],
+      'methods': validation['methodsFound'],
+    },
+  };
+
+  print(const JsonEncoder.withIndent('  ').convert(jsonOutput));
 }

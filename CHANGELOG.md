@@ -5,7 +5,52 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2025-12-23
+
+### 🔧 Fixed
+
+- Fixed publication issues and improved package structure
+- Removed problematic example files that caused analysis errors
+- Enhanced .pubignore configuration for cleaner package publishing
+
+## [2.2.0] - 2025-12-23
+
+### ✨ New Features
+
+- **JSON Output Support**: Complete implementation of JSON output format for all operations
+  - `--report json` now outputs structured JSON for CI/CD integration
+  - `--json-key-constants` flag for KeyConstants analysis in JSON format
+  - Comprehensive JSON structure with timestamps, summaries, and detailed results
+
+### 🔧 Improvements
+
+- **Enhanced CLI**: New `--json-key-constants` flag for machine-readable KeyConstants reports
+- **Better Integration**: JSON output enables seamless CI/CD pipeline integration
+- **Improved Documentation**: Enhanced README with comprehensive JSON output examples
+
+### 🏗️ Technical
+
+- Added JSON encoder for all report types
+- Structured output format for automated processing
+- Improved error handling in JSON generation
+
 ## [2.1.9] - 2025-12-19
+
+### Added
+
+- **KeyConstants Support**: Modern key pattern detection for `Key(KeyConstants.*)` and `ValueKey(KeyConstants.*)`
+- **Dynamic Key Methods**: Support for `KeyConstants.*Key()` method patterns
+- **KeyConstants Validation**: New `--validate-key-constants` flag to validate KeyConstants class structure
+- **Usage Analysis Report**: New `--key-constants-report` flag for comprehensive key usage analysis
+- **Migration Recommendations**: Intelligent suggestions for migrating from traditional to KeyConstants patterns
+- **Enhanced Key Detection**: Improved regex patterns for modern Flutter key management
+
+### Enhanced
+
+- **Key Detection Engine**: Extended to support both traditional and modern key patterns
+- **CLI Interface**: Added new flags for KeyConstants analysis and validation
+- **Reporting System**: Enhanced reports with pattern categorization and recommendations
+- **Test Coverage**: Comprehensive tests for KeyConstants functionality
 
 ### Fixed
 
@@ -55,9 +100,9 @@ Fixed
 
 ## [2.1.0] - 2025-12-19
 
-### Added
+Added
 
-#### 🎯 Tracked Keys Feature
+🎯 Tracked Keys Feature
 
 - **New `tracked_keys` configuration option** - Define a subset of keys to validate from your expected keys file
 - When specified, only validates the tracked keys instead of the entire expected keys list
@@ -71,51 +116,51 @@ Fixed
     - card_dropdown
   ```
 
-#### 🔧 Enhanced Configuration Management
+🔧 Enhanced Configuration Management
 
 - **Complete configuration file rewrite** with improved YAML parsing and error handling
 - **New configuration hierarchy**: CLI arguments > Config file > Defaults
 - **Enhanced error messages** with clear guidance for configuration issues
 - **Comprehensive configuration validation** with helpful warnings
 
-#### 📊 Advanced Key Generation
+📊 Advanced Key Generation
 
 - **Enhanced `--generate-keys` command** now respects all filtering options
 - **Tracked keys support** in key generation - only generates specified tracked keys
 - **Improved YAML output** with descriptive comments showing applied filters
 - **Better formatting** with sorted keys and clear structure
 
-#### 🎨 Beautiful CLI Output
+🎨 Beautiful CLI Output
 
 - **Redesigned human-readable output** with improved formatting and colors
 - **Tracked keys status indicators** - shows "✅ Matched tracked key" vs "❌ Missing tracked key"
 - **Enhanced verbose mode** with detailed configuration display
 - **Better error reporting** with actionable suggestions
 
-#### 🏗️ Package Development Support
+🏗️ Package Development Support
 
 - **Automatic example/ folder detection** for Flutter packages published to pub.dev
 - **Intelligent project path resolution** - works from root or example/ directory
 - **Comprehensive scanning** of both main project and example application code
 - **Dual dependency validation** - checks both main and example pubspec.yaml files
 
-### Enhanced
+Enhanced
 
-#### 🔍 Improved Key Detection
+🔍 Improved Key Detection
 
 - **Better regex patterns** for finding ValueKey and Key instances in Dart code
 - **Enhanced file scanning** with recursive directory traversal
 - **Optimized performance** for large codebases
 - **More accurate key extraction** with improved parsing logic
 
-#### ⚙️ Configuration System Overhaul
+⚙️ Configuration System Overhaul
 
 - **Type-safe configuration classes** with proper null safety
 - **Immutable configuration objects** with builder pattern for merging
 - **Comprehensive getter methods** for accessing configuration values
 - **Better default value handling** with explicit fallbacks
 
-#### 🧪 Robust Testing Infrastructure
+🧪 Robust Testing Infrastructure
 
 - **45 comprehensive test cases** covering all functionality
 - **8 new tracked keys tests** validating the new feature
@@ -123,7 +168,7 @@ Fixed
 - **8 example folder tests** ensuring package development support
 - **17 core feature tests** with improved reliability
 
-#### 📦 Package Publishing Optimization
+📦 Package Publishing Optimization
 
 - **Enhanced .pubignore** to exclude development files from published package
 - **Clean package structure** following pub.dev best practices
@@ -132,21 +177,21 @@ Fixed
 
 Fixed
 
-#### 🐛 Configuration Loading Issues
+🐛 Configuration Loading Issues
 
 - **Fixed YAML parsing errors** with better error handling and recovery
 - **Resolved null safety issues** in configuration merging
 - **Fixed CLI argument precedence** to properly override config file values
 - **Improved file path resolution** for relative and absolute paths
 
-#### 🔧 CLI Argument Processing
+🔧 CLI Argument Processing
 
 - **Fixed comma-separated value parsing** for include-only and exclude options
 - **Resolved boolean flag handling** for proper true/false detection
 - **Enhanced argument validation** with better error messages
 - **Fixed help output formatting** with proper alignment and examples
 
-#### 📁 Project Structure Detection
+📁 Project Structure Detection
 
 - **Fixed example/ folder detection** when running from different directories
 - **Resolved nested structure scanning** for complex project layouts

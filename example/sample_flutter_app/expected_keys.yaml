@@ -1,20 +1,29 @@
+# Generated expected keys for flutter_keycheck
+# Run: flutter_keycheck --generate-keys > keys/expected_keys.yaml
+
 keys:
-  # Authentication screen
-  - login_button
-  - signup_button
+  - another_old_key
+  - aqa_bottom_navigation
+  - aqa_email_field
+  - aqa_error_message_container
+  - aqa_forgot_password_link
+  - aqa_help_button
+  - aqa_login_app_bar
+  - aqa_login_loading_indicator
+  - aqa_password_field
+  - aqa_profile_menu_button
+  - aqa_settings_menu_button
+  - aqa_signup_link
+  - e2e_dashboard_app_bar
+  - e2e_login_submit_button
+  - e2e_quick_action_fab
+  - emailField
   - email_field
+  - loginButton
+  - login_button
+  - old_style_key
+  - passwordField
   - password_field
+  - signup_button
+  - traditional_key
 
-  # Home screen
-  - home_tab
-  - profile_tab
-  - settings_tab
-
-  # Profile screen
-  - edit_profile_button
-  - save_button
-  - avatar_image
-
-  # Settings
-  - theme_toggle
-  - notifications_switch

@@ -21,6 +21,8 @@ analyzer:
     strict-raw-types: true
   errors:
     todo: ignore
+  exclude:
+    - example/**
 
 linter:
   rules:

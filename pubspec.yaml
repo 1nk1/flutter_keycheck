@@ -1,6 +1,6 @@
 name: flutter_keycheck
 description: CLI tool for validating Flutter automation keys. Supports filtering, example folder scanning, and tracked key validation.
-version: 2.2.1
+version: 2.3.0
 repository: https://github.com/1nk1/flutter_keycheck
 homepage: https://github.com/1nk1/flutter_keycheck
 documentation: https://pub.dev/packages/flutter_keycheck

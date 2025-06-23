@@ -5,6 +5,13 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 2025-12-23
+
+### 🔧 Fixed
+
+- Fixed GitHub Actions workflow for automated publishing to pub.dev
+- Simplified workflow to use official dart-lang/setup-dart reusable workflow
+
 ## [2.3.0] - 2025-12-23
 
 ### 🚀 Release

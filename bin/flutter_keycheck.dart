@@ -200,86 +200,211 @@ void _outputHumanReport(
   print(blue('🔍 Flutter KeyCheck Results'));
   print('');
 
-  // Show tracked keys information if enabled
-  if (config.hasTrackedKeys()) {
-    print(cyan('📌 Tracking ${config.getTrackedKeys()!.length} specific keys'));
-    print('');
-  }
+  // Show KeyConstants resolver information if available and verbose
+  if (config.isVerbose() && result.keyConstantsInfo != null) {
+    final keyConstantsInfo = result.keyConstantsInfo!;
+    final hasKeyConstants = keyConstantsInfo['hasKeyConstants'] as bool;
 
-  // Missing keys
-  if (result.missingKeys.isNotEmpty) {
-    print(red('❌ Missing tracked keys (${result.missingKeys.length}):'));
-    for (final key in result.missingKeys.toList()..sort()) {
-      print('  - $key');
-    }
-    print('');
-  }
+    if (hasKeyConstants) {
+      print(blue('📋 KeyConstants resolver: ACTIVE'));
+      print(
+          cyan('   📁 Location: ${keyConstantsInfo['keyConstantsFilePath']}'));
 
-  // Found keys
-  if (result.matchedKeys.isNotEmpty) {
-    if (config.hasTrackedKeys()) {
-      print(green('✅ Matched tracked keys (${result.matchedKeys.length}):'));
-    } else {
-      print(green('✅ Found keys (${result.matchedKeys.length}):'));
-    }
+      final constantsCount = keyConstantsInfo['constantsCount'] as int;
+      final dynamicMethodsCount =
+          keyConstantsInfo['dynamicMethodsCount'] as int;
 
-    for (final entry in result.matchedKeys.entries) {
-      final key = entry.key;
-      final locations = entry.value;
-      print('  - $key');
-      if (config.isVerbose()) {
-        for (final location in locations) {
-          print('    📍 $location');
-        }
+      if (constantsCount > 0) {
+        print(cyan('   📊 Static constants: $constantsCount'));
       }
-    }
-    print('');
-  }
-
-  // Extra keys (only if fail-on-extra is enabled)
-  if (config.shouldFailOnExtra() && result.extraKeys.isNotEmpty) {
-    print(yellow('⚠️  Extra keys found (${result.extraKeys.length}):'));
-    for (final key in result.extraKeys.toList()..sort()) {
-      print('  - $key');
-    }
-    print('');
-  }
-
-  // Dependencies status
-  if (!result.dependencyStatus.hasAllDependencies) {
-    print(red('❌ Missing dependencies:'));
-    if (!result.dependencyStatus.hasIntegrationTest) {
-      print('  - integration_test (add to dev_dependencies)');
-    }
-    if (!result.dependencyStatus.hasAppiumServer) {
-      print('  - appium_flutter_server (add to dev_dependencies)');
-    }
-    print('');
-  } else {
-    print(green('✅ Required dependencies found'));
-  }
-
-  // Integration tests status
-  if (!result.hasIntegrationTests) {
-    if (config.isStrict()) {
-      print(red('❌ Integration test setup incomplete'));
+      if (dynamicMethodsCount > 0) {
+        print(cyan('   ⚙️  Dynamic methods: $dynamicMethodsCount'));
+      }
+      print('');
     } else {
       print(yellow(
-          '⚠️  Integration test setup incomplete (use --strict to enforce)'));
+          '📋 KeyConstants resolver: INACTIVE (no KeyConstants class found)'));
+      print('');
     }
-  } else {
-    print(green('✅ Integration test setup complete'));
   }
 
-  // Summary
-  print('');
-  if (result.missingKeys.isEmpty &&
-      (!config.shouldFailOnExtra() || result.extraKeys.isEmpty) &&
-      (!config.isStrict() ||
-          (result.hasDependencies && result.hasIntegrationTests))) {
-    print(green('🎉 All checks passed!'));
+  // Show tracked keys information if applicable
+  if (result.trackedKeys != null && result.trackedKeys!.isNotEmpty) {
+    print(blue('📌 Tracking ${result.trackedKeys!.length} specific keys'));
+    print('');
+
+    final trackedSet = result.trackedKeys!.toSet();
+    final foundTrackedKeys = result.matchedKeys.keys
+        .where((key) => trackedSet.contains(key))
+        .toList()
+      ..sort();
+    final missingTrackedKeys =
+        trackedSet.difference(result.matchedKeys.keys.toSet()).toList()..sort();
+
+    if (foundTrackedKeys.isNotEmpty) {
+      print(green('✅ Matched tracked keys (${foundTrackedKeys.length}):'));
+      for (final key in foundTrackedKeys) {
+        print(green('  ✅ $key'));
+        if (config.isVerbose()) {
+          final locations = result.matchedKeys[key]!;
+          for (final location in locations) {
+            print(cyan('     📍 $location'));
+          }
+        }
+      }
+      print('');
+    }
+
+    if (missingTrackedKeys.isNotEmpty) {
+      print(red('❌ Missing tracked keys (${missingTrackedKeys.length}):'));
+      for (final key in missingTrackedKeys) {
+        print(red('  ❌ $key'));
+      }
+      print('');
+    }
   } else {
+    // Standard key validation output
+    if (result.missingKeys.isNotEmpty) {
+      print(red('❌ Missing keys (${result.missingKeys.length}):'));
+      for (final key in result.missingKeys) {
+        print(red('  ❌ $key'));
+      }
+      print('');
+    }
+
+    if (result.extraKeys.isNotEmpty) {
+      print(yellow('⚠️  Extra keys (${result.extraKeys.length}):'));
+      for (final key in result.extraKeys) {
+        print(yellow('  ⚠️  $key'));
+      }
+      print('');
+    }
+
+    if (result.matchedKeys.isNotEmpty) {
+      print(green('✅ Found keys (${result.matchedKeys.length}):'));
+      for (final entry in result.matchedKeys.entries) {
+        // Show resolution information in verbose mode
+        if (config.isVerbose() && result.keyConstantsInfo != null) {
+          final keyConstantsInfo = result.keyConstantsInfo!;
+          final constants =
+              keyConstantsInfo['constants'] as Map<String, String>;
+          final dynamicMethods =
+              keyConstantsInfo['dynamicMethods'] as Map<String, String>;
+
+          // Check if this key was resolved from KeyConstants
+          String? resolvedFrom;
+          for (final constantEntry in constants.entries) {
+            if (constantEntry.value == entry.key) {
+              resolvedFrom = 'KeyConstants.${constantEntry.key}';
+              break;
+            }
+          }
+          if (resolvedFrom == null) {
+            for (final methodEntry in dynamicMethods.entries) {
+              if (methodEntry.value == entry.key) {
+                resolvedFrom = 'KeyConstants.${methodEntry.key}()';
+                break;
+              }
+            }
+          }
+
+          if (resolvedFrom != null) {
+            print(green('  ✅ ${entry.key} (resolved from $resolvedFrom)'));
+          } else {
+            print(green('  ✅ ${entry.key} (string literal)'));
+          }
+        } else {
+          print(green('  ✅ ${entry.key}'));
+        }
+
+        if (config.isVerbose()) {
+          for (final location in entry.value) {
+            print(cyan('     📍 $location'));
+          }
+        }
+      }
+      print('');
+    }
+  }
+
+  // Show resolution statistics in verbose mode
+  if (config.isVerbose() && result.keyConstantsInfo != null) {
+    final keyConstantsInfo = result.keyConstantsInfo!;
+    final hasKeyConstants = keyConstantsInfo['hasKeyConstants'] as bool;
+
+    if (hasKeyConstants) {
+      final constants = keyConstantsInfo['constants'] as Map<String, String>;
+      final dynamicMethods =
+          keyConstantsInfo['dynamicMethods'] as Map<String, String>;
+
+      var resolvedCount = 0;
+      var stringLiteralCount = 0;
+
+      for (final key in result.matchedKeys.keys) {
+        bool isResolved = false;
+        for (final constantValue in constants.values) {
+          if (constantValue == key) {
+            isResolved = true;
+            break;
+          }
+        }
+        if (!isResolved) {
+          for (final methodValue in dynamicMethods.values) {
+            if (methodValue == key) {
+              isResolved = true;
+              break;
+            }
+          }
+        }
+
+        if (isResolved) {
+          resolvedCount++;
+        } else {
+          stringLiteralCount++;
+        }
+      }
+
+      print(blue('📊 Resolution Stats:'));
+      print(cyan('   • String literals: $stringLiteralCount keys'));
+      print(cyan('   • KeyConstants resolved: $resolvedCount keys'));
+      print('');
+    }
+  }
+
+  // Dependency status
+  print(blue('📦 Dependencies'));
+  if (result.dependencyStatus.hasIntegrationTest) {
+    print(green('  ✅ integration_test'));
+  } else {
+    print(red('  ❌ integration_test missing'));
+  }
+
+  if (result.dependencyStatus.hasAppiumServer) {
+    print(green('  ✅ appium_flutter_server'));
+  } else {
+    print(red('  ❌ appium_flutter_server missing'));
+  }
+  print('');
+
+  // Integration test status
+  print(blue('🧪 Integration Tests'));
+  if (result.hasIntegrationTests) {
+    print(green('  ✅ Setup complete'));
+  } else {
+    print(red('  ❌ Setup incomplete'));
+  }
+  print('');
+
+  // Final verdict
+  final hasFailures = result.missingKeys.isNotEmpty ||
+      (config.shouldFailOnExtra() && result.extraKeys.isNotEmpty) ||
+      (config.isStrict() &&
+          (!result.hasDependencies || !result.hasIntegrationTests));
+
+  if (hasFailures) {
     print(red('💥 Some checks failed'));
+  } else {
+    print(green('🎉 All checks passed!'));
   }
 }
 
@@ -311,7 +436,64 @@ void _outputJsonReport(KeyValidationResult result) {
       'setup_complete': result.hasIntegrationTests,
     },
     'tracked_keys': result.trackedKeys,
+    'key_constants_info': result.keyConstantsInfo,
   };
+
+  // Add resolution statistics if KeyConstants are available
+  if (result.keyConstantsInfo != null) {
+    final keyConstantsInfo = result.keyConstantsInfo!;
+    final hasKeyConstants = keyConstantsInfo['hasKeyConstants'] as bool;
+
+    if (hasKeyConstants) {
+      final constants = keyConstantsInfo['constants'] as Map<String, String>;
+      final dynamicMethods =
+          keyConstantsInfo['dynamicMethods'] as Map<String, String>;
+
+      var resolvedCount = 0;
+      var stringLiteralCount = 0;
+      final resolvedKeys = <String, String>{};
+
+      for (final key in result.matchedKeys.keys) {
+        bool isResolved = false;
+        String? resolvedFrom;
+
+        // Check constants
+        for (final constantEntry in constants.entries) {
+          if (constantEntry.value == key) {
+            isResolved = true;
+            resolvedFrom = 'KeyConstants.${constantEntry.key}';
+            resolvedKeys[key] = resolvedFrom;
+            break;
+          }
+        }
+
+        // Check dynamic methods if not found in constants
+        if (!isResolved) {
+          for (final methodEntry in dynamicMethods.entries) {
+            if (methodEntry.value == key) {
+              isResolved = true;
+              resolvedFrom = 'KeyConstants.${methodEntry.key}()';
+              resolvedKeys[key] = resolvedFrom;
+              break;
+            }
+          }
+        }
+
+        if (isResolved) {
+          resolvedCount++;
+        } else {
+          stringLiteralCount++;
+        }
+      }
+
+      jsonOutput['resolution_stats'] = {
+        'string_literal_keys': stringLiteralCount,
+        'key_constants_resolved': resolvedCount,
+        'total_keys': result.matchedKeys.length,
+        'resolved_keys': resolvedKeys,
+      };
+    }
+  }
 
   print(const JsonEncoder.withIndent('  ').convert(jsonOutput));
 }
@@ -381,43 +563,111 @@ void _showKeyConstantsReport(String projectPath) {
   print('');
 
   final report = KeyChecker.generateKeyReport(projectPath);
+  final keyConstantsResolver =
+      report['keyConstantsResolver'] as Map<String, dynamic>;
 
   print('📊 Total keys found: ${report['totalKeysFound']}');
+  print('');
+
+  // Show KeyConstants resolver information
+  final hasKeyConstants = keyConstantsResolver['hasKeyConstants'] as bool;
+  if (hasKeyConstants) {
+    print(green('✅ KeyConstants class found'));
+    print(cyan(
+        '   📁 Location: ${keyConstantsResolver['keyConstantsFilePath']}'));
+    print(cyan(
+        '   📊 Static constants: ${keyConstantsResolver['constantsCount']}'));
+    print(cyan(
+        '   ⚙️  Dynamic methods: ${keyConstantsResolver['dynamicMethodsCount']}'));
+    print('');
+  } else {
+    print(yellow('⚠️  KeyConstants class not found'));
+    print('');
+  }
 
   final traditionalKeys = report['traditionalKeys'] as List<String>;
   final constantKeys = report['constantKeys'] as List<String>;
   final dynamicKeys = report['dynamicKeys'] as List<String>;
+  final resolvedKeys = report['resolvedKeys'] as Map<String, String>;
 
   if (traditionalKeys.isNotEmpty) {
-    print('\n📝 Traditional string-based keys (${traditionalKeys.length}):');
+    print('📝 Traditional string-based keys (${traditionalKeys.length}):');
     for (final key in traditionalKeys) {
       print(yellow('   • $key'));
     }
+    print('');
   }
 
   if (constantKeys.isNotEmpty) {
-    print('\n🏗️  KeyConstants static keys (${constantKeys.length}):');
+    print('🏗️  KeyConstants static keys (${constantKeys.length}):');
     for (final key in constantKeys) {
-      print(green('   • $key'));
+      final resolvedFrom = resolvedKeys[key];
+      if (resolvedFrom != null) {
+        print(green('   • $key (resolved from $resolvedFrom)'));
+      } else {
+        print(green('   • $key'));
+      }
     }
+    print('');
   }
 
   if (dynamicKeys.isNotEmpty) {
-    print('\n⚡ KeyConstants dynamic methods (${dynamicKeys.length}):');
+    print('⚡ KeyConstants dynamic methods (${dynamicKeys.length}):');
     for (final key in dynamicKeys) {
-      print(cyan('   • $key'));
+      final resolvedFrom = resolvedKeys[key];
+      if (resolvedFrom != null) {
+        print(cyan('   • $key (resolved from $resolvedFrom)'));
+      } else {
+        print(cyan('   • $key'));
+      }
+    }
+    print('');
+  }
+
+  // Show available constants and methods
+  if (hasKeyConstants) {
+    final constants = keyConstantsResolver['constants'] as Map<String, String>;
+    final dynamicMethods =
+        keyConstantsResolver['dynamicMethods'] as Map<String, String>;
+
+    if (constants.isNotEmpty) {
+      print('📋 Available KeyConstants (${constants.length}):');
+      for (final entry in constants.entries) {
+        final isUsed =
+            resolvedKeys.values.contains('KeyConstants.${entry.key}');
+        if (isUsed) {
+          print(green('   ✅ ${entry.key} = \'${entry.value}\' (used)'));
+        } else {
+          print(yellow('   ⚠️  ${entry.key} = \'${entry.value}\' (unused)'));
+        }
+      }
+      print('');
+    }
+
+    if (dynamicMethods.isNotEmpty) {
+      print('⚙️  Available Dynamic Methods (${dynamicMethods.length}):');
+      for (final entry in dynamicMethods.entries) {
+        final isUsed =
+            resolvedKeys.values.contains('KeyConstants.${entry.key}()');
+        if (isUsed) {
+          print(green('   ✅ ${entry.key}() => \'${entry.value}_...\' (used)'));
+        } else {
+          print(yellow(
+              '   ⚠️  ${entry.key}() => \'${entry.value}_...\' (unused)'));
+        }
+      }
+      print('');
     }
   }
 
   final recommendations = report['recommendations'] as List<String>;
   if (recommendations.isNotEmpty) {
-    print('\n💡 Recommendations:');
+    print('💡 Recommendations:');
     for (final recommendation in recommendations) {
       print(blue('   • $recommendation'));
     }
+    print('');
   }
-
-  print('');
 }
 
 void _showKeyConstantsValidation(String projectPath) {
@@ -467,6 +717,8 @@ void _showKeyConstantsValidation(String projectPath) {
 
 void _outputKeyConstantsJsonReport(String projectPath) {
   final report = KeyChecker.generateKeyReport(projectPath);
+  final keyConstantsResolver =
+      report['keyConstantsResolver'] as Map<String, dynamic>;
 
   final jsonOutput = {
     'timestamp': DateTime.now().toIso8601String(),
@@ -480,7 +732,16 @@ void _outputKeyConstantsJsonReport(String projectPath) {
     'traditional_keys': report['traditionalKeys'],
     'constant_keys': report['constantKeys'],
     'dynamic_keys': report['dynamicKeys'],
+    'resolved_keys': report['resolvedKeys'],
     'key_constants_validation': report['keyConstantsValidation'],
+    'key_constants_resolver': {
+      'has_key_constants': keyConstantsResolver['hasKeyConstants'],
+      'file_path': keyConstantsResolver['keyConstantsFilePath'],
+      'constants_count': keyConstantsResolver['constantsCount'],
+      'dynamic_methods_count': keyConstantsResolver['dynamicMethodsCount'],
+      'available_constants': keyConstantsResolver['constants'],
+      'available_dynamic_methods': keyConstantsResolver['dynamicMethods'],
+    },
     'recommendations': report['recommendations'],
   };
 

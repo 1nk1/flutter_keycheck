@@ -4,6 +4,144 @@ import 'package:ansicolor/ansicolor.dart';
 import 'package:path/path.dart' as path;
 import 'package:yaml/yaml.dart';
 
+/// KeyConstants resolver that maps constant names to their string values
+class KeyConstantsResolver {
+  final String projectPath;
+  final Map<String, String> _constantsCache = {};
+  final Map<String, String> _dynamicMethodsCache = {};
+  String? _keyConstantsFilePath;
+
+  KeyConstantsResolver(this.projectPath) {
+    _loadKeyConstants();
+  }
+
+  /// Loads and caches KeyConstants from the project
+  void _loadKeyConstants() {
+    final pathInfo = KeyChecker.resolveProjectPath(projectPath);
+    final resolvedPath = pathInfo['projectPath'] as String;
+    final directories = <Directory>[];
+
+    // Always try to scan lib/ and integration_test/ in the resolved project path
+    final libDir = Directory(path.join(resolvedPath, 'lib'));
+    final integrationDir =
+        Directory(path.join(resolvedPath, 'integration_test'));
+
+    if (libDir.existsSync()) {
+      directories.add(libDir);
+    }
+    if (integrationDir.existsSync()) {
+      directories.add(integrationDir);
+    }
+
+    // If we resolved to a different path, also scan the original path
+    if (resolvedPath != projectPath) {
+      final originalLibDir = Directory(path.join(projectPath, 'lib'));
+      final originalIntegrationDir =
+          Directory(path.join(projectPath, 'integration_test'));
+
+      if (originalLibDir.existsSync()) {
+        directories.add(originalLibDir);
+      }
+      if (originalIntegrationDir.existsSync()) {
+        directories.add(originalIntegrationDir);
+      }
+    }
+
+    for (final dir in directories) {
+      final dartFiles = dir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'))
+          .map((f) => f.path);
+
+      for (final filePath in dartFiles) {
+        final content = File(filePath).readAsStringSync();
+
+        // Check for KeyConstants class definition
+        if (content.contains('class KeyConstants')) {
+          _keyConstantsFilePath = filePath;
+          _parseKeyConstants(content);
+          return; // Found KeyConstants, stop searching
+        }
+      }
+    }
+  }
+
+  /// Parses KeyConstants file content and caches constants and methods
+  void _parseKeyConstants(String content) {
+    // Parse static const String fields: static const String name = 'value';
+    final constantPattern = RegExp(
+      r"static\s+const\s+String\s+(\w+)\s*=\s*'([^']+)'",
+      multiLine: true,
+    );
+    final constantMatches = constantPattern.allMatches(content);
+    for (final match in constantMatches) {
+      final constantName = match.group(1)!;
+      final constantValue = match.group(2)!;
+      _constantsCache[constantName] = constantValue;
+    }
+
+    // Also check for double quotes
+    final constantPatternDouble = RegExp(
+      r'static\s+const\s+String\s+(\w+)\s*=\s*"([^"]+)"',
+      multiLine: true,
+    );
+    final constantMatchesDouble = constantPatternDouble.allMatches(content);
+    for (final match in constantMatchesDouble) {
+      final constantName = match.group(1)!;
+      final constantValue = match.group(2)!;
+      _constantsCache[constantName] = constantValue;
+    }
+
+    // Parse dynamic key methods: static Key methodName(...) => Key('base_key_...');
+    final methodPattern = RegExp(
+      r"static\s+Key\s+(\w+Key)\s*\([^)]*\)\s*=>\s*Key\s*\(\s*'([^'_]+)",
+      multiLine: true,
+    );
+    final methodMatches = methodPattern.allMatches(content);
+    for (final match in methodMatches) {
+      final methodName = match.group(1)!;
+      final baseKey = match.group(2)!;
+      _dynamicMethodsCache[methodName] = baseKey;
+    }
+
+    // Also check for double quotes in methods
+    final methodPatternDouble = RegExp(
+      r'static\s+Key\s+(\w+Key)\s*\([^)]*\)\s*=>\s*Key\s*\(\s*"([^"_]+)',
+      multiLine: true,
+    );
+    final methodMatchesDouble = methodPatternDouble.allMatches(content);
+    for (final match in methodMatchesDouble) {
+      final methodName = match.group(1)!;
+      final baseKey = match.group(2)!;
+      _dynamicMethodsCache[methodName] = baseKey;
+    }
+  }
+
+  /// Resolves a KeyConstants constant name to its string value
+  String? resolveConstant(String constantName) {
+    return _constantsCache[constantName];
+  }
+
+  /// Resolves a KeyConstants dynamic method to its base key
+  String? resolveDynamicKey(String methodName) {
+    return _dynamicMethodsCache[methodName];
+  }
+
+  /// Returns true if KeyConstants class exists
+  bool get hasKeyConstants => _keyConstantsFilePath != null;
+
+  /// Returns the path to the KeyConstants file
+  String? get keyConstantsFilePath => _keyConstantsFilePath;
+
+  /// Returns all cached constants
+  Map<String, String> get constants => Map.unmodifiable(_constantsCache);
+
+  /// Returns all cached dynamic methods
+  Map<String, String> get dynamicMethods =>
+      Map.unmodifiable(_dynamicMethodsCache);
+}
+
 /// Status of required dependencies in pubspec.yaml
 class DependencyStatus {
   /// Constructor
@@ -49,6 +187,9 @@ class KeyValidationResult {
   /// Optional tracked keys
   final List<String>? trackedKeys;
 
+  /// KeyConstants resolver information
+  final Map<String, dynamic>? keyConstantsInfo;
+
   const KeyValidationResult({
     required this.missingKeys,
     required this.extraKeys,
@@ -56,6 +197,7 @@ class KeyValidationResult {
     required this.dependencyStatus,
     required this.hasIntegrationTests,
     this.trackedKeys,
+    this.keyConstantsInfo,
   });
 
   /// Whether required test dependencies are present (for backward compatibility)
@@ -287,6 +429,7 @@ class KeyChecker {
   /// - find.byValueKey finders
   /// - find.bySemanticsLabel finders
   /// - find.byTooltip finders
+  /// - KeyConstants patterns (resolved to actual string values)
   ///
   /// This method automatically detects and handles Flutter packages with example/ folders.
   ///
@@ -302,6 +445,9 @@ class KeyChecker {
     List<String>? exclude,
   }) {
     final result = <String, List<String>>{};
+
+    // Initialize KeyConstants resolver
+    final resolver = KeyConstantsResolver(sourcePath);
 
     // Resolve the correct project path and get directories to scan
     final pathInfo = resolveProjectPath(sourcePath);
@@ -321,6 +467,13 @@ class KeyChecker {
           .map((f) => f.path);
 
       for (final filePath in dartFiles) {
+        // Skip the KeyConstants file itself to avoid detecting key definitions as usage
+        if (resolver.keyConstantsFilePath != null &&
+            path.normalize(filePath) ==
+                path.normalize(resolver.keyConstantsFilePath!)) {
+          continue;
+        }
+
         final content = File(filePath).readAsStringSync();
 
         // Find traditional ValueKey and Key declarations
@@ -331,30 +484,48 @@ class KeyChecker {
           result.putIfAbsent(key, () => []).add(filePath);
         }
 
-        // Find modern Key(KeyConstants.*) patterns
+        // Find modern Key(KeyConstants.*) patterns and resolve them
         final constantKeyMatches =
             RegExp(r"(?:const\s+)?Key\(\s*KeyConstants\.(\w+)\s*\)")
                 .allMatches(content);
         for (final match in constantKeyMatches) {
-          final key = match.group(1)!;
-          result.putIfAbsent(key, () => []).add(filePath);
+          final constantName = match.group(1)!;
+          final resolvedValue = resolver.resolveConstant(constantName);
+          if (resolvedValue != null) {
+            result.putIfAbsent(resolvedValue, () => []).add(filePath);
+          } else {
+            // If resolution fails, use the constant name as fallback
+            result.putIfAbsent(constantName, () => []).add(filePath);
+          }
         }
 
-        // Find dynamic KeyConstants.*Key(*) method calls
+        // Find dynamic KeyConstants.*Key(*) method calls and resolve them
         final dynamicKeyMatches =
             RegExp(r"KeyConstants\.(\w*Key)\s*\([^)]*\)").allMatches(content);
         for (final match in dynamicKeyMatches) {
-          final key = match.group(1)!;
-          result.putIfAbsent(key, () => []).add(filePath);
+          final methodName = match.group(1)!;
+          final resolvedBaseKey = resolver.resolveDynamicKey(methodName);
+          if (resolvedBaseKey != null) {
+            result.putIfAbsent(resolvedBaseKey, () => []).add(filePath);
+          } else {
+            // If resolution fails, use the method name as fallback
+            result.putIfAbsent(methodName, () => []).add(filePath);
+          }
         }
 
-        // Find ValueKey(KeyConstants.*) patterns
+        // Find ValueKey(KeyConstants.*) patterns and resolve them
         final constantValueKeyMatches =
             RegExp(r"(?:const\s+)?ValueKey\(\s*KeyConstants\.(\w+)\s*\)")
                 .allMatches(content);
         for (final match in constantValueKeyMatches) {
-          final key = match.group(1)!;
-          result.putIfAbsent(key, () => []).add(filePath);
+          final constantName = match.group(1)!;
+          final resolvedValue = resolver.resolveConstant(constantName);
+          if (resolvedValue != null) {
+            result.putIfAbsent(resolvedValue, () => []).add(filePath);
+          } else {
+            // If resolution fails, use the constant name as fallback
+            result.putIfAbsent(constantName, () => []).add(filePath);
+          }
         }
 
         // Find finder methods (byValueKey, bySemanticsLabel, byTooltip)
@@ -366,22 +537,34 @@ class KeyChecker {
           result.putIfAbsent(key, () => []).add(filePath);
         }
 
-        // Find finder methods with KeyConstants
+        // Find finder methods with KeyConstants and resolve them
         final constantFinderMatches =
             RegExp(r"find\.byValueKey\(\s*KeyConstants\.(\w+)\s*\)")
                 .allMatches(content);
         for (final match in constantFinderMatches) {
-          final key = match.group(1)!;
-          result.putIfAbsent(key, () => []).add(filePath);
+          final constantName = match.group(1)!;
+          final resolvedValue = resolver.resolveConstant(constantName);
+          if (resolvedValue != null) {
+            result.putIfAbsent(resolvedValue, () => []).add(filePath);
+          } else {
+            // If resolution fails, use the constant name as fallback
+            result.putIfAbsent(constantName, () => []).add(filePath);
+          }
         }
 
-        // Find dynamic finder methods with KeyConstants
+        // Find dynamic finder methods with KeyConstants and resolve them
         final dynamicFinderMatches = RegExp(
                 r"find\.byValueKey\(\s*KeyConstants\.(\w*Key)\s*\([^)]*\)\s*\)")
             .allMatches(content);
         for (final match in dynamicFinderMatches) {
-          final key = match.group(1)!;
-          result.putIfAbsent(key, () => []).add(filePath);
+          final methodName = match.group(1)!;
+          final resolvedBaseKey = resolver.resolveDynamicKey(methodName);
+          if (resolvedBaseKey != null) {
+            result.putIfAbsent(resolvedBaseKey, () => []).add(filePath);
+          } else {
+            // If resolution fails, use the method name as fallback
+            result.putIfAbsent(methodName, () => []).add(filePath);
+          }
         }
       }
     }
@@ -608,7 +791,7 @@ class KeyChecker {
   ///
   /// Analyzes the project for:
   /// - Traditional key patterns (ValueKey, Key with strings)
-  /// - Modern KeyConstants patterns
+  /// - Modern KeyConstants patterns (resolved to actual values)
   /// - Dynamic key generation methods
   /// - Missing KeyConstants class
   ///
@@ -616,13 +799,24 @@ class KeyChecker {
   static Map<String, dynamic> generateKeyReport(String projectPath) {
     final foundKeys = findKeysInProject(projectPath);
     final keyConstantsInfo = validateKeyConstants(projectPath);
+    final resolver = KeyConstantsResolver(projectPath);
 
     final report = <String, dynamic>{
       'totalKeysFound': foundKeys.length,
       'traditionalKeys': <String>[],
       'constantKeys': <String>[],
       'dynamicKeys': <String>[],
+      'resolvedKeys':
+          <String, String>{}, // Maps resolved keys to their constants
       'keyConstantsValidation': keyConstantsInfo,
+      'keyConstantsResolver': <String, dynamic>{
+        'hasKeyConstants': resolver.hasKeyConstants,
+        'keyConstantsFilePath': resolver.keyConstantsFilePath,
+        'constantsCount': resolver.constants.length,
+        'dynamicMethodsCount': resolver.dynamicMethods.length,
+        'constants': resolver.constants,
+        'dynamicMethods': resolver.dynamicMethods,
+      },
       'recommendations': <String>[],
     };
 
@@ -638,6 +832,7 @@ class KeyChecker {
     final traditionalKeys = <String>[];
     final constantKeys = <String>[];
     final dynamicKeys = <String>[];
+    final resolvedKeysMap = <String, String>{};
 
     for (final dir in directories) {
       final dartFiles = dir
@@ -647,6 +842,13 @@ class KeyChecker {
           .map((f) => f.path);
 
       for (final filePath in dartFiles) {
+        // Skip the KeyConstants file itself to avoid detecting key definitions as usage
+        if (resolver.keyConstantsFilePath != null &&
+            path.normalize(filePath) ==
+                path.normalize(resolver.keyConstantsFilePath!)) {
+          continue;
+        }
+
         final content = File(filePath).readAsStringSync();
 
         // Check for traditional patterns
@@ -657,21 +859,43 @@ class KeyChecker {
           if (!traditionalKeys.contains(key)) traditionalKeys.add(key);
         }
 
-        // Check for KeyConstants patterns
+        // Check for KeyConstants patterns and resolve them
         final constantMatches =
             RegExp(r"(?:const\s+)?(?:Value)?Key\(\s*KeyConstants\.(\w+)\s*\)")
                 .allMatches(content);
         for (final match in constantMatches) {
-          final key = match.group(1)!;
-          if (!constantKeys.contains(key)) constantKeys.add(key);
+          final constantName = match.group(1)!;
+          final resolvedValue = resolver.resolveConstant(constantName);
+          if (resolvedValue != null) {
+            if (!constantKeys.contains(resolvedValue)) {
+              constantKeys.add(resolvedValue);
+              resolvedKeysMap[resolvedValue] = constantName;
+            }
+          } else {
+            // If resolution fails, treat as constant name
+            if (!constantKeys.contains(constantName)) {
+              constantKeys.add(constantName);
+            }
+          }
         }
 
-        // Check for dynamic KeyConstants methods
+        // Check for dynamic KeyConstants methods and resolve them
         final dynamicMatches =
             RegExp(r"KeyConstants\.(\w*Key)\s*\([^)]*\)").allMatches(content);
         for (final match in dynamicMatches) {
-          final key = match.group(1)!;
-          if (!dynamicKeys.contains(key)) dynamicKeys.add(key);
+          final methodName = match.group(1)!;
+          final resolvedBaseKey = resolver.resolveDynamicKey(methodName);
+          if (resolvedBaseKey != null) {
+            if (!dynamicKeys.contains(resolvedBaseKey)) {
+              dynamicKeys.add(resolvedBaseKey);
+              resolvedKeysMap[resolvedBaseKey] = methodName;
+            }
+          } else {
+            // If resolution fails, treat as method name
+            if (!dynamicKeys.contains(methodName)) {
+              dynamicKeys.add(methodName);
+            }
+          }
         }
       }
     }
@@ -679,11 +903,12 @@ class KeyChecker {
     report['traditionalKeys'] = traditionalKeys;
     report['constantKeys'] = constantKeys;
     report['dynamicKeys'] = dynamicKeys;
+    report['resolvedKeys'] = resolvedKeysMap;
 
     // Generate recommendations
     final recommendations = <String>[];
 
-    if (!(keyConstantsInfo['hasKeyConstants'] as bool)) {
+    if (!resolver.hasKeyConstants) {
       recommendations.add(
           'Consider creating a KeyConstants class to centralize key management');
     }
@@ -695,9 +920,19 @@ class KeyChecker {
 
     if (constantKeys.isEmpty &&
         dynamicKeys.isEmpty &&
-        (keyConstantsInfo['hasKeyConstants'] as bool)) {
+        resolver.hasKeyConstants) {
       recommendations.add(
           'KeyConstants class exists but is not being used. Consider migrating existing keys');
+    }
+
+    if (resolver.hasKeyConstants && resolver.constants.isNotEmpty) {
+      final unusedConstants = resolver.constants.keys
+          .toSet()
+          .difference(resolvedKeysMap.values.toSet());
+      if (unusedConstants.isNotEmpty) {
+        recommendations.add(
+            'Found ${unusedConstants.length} unused KeyConstants: ${unusedConstants.join(', ')}');
+      }
     }
 
     report['recommendations'] = recommendations;
@@ -757,6 +992,9 @@ class KeyChecker {
     // Load expected keys
     final expectedKeys = loadExpectedKeys(keysPath);
 
+    // Initialize KeyConstants resolver
+    final resolver = KeyConstantsResolver(sourcePath);
+
     // Apply tracked keys filtering if specified
     final keysToValidate = trackedKeys != null && trackedKeys.isNotEmpty
         ? expectedKeys.intersection(trackedKeys.toSet())
@@ -792,6 +1030,16 @@ class KeyChecker {
     final hasDeps = checkDependencies(sourcePath);
     final hasTests = checkIntegrationTests(sourcePath);
 
+    // Prepare KeyConstants resolver information
+    final keyConstantsInfo = <String, dynamic>{
+      'hasKeyConstants': resolver.hasKeyConstants,
+      'keyConstantsFilePath': resolver.keyConstantsFilePath,
+      'constantsCount': resolver.constants.length,
+      'dynamicMethodsCount': resolver.dynamicMethods.length,
+      'constants': resolver.constants,
+      'dynamicMethods': resolver.dynamicMethods,
+    };
+
     return KeyValidationResult(
       missingKeys: missingKeys,
       extraKeys: extraKeys,
@@ -799,6 +1047,7 @@ class KeyChecker {
       dependencyStatus: hasDeps,
       hasIntegrationTests: hasTests,
       trackedKeys: trackedKeys,
+      keyConstantsInfo: keyConstantsInfo,
     );
   }
 

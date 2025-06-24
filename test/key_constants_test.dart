@@ -30,12 +30,22 @@ void main() {
         }
       ''');
 
+      // Create KeyConstants file for resolution
+      final keyConstantsFile = File('${libDir.path}/key_constants.dart');
+      keyConstantsFile.writeAsStringSync('''
+        class KeyConstants {
+          static const String loginButton = 'login_button';
+          static const String emailField = 'email_field';
+        }
+      ''');
+
       final foundKeys = KeyChecker.findKeysInProject(tempDir.path);
 
-      expect(foundKeys.keys, contains('loginButton'));
-      expect(foundKeys.keys, contains('emailField'));
-      expect(foundKeys['loginButton'], contains(testFile.path));
-      expect(foundKeys['emailField'], contains(testFile.path));
+      // Should find resolved values
+      expect(foundKeys.keys, contains('login_button'));
+      expect(foundKeys.keys, contains('email_field'));
+      expect(foundKeys['login_button'], contains(testFile.path));
+      expect(foundKeys['email_field'], contains(testFile.path));
     });
 
     test('should detect ValueKey(KeyConstants.*) patterns', () {
@@ -51,10 +61,20 @@ void main() {
         }
       ''');
 
+      // Create KeyConstants file for resolution
+      final keyConstantsFile = File('${libDir.path}/key_constants.dart');
+      keyConstantsFile.writeAsStringSync('''
+        class KeyConstants {
+          static const String passwordField = 'password_field';
+          static const String submitButton = 'submit_button';
+        }
+      ''');
+
       final foundKeys = KeyChecker.findKeysInProject(tempDir.path);
 
-      expect(foundKeys.keys, contains('passwordField'));
-      expect(foundKeys.keys, contains('submitButton'));
+      // Should find resolved values
+      expect(foundKeys.keys, contains('password_field'));
+      expect(foundKeys.keys, contains('submit_button'));
     });
 
     test('should detect finder methods with KeyConstants', () {
@@ -70,10 +90,20 @@ void main() {
         }
       ''');
 
+      // Create KeyConstants file for resolution
+      final keyConstantsFile = File('${libDir.path}/key_constants.dart');
+      keyConstantsFile.writeAsStringSync('''
+        class KeyConstants {
+          static const String loginButton = 'login_button';
+          static const String emailField = 'email_field';
+        }
+      ''');
+
       final foundKeys = KeyChecker.findKeysInProject(tempDir.path);
 
-      expect(foundKeys.keys, contains('loginButton'));
-      expect(foundKeys.keys, contains('emailField'));
+      // Should find resolved values
+      expect(foundKeys.keys, contains('login_button'));
+      expect(foundKeys.keys, contains('email_field'));
     });
 
     test('should still detect traditional key patterns', () {
@@ -207,18 +237,23 @@ void main() {
 
       final report = KeyChecker.generateKeyReport(tempDir.path);
 
-      expect(
-          report['totalKeysFound'],
-          equals(
-              5)); // 2 KeyConstants + 2 traditional + 1 from method definition
+      // Debug: Print what was found
+      print('Total keys found: ${report['totalKeysFound']}');
+      print('Traditional keys: ${report['traditionalKeys']}');
+      print('Constant keys: ${report['constantKeys']}');
+      print('Dynamic keys: ${report['dynamicKeys']}');
+
+      expect(report['totalKeysFound'],
+          equals(4)); // 2 resolved KeyConstants + 2 traditional keys
 
       final traditionalKeys = report['traditionalKeys'] as List<String>;
       expect(traditionalKeys, contains('old_key'));
       expect(traditionalKeys, contains('another_old_key'));
 
       final constantKeys = report['constantKeys'] as List<String>;
-      expect(constantKeys, contains('loginButton'));
-      expect(constantKeys, contains('emailField'));
+      // Should contain resolved values, not constant names
+      expect(constantKeys, contains('login_button'));
+      expect(constantKeys, contains('email_field'));
 
       final recommendations = report['recommendations'] as List<String>;
       expect(recommendations, isNotEmpty);

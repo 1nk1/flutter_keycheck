@@ -500,7 +500,7 @@ void _outputJsonReport(KeyValidationResult result) {
 
 void _showHelp(ArgParser parser) {
   print('''
-Flutter KeyCheck v2.2.0 - Validate automation keys in Flutter projects
+Flutter KeyCheck v2.3.3 - Validate automation keys in Flutter projects
 
 USAGE:
   flutter_keycheck [options]

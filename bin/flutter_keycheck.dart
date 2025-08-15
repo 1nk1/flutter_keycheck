@@ -684,7 +684,7 @@ void _showKeyConstantsValidation(String projectPath) {
 
   if (validation['hasKeyConstants'] as bool) {
     print(green('✅ KeyConstants class found'));
-    print(cyan('   📁 Location: ${validation['filePath']}'));
+    print(cyan(' 📁 Location: ${validation['filePath']}'));
 
     final constants = validation['constantsFound'] as List<String>;
     final methods = validation['methodsFound'] as List<String>;

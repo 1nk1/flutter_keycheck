@@ -1,16 +1,40 @@
-# Flutter KeyCheck
+# Flutter KeyCheck v3
 
 [![pub package](https://img.shields.io/pub/v/flutter_keycheck.svg)](https://pub.dev/packages/flutter_keycheck)
 [![pub points](https://img.shields.io/pub/points/flutter_keycheck)](https://pub.dev/packages/flutter_keycheck/score)
 [![Dart SDK Version](https://badgen.net/pub/sdk-version/flutter_keycheck)](https://pub.dev/packages/flutter_keycheck)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Actions](https://github.com/1nk1/flutter_keycheck/workflows/Dart/badge.svg)](https://github.com/1nk1/flutter_keycheck/actions)
+[![Dart 3](https://img.shields.io/badge/Dart-3.5%2B-blue)](https://dart.dev)
+[![CI Tested](https://img.shields.io/badge/CI-tested-green)](https://github.com/1nk1/flutter_keycheck/actions)
 
-A powerful CLI tool for validating Flutter automation keys in your codebase. Perfect for QA automation teams, CI/CD pipelines, and Flutter package development.
+A comprehensive Flutter widget key coverage analyzer with AST parsing, key↔handler linking, and enterprise CI/CD integration. Perfect for QA automation teams, Flutter development teams, and DevOps engineers.
+
+## 👥 Who is it for?
+
+**QA Automation Engineers** - Generate baseline keys, track critical UI elements, validate in CI/CD pipelines
+
+**Flutter Development Teams** - Ensure consistent key naming, manage technical debt, maintain testability
+
+**DevOps & CI Engineers** - Implement quality gates, automate validation, generate compliance reports
+
+**Package Maintainers** - Validate example apps, ensure demo completeness, maintain documentation accuracy
+
+## ⚡ What's New in v3
+
+### Scan Coverage vs Runtime Coverage
+**Important**: Flutter KeyCheck provides "Scan Coverage" - static analysis of which widgets have keys in your codebase. This is different from runtime code coverage that measures executed code during tests. Scan Coverage helps identify testability gaps before runtime.
+
+### Breaking Changes
+- **CLI redesigned** with subcommands: `scan`, `validate`, `baseline`, `diff`, `sync`, `report`
+- **Deterministic exit codes**: 0 (success), 1 (policy), 2 (config), 3 (I/O), 4 (internal)
+- **Schema v1.0** with standardized metrics (parse_success_rate as fraction 0.0-1.0)
+
+See [MIGRATION_v3.md](MIGRATION_v3.md) for upgrade instructions.
 
 ## ✨ Features
 
-### 🔑 KeyConstants Support (NEW in v2.1.9)
+### 🚀 AST-Based Analysis (NEW in v3.0)
 
 - **Modern key patterns** - Detects `Key(KeyConstants.*)` and `ValueKey(KeyConstants.*)` usage
 - **Dynamic key methods** - Supports `KeyConstants.*Key()` method patterns
@@ -68,24 +92,27 @@ dev_dependencies:
 
 ## 🚀 Quick Start
 
-### 1. Generate Keys from Your Project
+### 1. Scan Your Project
 
 ```bash
-# Generate all keys found in your project
-flutter_keycheck --generate-keys > keys/expected_keys.yaml
+# Scan and generate coverage report
+flutter_keycheck scan --report json,junit,md --out-dir reports
 
-# Generate only AQA automation keys
-flutter_keycheck --generate-keys --include-only="aqa_,e2e_" > keys/automation_keys.yaml
+# Scan with specific packages mode
+flutter_keycheck scan --packages workspace --report json
 ```
 
-### 2. Validate Keys
+### 2. Validate Coverage
 
 ```bash
-# Basic validation
-flutter_keycheck --keys keys/expected_keys.yaml
+# Primary validation command
+flutter_keycheck validate --strict
 
-# Strict validation for CI/CD
-flutter_keycheck --keys keys/expected_keys.yaml --strict --fail-on-extra
+# CI/CD validation (alias)
+flutter_keycheck ci-validate --fail-on-lost --protected-tags critical,aqa
+
+# With thresholds
+flutter_keycheck validate --threshold-file coverage-thresholds.yaml
 ```
 
 ### 3. Use Configuration File
@@ -93,44 +120,44 @@ flutter_keycheck --keys keys/expected_keys.yaml --strict --fail-on-extra
 Create `.flutter_keycheck.yaml` in your project root:
 
 ```yaml
-keys: keys/expected_keys.yaml
-strict: false
-verbose: false
-fail_on_extra: false
+version: 1  # Schema version (required for v3)
 
-# Focus on critical automation keys
-tracked_keys:
-  - e2e_login_submit_button
-  - aqa_signup_email_field
-  - e2e_checkout_process
+validate:
+  thresholds:
+    min_coverage: 0.8    # 80% widgets must have keys
+    max_drift: 10        # Max 10 keys can change
+    parse_success: 0.95  # 95% files must parse successfully
+  protected_tags:
+    - critical           # Critical user journeys
+    - aqa               # Automation test keys
+  fail_on_lost: true    # Fail if protected keys are removed
+  fail_on_extra: false  # Don't fail on new keys
 
-# Filter patterns for key generation and validation
-include_only:
-  - aqa_
-  - e2e_
-  - _button
-  - _field
-
-exclude:
-  - user.id
-  - token
-  - temp_
+scan:
+  packages: workspace    # 'workspace' or 'resolve'
+  include_tests: false   # Skip test files
+  include_generated: false  # Skip .g.dart files
+  cache: true           # Enable caching
 ```
 
 Then run:
 
 ```bash
-flutter_keycheck
+# Uses configuration file automatically
+flutter_keycheck validate
 ```
 
-### 4. KeyConstants Analysis
+### 4. CI/CD Integration
 
 ```bash
-# Validate KeyConstants class structure
-flutter_keycheck --validate-key-constants
+# GitLab CI example
+flutter_keycheck scan --report json,junit --out-dir reports
+flutter_keycheck validate --strict --fail-on-lost
+# Artifacts available in reports/
 
-# Generate KeyConstants usage report
-flutter_keycheck --key-constants-report
+# GitHub Actions example
+flutter_keycheck ci-validate --protected-tags critical,aqa
+if [ $? -eq 1 ]; then echo "Policy violation!"; exit 1; fi
 ```
 
 ## 🏷️ AQA/E2E Tagging Strategy
@@ -614,20 +641,32 @@ jobs:
 
 ```yaml
 stages:
-  - test
   - validate
 
-keycheck:
+variables:
+  PUB_CACHE: "$CI_PROJECT_DIR/.pub-cache"
+
+cache:
+  key: "${CI_PROJECT_NAME}"
+  paths:
+    - .pub-cache/
+
+validate:keycheck:
   stage: validate
   image: dart:stable
   before_script:
+    - dart --version
     - dart pub global activate flutter_keycheck
   script:
-    - flutter_keycheck --strict --fail-on-extra --report json > keycheck-report.json
+    - flutter_keycheck --config .flutter_keycheck_e2e.yaml --strict --fail-on-extra --report json || EXIT=$?
+    - mkdir -p reports && mv keycheck-report.json reports/ || true
+    - exit ${EXIT:-0}
   artifacts:
     when: always
+    paths:
+      - reports/
     reports:
-      junit: keycheck-report.json
+      junit: reports/keycheck-report.json
     expire_in: 1 week
   only:
     - merge_requests
@@ -837,6 +876,26 @@ void main() {
 3. **Avoid dynamic keys**: Don't use variables in key values
 4. **Regular validation**: Run in CI/CD to catch missing keys early
 5. **Track critical paths**: Use tracked_keys for essential user journeys
+
+## 🔒 Security & Safety
+
+Flutter KeyCheck is designed with security in mind:
+
+- **Read-only operations**: Only scans source code files, never modifies them
+- **No network access**: Works entirely offline, no data is sent anywhere
+- **No secrets exposure**: Does not read environment variables or configuration files with sensitive data
+- **Path restrictions**: Use `--path` to limit scanning to specific directories
+- **Exclude patterns**: Use `--exclude` to skip sensitive directories or files
+- **Safe for CI/CD**: Designed for automated environments with strict security policies
+
+Example of restricting scan scope:
+```bash
+# Scan only specific directories
+flutter_keycheck --path lib --exclude="lib/internal,lib/generated"
+
+# Exclude sensitive patterns
+flutter_keycheck --exclude="*.env,*.secret,config/"
+```
 
 ## 📦 Package Information
 

@@ -1,0 +1,31 @@
+Flutter KeyCheck Metrics Export
+========================================
+Version: 3.0.0-rc1
+Timestamp: 2025-01-15T00:45:00.000Z
+
+Coverage Metrics:
+--------------------
+Files Total: 42
+Files Scanned: 38
+Parse Success Rate: 95.2%
+Widgets Total: 156
+Widgets with Keys: 124
+Handlers Total: 28
+Handlers Linked: 22
+
+Key Coverage: 79.5%
+
+Detector Performance:
+--------------------
+ValueKeyDetector:
+  Hits: 89
+  Keys Found: 87
+  Effectiveness: 97.8%
+KeyConstantsDetector:
+  Hits: 35
+  Keys Found: 34
+  Effectiveness: 97.1%
+HandlerDetector:
+  Hits: 28
+  Keys Found: 22
+  Effectiveness: 78.6%

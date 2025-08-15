@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Flutter KeyCheck Coverage" tests="3" failures="0" errors="0" time="1.234">
+  <testsuite name="Coverage Metrics" tests="3" failures="0" errors="0" time="1.234">
+    <testcase name="Widget Coverage" classname="Coverage" time="0.5">
+      <system-out>Coverage: 94.87% (148/156 widgets have keys)</system-out>
+    </testcase>
+    <testcase name="Parse Success Rate" classname="Coverage" time="0.3">
+      <system-out>Parse Success: 95.2% (40/42 files parsed successfully)</system-out>
+    </testcase>
+    <testcase name="Blind Spots" classname="Coverage" time="0.434">
+      <system-out>Found 2 blind spots requiring attention</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

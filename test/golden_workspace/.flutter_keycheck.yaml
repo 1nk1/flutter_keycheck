@@ -1,0 +1,51 @@
+version: 3
+monorepo: false
+
+# Registry settings
+registry:
+  type: path
+  path: .flutter_keycheck/baseline.json
+
+# Scanning configuration
+scan:
+  packages: workspace
+  include_tests: true
+  include_generated: false
+  exclude_patterns:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+
+# Validation policies
+policies:
+  fail_on_lost: true
+  fail_on_rename: false
+  fail_on_extra: false
+  protected_tags:
+    - critical
+    - aqa
+  max_drift: 10
+
+# Reporting configuration
+report:
+  formats:
+    - json
+    - junit
+    - md
+  out_dir: reports
+
+# Tag definitions for this workspace
+tags:
+  critical:
+    - login_button
+    - email_field
+    - password_field
+    - submit_button
+  aqa:
+    - home_scaffold
+    - login_scaffold
+    - settings_scaffold
+  navigation:
+    - settings_button
+    - forgot_password_link
+    - profile_tile
+    - logout_tile

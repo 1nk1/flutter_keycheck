@@ -7,6 +7,8 @@
 .pub/
 build/
 
+.claude
+
 # IDEs
 .idea/
 .vscode/

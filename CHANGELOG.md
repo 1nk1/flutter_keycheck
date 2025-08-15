@@ -5,7 +5,89 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.3.3] - 2024-06-24
+## [3.0.0-rc.1] - 2025-01-15
+
+### 🚀 BREAKING CHANGES - Major v3 Release
+
+Complete CLI redesign with subcommands, deterministic exit codes, and v1.0 schema.
+
+### ⚠️ Breaking Changes
+
+#### CLI Migration to Subcommands
+- **Old**: `flutter_keycheck --keys file.yaml --strict`
+- **New**: `flutter_keycheck validate --strict`
+- Primary command is now `validate` (with `ci-validate` alias)
+- All functionality moved to explicit subcommands
+
+#### Exit Codes Standardized
+- `0`: Success - all validations passed
+- `1`: Policy violation - thresholds not met, critical keys missing
+- `2`: Configuration error - invalid config, missing files
+- `3`: I/O or sync error - file access, git operations
+- `4`: Internal error - unexpected failures
+
+#### Schema v1.0
+- New standardized JSON schema for scan coverage metrics
+- `parse_success_rate` is now a fraction (0.0 to 1.0), not percentage
+- Structured metrics with `files_total`, `files_scanned`, `widgets_total`, etc.
+- Detector effectiveness tracking with `detectors[]` array
+
+### ✨ New Features
+
+#### Core Commands
+- **scan**: Build current snapshot with AST parsing and key↔handler linking
+- **baseline**: Create/update/delete baselines for tracking changes
+- **diff**: Compare snapshots to detect key drift
+- **validate**: Primary validation command (ci-validate alias available)
+- **sync**: Sync with external key registries (git, API)
+- **report**: Generate various report formats
+
+#### Advanced Scanning
+- AST-based widget tree analysis with parallel processing (8-12 isolates)
+- Key↔handler linking to track widget-to-event connections
+- Blind spot detection for untestable areas
+- Cache system in `.dart_tool/flutter_keycheck/` with POSIX paths
+- Incremental scanning with `--since` for git-based changes
+
+#### Enterprise Features
+- Multi-package monorepo support with `--packages workspace|resolve`
+- Protected key tags for critical automation paths
+- Maximum drift thresholds for controlled evolution
+- External registry sync (GitLab, GitHub, custom APIs)
+
+### 🔧 Improvements
+
+#### Performance
+- Parallel file processing with isolate pool
+- Smart caching reduces scan time by 60-80%
+- Incremental scanning for large codebases
+- POSIX path normalization for cross-platform consistency
+
+#### CI/CD Integration
+- GitLab CI template with artifacts and metrics export
+- GitHub Actions workflow with deterministic exit codes
+- JUnit XML reports for test result parsing
+- Markdown reports for PR/MR comments
+- JSON schema v1.0 for programmatic consumption
+
+### 📊 Metrics Collection
+
+New v1.0 schema provides:
+- `parse_success_rate`: Fraction of successfully parsed files (0.0-1.0)
+- `widgets_total` / `widgets_with_keys`: Key coverage metrics
+- `handlers_total` / `handlers_linked`: Event handler tracking
+- `detectors[]`: Individual detector performance metrics
+- `blind_spots[]`: Areas that cannot be properly tested
+
+### 🔄 Migration Guide
+
+See [MIGRATION_v3.md](MIGRATION_v3.md) for detailed migration instructions.
+
+### Links
+- [Pull Request #42](https://github.com/1nk1/flutter_keycheck/pull/42)
+- [GitLab MR #15](https://gitlab.com/flutter/flutter_keycheck/-/merge_requests/15)
+
+## [2.3.3] - 2025-01-15
 
 ### 🚀 Major Release: KeyConstants Pattern Support
 

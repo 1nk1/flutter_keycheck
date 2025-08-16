@@ -170,31 +170,16 @@ class SemanticKeyDetector extends KeyDetector {
 
   @override
   DetectionResult? detect(MethodInvocation node) {
-    // Check for Semantics widget with identifier
-    if (node.methodName.name == 'Semantics') {
-      for (final arg in node.argumentList.arguments ?? []) {
-        if (arg is NamedExpression) {
-          if (arg.name.label.name == 'identifier') {
-            final value = arg.expression;
-            if (value is StringLiteral) {
-              return DetectionResult(
-                key: value.stringValue ?? '',
-                detector: name,
-                tags: ['semantic', 'accessibility'],
-              );
-            }
-          }
-        }
-      }
-    }
+    // This detector doesn't handle method invocations
+    // Semantics is a widget constructor, not a method
     return null;
   }
 
   @override
   DetectionResult? detectExpression(Expression expression) {
-    if (expression is MethodInvocation) {
-      return detect(expression);
-    }
+    // Semantics widgets are handled differently
+    // They use identifier parameter, not key parameter
+    // This is handled in the AST scanner's _checkSemanticsWidget method
     return null;
   }
 }

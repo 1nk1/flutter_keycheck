@@ -507,6 +507,8 @@ String _getSampleJson() {
       mainFile = File('test/golden_workspace/lib/main.dart');
     }
     if (mainFile.existsSync()) {
+      // Debug: print which file we're reading
+      stderr.writeln('[DEBUG] Reading keys from: ${mainFile.path}');
       final content = mainFile.readAsStringSync();
       final lines = content.split('\n');
 
@@ -535,9 +537,12 @@ String _getSampleJson() {
           }
         }
       }
+      // Debug: print how many keys found
+      stderr.writeln('[DEBUG] Found ${keys.length} keys in file');
     }
   } catch (e) {
     // Fallback to default if scanning fails
+    stderr.writeln('[DEBUG] Error scanning file: $e');
   }
 
   // If no keys found or file doesn't exist, use the baseline

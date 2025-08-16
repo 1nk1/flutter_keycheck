@@ -223,8 +223,8 @@ class AstScannerV3 {
           filePath: filePath,
         );
 
-        // Visit AST
-        result.unit.visitChildren(visitor);
+        // Visit AST - use accept to properly traverse the entire tree
+        result.unit.accept(visitor);
 
         // Store analysis
         fileAnalyses[filePath] = analysis;
@@ -413,10 +413,86 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
   });
 
   @override
+  void visitClassDeclaration(ClassDeclaration node) {
+    // Make sure we visit the class body
+    super.visitClassDeclaration(node);
+  }
+
+  @override
+  void visitMethodDeclaration(MethodDeclaration node) {
+    // Make sure we visit the method body
+    super.visitMethodDeclaration(node);
+  }
+
+  @override
+  void visitFunctionDeclaration(FunctionDeclaration node) {
+    // Also handle top-level functions
+    super.visitFunctionDeclaration(node);
+  }
+
+  @override
   void visitMethodInvocation(MethodInvocation node) {
     analysis.nodesAnalyzed++;
 
-    // Check each detector
+    // Check if this might be a widget constructor (when Flutter types aren't resolved)
+    final methodName = node.methodName.name;
+
+    // Special handling for Semantics widget
+    if (methodName == 'Semantics' && node.target == null) {
+      analysis.widgetCount++;
+      analysis.widgetTypes.add(methodName);
+
+      // Semantics uses 'identifier' parameter instead of 'key'
+      for (final arg in node.argumentList.arguments) {
+        if (arg is NamedExpression && arg.name.label.name == 'identifier') {
+          final value = arg.expression;
+          if (value is StringLiteral) {
+            final result = DetectionResult(
+              key: value.stringValue ?? '',
+              detector: 'Semantics',
+              tags: ['semantic', 'accessibility'],
+            );
+            _recordKey(result.key, node,
+                detectors.firstWhere((d) => d.name == 'Semantics'), result);
+            analysis.widgetsWithKeys++;
+          }
+        }
+      }
+    } else if (_isWidget(methodName) && node.target == null) {
+      // This is likely a widget constructor being parsed as a method
+      analysis.widgetCount++;
+      analysis.widgetTypes.add(methodName);
+
+      // Check for key parameter
+      NamedExpression? keyArg;
+      try {
+        keyArg = node.argumentList.arguments
+            .whereType<NamedExpression>()
+            .firstWhere((arg) => arg.name.label.name == 'key');
+      } catch (_) {
+        keyArg = null;
+      }
+
+      if (keyArg != null) {
+        analysis.widgetsWithKeys++;
+
+        // Extract key value using detectors
+        for (final detector in detectors) {
+          final result = detector.detectExpression(keyArg.expression);
+          if (result != null) {
+            _recordKey(result.key, node, detector, result);
+            break;
+          }
+        }
+
+        // Check for handlers in this widget
+        _checkMethodInvocationHandlers(node);
+      } else {
+        analysis.uncoveredWidgetTypes.add(methodName);
+      }
+    }
+
+    // Check each detector for regular method invocations (like ValueKey)
     for (final detector in detectors) {
       final result = detector.detect(node);
       if (result != null) {
@@ -427,6 +503,7 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
     // Check for action handlers
     _checkActionHandler(node);
 
+    // Call super to continue visiting
     super.visitMethodInvocation(node);
   }
 
@@ -436,6 +513,7 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
 
     // Track widget creation
     final typeName = node.constructorName.type.toString();
+
     if (_isWidget(typeName)) {
       analysis.widgetCount++;
       analysis.widgetTypes.add(typeName);
@@ -455,13 +533,23 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
           final result = detector.detectExpression(keyArg.expression);
           if (result != null) {
             _recordKey(result.key, node, detector, result);
+            break; // Found a key, stop checking other detectors
           }
         }
       } else {
         analysis.uncoveredWidgetTypes.add(typeName);
       }
+
+      // Check for handlers in this widget
+      _checkWidgetHandlers(node);
     }
 
+    // Also check for Semantics widget specifically
+    if (typeName == 'Semantics') {
+      _checkSemanticsWidget(node);
+    }
+
+    // Call super to continue visiting children
     super.visitInstanceCreationExpression(node);
   }
 
@@ -535,6 +623,144 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
     }
   }
 
+  void _checkMethodInvocationHandlers(MethodInvocation node) {
+    // Check for handlers in named arguments (for widgets parsed as methods)
+    final handlerPatterns = [
+      'onPressed',
+      'onTap',
+      'onSubmitted',
+      'onChanged',
+      'onLongPress',
+      'onSaved',
+      'onSelected',
+      'onDoubleTap'
+    ];
+
+    String? widgetKey;
+    // First, find if this widget has a key
+    NamedExpression? keyArg;
+    try {
+      keyArg = node.argumentList.arguments
+          .whereType<NamedExpression>()
+          .firstWhere((arg) => arg.name.label.name == 'key');
+    } catch (_) {
+      keyArg = null;
+    }
+
+    if (keyArg != null) {
+      for (final detector in detectors) {
+        final result = detector.detectExpression(keyArg.expression);
+        if (result != null) {
+          widgetKey = result.key;
+          break;
+        }
+      }
+    }
+
+    // If widget has a key, check for handlers
+    if (widgetKey != null) {
+      for (final arg in node.argumentList.arguments) {
+        if (arg is NamedExpression) {
+          final name = arg.name.label.name;
+          if (handlerPatterns.contains(name)) {
+            final usage = keyUsages[widgetKey];
+            if (usage != null) {
+              usage.handlers.add(HandlerInfo(
+                type: name,
+                method: _extractHandlerFromExpression(arg.expression),
+                file: filePath,
+                line: arg.offset,
+              ));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void _checkWidgetHandlers(InstanceCreationExpression node) {
+    // Check for handlers in named arguments
+    final handlerPatterns = [
+      'onPressed',
+      'onTap',
+      'onSubmitted',
+      'onChanged',
+      'onLongPress',
+      'onSaved',
+      'onSelected',
+      'onDoubleTap'
+    ];
+
+    String? widgetKey;
+    // First, find if this widget has a key
+    final keyArgs = node.argumentList.arguments
+        .whereType<NamedExpression>()
+        .where((arg) => arg.name.label.name == 'key')
+        .toList();
+    final keyArg = keyArgs.isNotEmpty ? keyArgs.first : null;
+
+    if (keyArg != null) {
+      for (final detector in detectors) {
+        final result = detector.detectExpression(keyArg.expression);
+        if (result != null) {
+          widgetKey = result.key;
+          break;
+        }
+      }
+    }
+
+    // If widget has a key, check for handlers
+    if (widgetKey != null) {
+      for (final arg in node.argumentList.arguments) {
+        if (arg is NamedExpression) {
+          final name = arg.name.label.name;
+          if (handlerPatterns.contains(name)) {
+            final usage = keyUsages[widgetKey];
+            if (usage != null) {
+              usage.handlers.add(HandlerInfo(
+                type: name,
+                method: _extractHandlerFromExpression(arg.expression),
+                file: filePath,
+                line: arg.offset,
+              ));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void _checkSemanticsWidget(InstanceCreationExpression node) {
+    // Check for Semantics widget with identifier
+    for (final arg in node.argumentList.arguments) {
+      if (arg is NamedExpression && arg.name.label.name == 'identifier') {
+        final value = arg.expression;
+        if (value is StringLiteral) {
+          final result = DetectionResult(
+            key: value.stringValue ?? '',
+            detector: 'Semantics',
+            tags: ['semantic', 'accessibility'],
+          );
+          _recordKey(result.key, node,
+              detectors.firstWhere((d) => d.name == 'Semantics'), result);
+        }
+      }
+    }
+  }
+
+  String? _extractHandlerFromExpression(Expression expression) {
+    if (expression is SimpleIdentifier) {
+      return expression.name;
+    }
+    if (expression is FunctionExpression) {
+      return '<anonymous>';
+    }
+    if (expression is MethodInvocation) {
+      return expression.methodName.name;
+    }
+    return null;
+  }
+
   String _getContext(AstNode node) {
     AstNode? current = node.parent;
     while (current != null) {
@@ -583,7 +809,18 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
           'Padding',
           'Expanded',
           'ListView',
-          'GridView'
+          'GridView',
+          'Container',
+          'Text',
+          'Image',
+          'Icon',
+          'MaterialApp',
+          'CupertinoApp',
+          'Semantics',
+          'ElevatedButton',
+          'TextButton',
+          'IconButton',
+          'OutlinedButton'
         ].contains(typeName);
   }
 }

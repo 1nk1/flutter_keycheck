@@ -154,8 +154,9 @@ void main() {
     });
 
     test('validates snapshot structure consistency', () async {
-      final expectedFile = File(expectedSnapshotPath);
-      final expectedJson = jsonDecode(await expectedFile.readAsString());
+      // Note: expectedFile could be used to validate structure
+      // final expectedFile = File(expectedSnapshotPath);
+      // final expectedJson = jsonDecode(await expectedFile.readAsString());
 
       // Run actual scan
       final result = await Process.run(

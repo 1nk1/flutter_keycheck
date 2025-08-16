@@ -182,7 +182,8 @@ void main() {
             reason: 'Validation with coverage thresholds should pass');
 
         // Verify it's using the thresholds
-        final output = result.stdout.toString();
+        // Note: output could be checked for threshold references
+        // final output = result.stdout.toString();
         // The tool should reference thresholds in its output when using them
       });
 

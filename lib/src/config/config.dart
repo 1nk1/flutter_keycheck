@@ -1,6 +1,5 @@
 // Legacy config class for backward compatibility
 import 'dart:io';
-import 'package:path/path.dart' as path;
 import 'package:yaml/yaml.dart';
 
 class Config {

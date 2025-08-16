@@ -1,5 +1,6 @@
 // Shim for git registry - re-exports key registry
-export 'key_registry_v3.dart';
+import 'key_registry_v3.dart' show GitKeyRegistry;
+export 'key_registry_v3.dart' show GitKeyRegistry;
 
 // Type alias for compatibility
-typedef GitRegistry = KeyRegistryV3;
+typedef GitRegistry = GitKeyRegistry;

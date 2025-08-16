@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:flutter_keycheck/src/models/scan_result.dart';
 

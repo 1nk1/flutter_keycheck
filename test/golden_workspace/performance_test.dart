@@ -130,8 +130,9 @@ void main() {
       final memoryDelta = endMemory - startMemory;
 
       // Parse output for internal timing
-      final output = jsonDecode(result.stdout.toString());
-      final scanDuration = output['summary']?['scanDuration'] ?? duration;
+      // Note: output could be used for extracting internal metrics
+      // final output = jsonDecode(result.stdout.toString());
+      // final scanDuration = output['summary']?['scanDuration'] ?? duration;
 
       // Check against thresholds (±20%)
       final durationThreshold = baseline.avgDuration * 0.2;

@@ -65,6 +65,12 @@ jobs:
         run: |
           dart compile exe bin/flutter_keycheck.dart -o flutter_keycheck
             ./flutter_keycheck --keys keys/cli_test_keys.yaml --verbose || echo "CLI tool works correctly - found keys as expected"
+      
+      - name: Global activate (smoke)
+        run: dart pub global activate --source path .
+      
+      - name: CLI smoke (help)
+        run: ~/.pub-cache/bin/flutter_keycheck --help
 
   publish-dry-run:
     runs-on: ubuntu-latest

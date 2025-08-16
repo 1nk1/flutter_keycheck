@@ -106,6 +106,27 @@ dev_dependencies:
 
 ## 🚀 Quick Start
 
+### Global Installation
+```bash
+# Install globally
+dart pub global activate flutter_keycheck
+
+# Run commands
+flutter_keycheck scan --report json
+flutter_keycheck validate --strict
+flutter_keycheck baseline create
+```
+
+### Local Installation
+```bash
+# Add to dev_dependencies
+dart pub add --dev flutter_keycheck
+
+# Run with dart run
+dart run flutter_keycheck:flutter_keycheck scan --report json
+dart run flutter_keycheck:flutter_keycheck validate --strict
+```
+
 ### 1. Scan Your Project
 
 ```bash

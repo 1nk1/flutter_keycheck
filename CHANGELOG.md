@@ -5,11 +5,19 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0-rc.1] - 2025-01-15
+## [3.0.0-rc.1] - 2025-01-16
 
 ### 🚀 BREAKING CHANGES - Major v3 Release
 
 Complete CLI redesign with subcommands, deterministic exit codes, and v1.0 schema.
+
+### ⚠️ BREAKING: Deleted Legacy Binaries
+- **Removed**: `bin/flutter_keycheck_v2.dart`
+- **Removed**: `bin/flutter_keycheck_v3.dart`  
+- **Removed**: `bin/flutter_keycheck_v3_complete.dart`
+- **Removed**: `bin/flutter_keycheck_v3_integrated.dart`
+- **Removed**: `bin/flutter_keycheck_v3_proper.dart`
+- **Unified**: Only `bin/flutter_keycheck.dart` remains
 
 ### ⚠️ Breaking Changes
 

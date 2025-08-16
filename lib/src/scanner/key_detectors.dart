@@ -124,8 +124,8 @@ class ValueKeyDetector extends KeyDetector {
 }
 
 /// Detector for Key patterns
-class KeyDetector extends KeyDetector {
-  KeyDetector({Map<String, dynamic>? config})
+class BasicKeyDetector extends KeyDetector {
+  BasicKeyDetector({Map<String, dynamic>? config})
       : super(
           name: 'Key',
           description: 'Detects Key(...) patterns',
@@ -353,7 +353,7 @@ class DetectorFactory {
     
     // Always include built-in detectors
     detectors.add(ValueKeyDetector());
-    detectors.add(KeyDetector());
+    detectors.add(BasicKeyDetector());
     detectors.add(FindByKeyDetector());
     detectors.add(SemanticsDetector());
     

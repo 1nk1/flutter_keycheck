@@ -1,170 +1,129 @@
-import 'package:flutter/material.dart';
+// Mock Flutter code for testing - no actual Flutter imports needed
+// This file simulates Flutter code structure for AST analysis testing
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp {
+  const MyApp({this.key});
+  
+  final Key? key = const ValueKey('app_root');
+}
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      key: const ValueKey('app_root'),
-      title: 'Golden Workspace',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const HomeScreen(),
+class HomeScreen {
+  const HomeScreen({this.key});
+  
+  final Key? key = const ValueKey('home_scaffold');
+  
+  void build() {
+    // Mock widgets with keys
+    final appBar = AppBar(
+      key: const ValueKey('home_appbar'),
+    );
+    
+    final loginButton = ElevatedButton(
+      key: const ValueKey('login_button'), // Critical key
+    );
+    
+    final settingsButton = ElevatedButton(
+      key: const ValueKey('settings_button'),
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      key: const ValueKey('home_scaffold'),
-      appBar: AppBar(
-        key: const ValueKey('home_appbar'),
-        title: const Text('Golden Workspace'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Test Application',
-              key: ValueKey('home_title'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              key: const ValueKey('login_button'), // Critical key
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-              },
-              child: const Text('Login'),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              key: const ValueKey('settings_button'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                );
-              },
-              child: const Text('Settings'),
-            ),
-          ],
-        ),
-      ),
+class LoginScreen {
+  const LoginScreen({this.key});
+  
+  final Key? key = const ValueKey('login_scaffold');
+  
+  void build() {
+    // Mock form fields with keys
+    final emailField = TextField(
+      key: const ValueKey('email_field'), // Critical key
+    );
+    
+    final passwordField = TextField(
+      key: const ValueKey('password_field'), // Critical key
+    );
+    
+    final submitButton = ElevatedButton(
+      key: const ValueKey('submit_button'), // Critical key
+    );
+    
+    final forgotPasswordLink = TextButton(
+      key: const ValueKey('forgot_password_link'),
     );
   }
 }
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      key: const ValueKey('login_scaffold'),
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              key: const ValueKey('email_field'), // Critical key
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              key: const ValueKey('password_field'), // Critical key
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              key: const ValueKey('submit_button'), // Critical key
-              onPressed: _handleLogin,
-              child: const Text('Submit'),
-            ),
-            TextButton(
-              key: const ValueKey('forgot_password_link'),
-              onPressed: () {},
-              child: const Text('Forgot Password?'),
-            ),
-          ],
-        ),
-      ),
+class SettingsScreen {
+  const SettingsScreen({this.key});
+  
+  final Key? key = const ValueKey('settings_scaffold');
+  
+  void build() {
+    final darkModeSwitch = SwitchListTile(
+      key: const ValueKey('dark_mode_switch'),
     );
-  }
-
-  void _handleLogin() {
-    // Login logic
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+    
+    final profileTile = ListTile(
+      key: const ValueKey('profile_tile'),
+    );
+    
+    final logoutTile = ListTile(
+      key: const ValueKey('logout_tile'),
+    );
   }
 }
 
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+// Mock Flutter classes (no actual imports)
+class Key {
+  const Key(this.value);
+  final String value;
+}
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      key: const ValueKey('settings_scaffold'),
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
-      body: ListView(
-        children: [
-          SwitchListTile(
-            key: const ValueKey('dark_mode_switch'),
-            title: const Text('Dark Mode'),
-            value: false,
-            onChanged: (value) {},
-          ),
-          ListTile(
-            key: const ValueKey('profile_tile'),
-            title: const Text('Profile'),
-            onTap: () {},
-          ),
-          ListTile(
-            key: const ValueKey('logout_tile'),
-            title: const Text('Logout'),
-            onTap: () {},
-          ),
-        ],
-      ),
-    );
-  }
+class ValueKey extends Key {
+  const ValueKey(String value) : super(value);
+}
+
+class Widget {
+  const Widget({this.key});
+  final Key? key;
+}
+
+class StatelessWidget extends Widget {
+  const StatelessWidget({Key? key}) : super(key: key);
+}
+
+class StatefulWidget extends Widget {
+  const StatefulWidget({Key? key}) : super(key: key);
+}
+
+class ElevatedButton extends Widget {
+  const ElevatedButton({Key? key}) : super(key: key);
+}
+
+class TextField extends Widget {
+  const TextField({Key? key}) : super(key: key);
+}
+
+class TextButton extends Widget {
+  const TextButton({Key? key}) : super(key: key);
+}
+
+class AppBar extends Widget {
+  const AppBar({Key? key}) : super(key: key);
+}
+
+class SwitchListTile extends Widget {
+  const SwitchListTile({Key? key}) : super(key: key);
+}
+
+class ListTile extends Widget {
+  const ListTile({Key? key}) : super(key: key);
+}
+
+void runApp(Widget app) {
+  // Mock implementation
 }

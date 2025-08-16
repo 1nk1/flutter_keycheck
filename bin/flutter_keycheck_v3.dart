@@ -23,7 +23,7 @@ void main(List<String> arguments) async {
   try {
     final results = parser.parse(arguments);
     
-    if (results['version']) {
+    if (results['version'] == true) {
       print('flutter_keycheck version 3.0.0-rc.1');
       if (arguments.contains('--version')) {
         print('Dart SDK version: ${Platform.version.split(' ').first}');
@@ -31,7 +31,7 @@ void main(List<String> arguments) async {
       exit(0);
     }
 
-    if (results['help'] || results.command == null) {
+    if (results['help'] == true || results.command == null) {
       printHelp(parser);
       exit(0);
     }

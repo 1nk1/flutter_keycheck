@@ -38,7 +38,7 @@ class AstScannerV3 {
     // Initialize built-in detectors
     detectors = [
       ValueKeyDetector(),
-      KeyDetector(),
+      BasicKeyDetector(),
       ConstKeyDetector(),
       SemanticKeyDetector(),
       TestKeyDetector(),

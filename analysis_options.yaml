@@ -25,14 +25,20 @@ analyzer:
     cast_from_null_always_fails: ignore
   exclude:
     - example/**
-    - lib/src/scanner/ast_scanner.dart
-    - lib/src/scanner/key_detectors.dart
     - test/golden_workspace/lib/**
     - test/golden_workspace/test/golden_workspace/**
     - test_legacy/**
+    # Legacy v2 files that should be excluded
     - lib/src/checker.dart
     - lib/src/cli.dart
-    - lib/src/commands/**
+    - lib/src/scanner/ast_scanner.dart
+    - lib/src/scanner/key_detectors.dart
+    - lib/src/commands/base_command.dart
+    - lib/src/commands/scan_command.dart
+    - lib/src/commands/validate_command.dart
+    - lib/src/commands/report_command.dart
+    - lib/src/commands/diff_command.dart
+    - lib/src/commands/sync_command.dart  # This extends old BaseCommand
 
 linter:
   rules:

@@ -226,3 +226,118 @@ class TestKeyDetector extends KeyDetector {
     return null;
   }
 }
+
+/// Detector for MaterialKey usage
+class MaterialKeyDetector extends KeyDetector {
+  @override
+  String get name => 'MaterialKey';
+
+  @override
+  DetectionResult? detect(MethodInvocation node) {
+    // Not typically a method invocation
+    return null;
+  }
+
+  @override
+  DetectionResult? detectExpression(Expression expression) {
+    if (expression is InstanceCreationExpression) {
+      final typeName = expression.constructorName.type.toString();
+      if (typeName == 'MaterialKey') {
+        final arg = expression.argumentList.arguments.isNotEmpty
+            ? expression.argumentList.arguments.first
+            : null;
+        if (arg is StringLiteral) {
+          return DetectionResult(
+            key: arg.stringValue ?? '',
+            detector: name,
+            tags: ['material', 'ui'],
+          );
+        }
+      }
+    }
+    return null;
+  }
+}
+
+/// Detector for CupertinoKey usage  
+class CupertinoKeyDetector extends KeyDetector {
+  @override
+  String get name => 'CupertinoKey';
+
+  @override
+  DetectionResult? detect(MethodInvocation node) {
+    // Not typically a method invocation
+    return null;
+  }
+
+  @override
+  DetectionResult? detectExpression(Expression expression) {
+    if (expression is InstanceCreationExpression) {
+      final typeName = expression.constructorName.type.toString();
+      if (typeName == 'CupertinoKey') {
+        final arg = expression.argumentList.arguments.isNotEmpty
+            ? expression.argumentList.arguments.first
+            : null;
+        if (arg is StringLiteral) {
+          return DetectionResult(
+            key: arg.stringValue ?? '',
+            detector: name,
+            tags: ['cupertino', 'ios', 'ui'],
+          );
+        }
+      }
+    }
+    return null;
+  }
+}
+
+/// Detector for IntegrationTestKey usage
+class IntegrationTestKeyDetector extends KeyDetector {
+  @override
+  String get name => 'IntegrationTestKey';
+
+  @override
+  DetectionResult? detect(MethodInvocation node) {
+    // Not typically a method invocation
+    return null;
+  }
+
+  @override
+  DetectionResult? detectExpression(Expression expression) {
+    // This detector would handle key: "..." patterns in integration tests
+    // The actual detection happens via regex in text-based scanning
+    return null;
+  }
+}
+
+/// Detector for PatrolFinder usage
+class PatrolFinderDetector extends KeyDetector {
+  @override
+  String get name => 'PatrolFinder';
+
+  @override
+  DetectionResult? detect(MethodInvocation node) {
+    // Check for $('key') pattern - this is Patrol's finder syntax
+    if (node.methodName.name == r'$') {
+      final arg = node.argumentList.arguments.isNotEmpty
+          ? node.argumentList.arguments.first
+          : null;
+      if (arg is StringLiteral) {
+        return DetectionResult(
+          key: arg.stringValue ?? '',
+          detector: name,
+          tags: ['patrol', 'test', 'e2e'],
+        );
+      }
+    }
+    return null;
+  }
+
+  @override
+  DetectionResult? detectExpression(Expression expression) {
+    if (expression is MethodInvocation) {
+      return detect(expression);
+    }
+    return null;
+  }
+}

@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_keycheck/src/cli/cli_runner.dart';
 import 'package:flutter_keycheck/src/commands/base_command_v3.dart';
+import 'package:flutter_keycheck/src/config/config_v3.dart' as config_v3;
+import 'package:flutter_keycheck/src/models/scan_result.dart';
 import 'package:flutter_keycheck/src/policy/policy_engine.dart';
 import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 import 'package:flutter_keycheck/src/models/validation_result.dart';
@@ -88,8 +90,10 @@ class ValidateCommandV3 extends BaseCommandV3 {
       final scanResult = await scanner.scan();
 
       // Configure policy engine
-      final policyEngine = PolicyEngine(
-        strict: argResults!['strict'] as bool,
+      final policyEngine = PolicyEngine();
+      
+      // Create policy config from arguments
+      final policyConfig = PolicyConfig(
         failOnLost: argResults!['fail-on-lost'] as bool,
         failOnRename: argResults!['fail-on-rename'] as bool,
         failOnExtra: argResults!['fail-on-extra'] as bool,
@@ -101,6 +105,7 @@ class ValidateCommandV3 extends BaseCommandV3 {
       final validationResult = policyEngine.validate(
         baseline: baseline,
         current: scanResult,
+        config: policyConfig,
       );
 
       // Log results
@@ -133,7 +138,7 @@ class ValidateCommandV3 extends BaseCommandV3 {
     }
   }
 
-  Future<ScanResult?> _loadBaseline(ConfigV3 config) async {
+  Future<ScanResult?> _loadBaseline(config_v3.ConfigV3 config) async {
     final baselineSource = argResults!['baseline'] as String;
 
     if (baselineSource == 'registry') {

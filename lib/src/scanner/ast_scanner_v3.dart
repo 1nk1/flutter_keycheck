@@ -50,6 +50,10 @@ class AstScannerV3 {
       ConstKeyDetector(),
       SemanticKeyDetector(),
       TestKeyDetector(),
+      MaterialKeyDetector(),
+      CupertinoKeyDetector(),
+      IntegrationTestKeyDetector(),
+      PatrolFinderDetector(),
     ];
   }
 

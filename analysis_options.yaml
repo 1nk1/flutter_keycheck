@@ -39,7 +39,7 @@ linter:
     - always_declare_return_types
     - avoid_empty_else
     - avoid_relative_lib_imports
-    - avoid_slow_async_io
+    # - avoid_slow_async_io  # Disabled: We need async file operations for CLI tool
     - avoid_type_to_string
     - avoid_types_as_parameter_names
     - avoid_web_libraries_in_flutter

@@ -2,6 +2,7 @@
 
 /// Export metrics for GitLab CI metrics collection
 /// Used to track scan coverage metrics over time
+library;
 
 import 'dart:convert';
 import 'dart:io';

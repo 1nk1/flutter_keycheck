@@ -1,23 +1,11 @@
-# Flutter KeyCheck Coverage Thresholds
-# These thresholds define minimum acceptable coverage levels
-
-# Widget key coverage threshold (percentage)
-widget_coverage: 80.0
-
-# Handler linkage threshold (percentage)  
-handler_coverage: 75.0
-
-# Parse success rate threshold (percentage)
-parse_success_rate: 95.0
-
-# Detector effectiveness threshold (percentage)
-detector_effectiveness: 70.0
-
-# Enable strict mode for CI/CD
-strict: true
-
-# Fail on missing keys
-fail_on_missing: true
-
-# Warning level for extra keys
-warn_on_extra: true
+schema_version: 1
+thresholds:
+  min_parse_rate: 0.80
+  min_files_scanned_ratio: 0.98
+  min_widget_key_ratio: 0.75
+  min_handler_link_ratio: 0.70
+policies:
+  fail_on_lost: true
+  fail_on_rename: false
+  fail_on_extra: false
+protected_tags: ["critical", "aqa"]

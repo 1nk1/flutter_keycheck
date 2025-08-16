@@ -1,183 +1,46 @@
-## GitLab CI/CD Configuration for Flutter KeyCheck v3
-## Supports RC testing with real artifacts
-
 workflow:
   rules:
     - if: $CI_COMMIT_TAG
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "flutter_keycheck_v3"
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH
 
 stages:
-  - analyze
-  - test
   - validate
-  - publish
+  - release
 
-variables:
-  PUB_CACHE: "$CI_PROJECT_DIR/.pub-cache"
-  FLUTTER_VERSION: "stable"
-  DART_VERSION: "stable"
-  KEY_REGISTRY_REPO: "${KEY_REGISTRY_REPO:-git@gitlab.com:org/key-registry.git}"
-
-# Cache configuration
-.cache_template: &cache_config
-  cache:
-    key: "pub-${CI_COMMIT_REF_SLUG}"
-    paths:
-      - .pub-cache/
-      - .dart_tool/
-    policy: pull-push
-
-# Base job for Dart commands
-.dart_job:
-  image: dart:${DART_VERSION}
-  <<: *cache_config
-  before_script:
-    - export PATH="$PATH:$PUB_CACHE/bin"
-    - dart pub global activate flutter_keycheck || true
-    - dart pub get
-
-# Analyze code quality
-analyze:code:
-  extends: .dart_job
-  stage: analyze
-  script:
-    - dart format --set-exit-if-changed .
-    - dart analyze --fatal-infos
-  artifacts:
-    when: always
-    reports:
-      codequality: code-quality-report.json
-    expire_in: 1 week
-
-# Run tests
-test:unit:
-  extends: .dart_job
-  stage: test
-  script:
-    - dart test --reporter=json > test-results.json || true
-    - dart test --reporter=compact
-  coverage: '/\s*lines\.*:\s*(\d+\.\d+)%/'
-  artifacts:
-    when: always
-    paths:
-      - test-results.json
-    reports:
-      junit: test-results.xml
-    expire_in: 1 week
-
-# Validate keys in CI
-validate:keys:
-  extends: .dart_job
-  stage: validate
-  script:
-    # Sync with registry
-    - |
-      if [ -n "$KEY_REGISTRY_REPO" ]; then
-        dart run bin/flutter_keycheck_v3.dart sync --registry git --repo "$KEY_REGISTRY_REPO" --action pull
-      fi
-    
-    # Run scan
-    - dart run bin/flutter_keycheck_v3.dart scan --packages resolve --report json --out-dir reports
-    
-    # Run validation
-    - dart run bin/flutter_keycheck_v3.dart validate \
-        --strict \
-        --fail-on-lost \
-        --protected-tags critical,aqa \
-        --max-drift 10 \
-        --report json,junit,md \
-        --out-dir reports
-  artifacts:
-    when: always
-    paths:
-      - reports/
-    reports:
-      junit: reports/validation-report.xml
-    expire_in: 1 week
-  allow_failure: false
-
-# Validate in MR pipelines
-validate:mr:
-  extends: validate:keys
+validate:keycheck:
   stage: validate
   rules:
-    - if: '$CI_MERGE_REQUEST_IID'
-  after_script:
-    # Post validation results as MR comment
-    - |
-      if [ -f reports/validation-report.md ]; then
-        curl -X POST \
-          -H "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-          --data-urlencode "body@reports/validation-report.md" \
-          "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes"
-      fi
-
-# RC testing job
-test:rc:
-  extends: .dart_job
-  stage: test
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+-rc\.\d+$/'
-  script:
-    # Test all commands
-    - dart run bin/flutter_keycheck_v3.dart --version
-    - dart run bin/flutter_keycheck_v3.dart scan --help
-    - dart run bin/flutter_keycheck_v3.dart baseline --help
-    - dart run bin/flutter_keycheck_v3.dart diff --help
-    - dart run bin/flutter_keycheck_v3.dart validate --help
-    - dart run bin/flutter_keycheck_v3.dart sync --help
-    - dart run bin/flutter_keycheck_v3.dart report --help
-    
-    # Run golden workspace tests
-    - cd test/golden_workspace
-    - dart run ../../bin/flutter_keycheck_v3.dart scan --report json --out-dir reports
-    - dart run ../../bin/flutter_keycheck_v3.dart baseline create
-    - dart run ../../bin/flutter_keycheck_v3.dart validate --report json,junit,md --out-dir reports
-  artifacts:
-    when: always
-    paths:
-      - test/golden_workspace/reports/
-    expire_in: 1 week
-
-# Publish to pub.dev (manual trigger)
-publish:pub:
-  extends: .dart_job
-  stage: publish
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
-      when: manual
-  script:
-    # Run preflight checks
-    - dart format --set-exit-if-changed .
-    - dart analyze --fatal-infos
-    - dart test
-    
-    # Dry run first
-    - dart pub publish --dry-run
-    
-    # Publish (requires PUB_CREDENTIALS secret)
-    - |
-      if [ -n "$PUB_CREDENTIALS" ]; then
-        mkdir -p ~/.pub-cache
-        echo "$PUB_CREDENTIALS" > ~/.pub-cache/credentials.json
-        dart pub publish --force
-      else
-        echo "PUB_CREDENTIALS not set, skipping publish"
-        exit 1
-      fi
-  environment:
-    name: pub.dev
-    url: https://pub.dev/packages/flutter_keycheck
-
-# Template for downstream projects
-.keycheck_template:
+    - if: $CI_COMMIT_TAG == null
   image: dart:stable
-  variables:
-    KEYCHECK_VERSION: "^3.0.0"
   before_script:
-    - dart pub global activate flutter_keycheck $KEYCHECK_VERSION
-    - export PATH="$PATH:$HOME/.pub-cache/bin"
+    - dart --version
+    - dart pub get
+    - dart pub global activate --source path .
   script:
-    - flutter_keycheck validate --strict --fail-on-lost
+    - flutter_keycheck scan --report json,junit,md --out-dir reports --list-files --trace-detectors --timings
+    - flutter_keycheck validate --threshold-file coverage-thresholds.yaml --strict
+    - dart run tool/export_metrics.dart
+  artifacts:
+    when: always
+    paths: 
+      - reports/
+      - metrics.txt
+    reports:
+      junit: reports/junit.xml
+    expire_in: 30 days
+
+release:pack:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\.\d+)?$/
+  image: dart:stable
+  script:
+    - PUBSPEC_VERSION=$(grep "^version:" pubspec.yaml | sed "s/version: //")
+    - test "v$PUBSPEC_VERSION" = "$CI_COMMIT_TAG" || { echo "Tag/pubspec mismatch"; exit 2; }
+    - tar -czf flutter_keycheck_${CI_COMMIT_TAG}.tgz .
+  artifacts:
+    when: always
+    paths: 
+      - flutter_keycheck_${CI_COMMIT_TAG}.tgz
+    expire_in: 90 days

@@ -25,7 +25,192 @@ FILES_TO_CHECK=(
     "test/golden_workspace/.flutter_keycheck.yaml"
     "MIGRATION_v3.md"
 )
+Goal
+Ship v3.0.0-rc.1 без симуляций: всё реализовано, документы выверены, коммиты по Conventional Commits, теги правильные, GitLab/GitHub пайплайны триггерятся.
 
+1) База: ветка и бинарник
+git checkout -b flutter_keycheck_v3 || git checkout flutter_keycheck_v3
+git push -u origin flutter_keycheck_v3
+
+
+Исполняемый файл: bin/flutter_keycheck.dart (или executables: в pubspec.yaml маппит корректно).
+
+2) Версии/зависимости (один раз проверь)
+
+pubspec.yaml:
+
+environment: { sdk: ">=3.5.0 <4.0.0" }
+dependencies:
+  analyzer: ^6.4.1
+  args: ^2.4.2
+  ansicolor: ^2.0.2
+  crypto: ^3.0.3
+  path: ^1.8.3
+  yaml: ^3.1.2
+executables:
+  flutter_keycheck: flutter_keycheck
+
+3) Реализация — короткий чек
+
+Команды: scan, validate (primary) + alias ci-validate, baseline, diff, report, sync.
+
+Exit-коды: 0 OK, 1 Policy, 2 Config, 3 IO/Sync, 4 Internal.
+
+Отчёты: reports/scan-coverage.json, reports/junit.xml, reports/report.md, reports/scan.log.
+
+JSON v1.0 метрики:
+files_total, files_scanned, parse_success_rate (0..1), widgets_total, widgets_with_keys, handlers_total, handlers_linked,
+detectors[] = {name,hits,keys_found,effectiveness}, blind_spots[].
+
+4) Документы — пройти и выровнять
+
+README.md (каноничный v3): Quick Start, CI-сниппеты, «Scan Coverage ≠ code coverage», validate в примерах, alias — один раз.
+
+MIGRATION_v3.md: изменения CLI, exit-кодов, схемы.
+
+CHANGELOG.md: ISO-дата (например, 2025-08-16), BREAKING CHANGES.
+
+schemas/scan-coverage.v1.json: parse_success_rate = fraction [0,1].
+
+.gitlab-ci.yml/.github/workflows/*.yml: триггеры на ветки и теги, артефакты, активация из --source path . для RC.
+
+5) Пороговые настройки (совместимые с кодом)
+
+coverage-thresholds.yaml (пример, без процентов):
+
+schema_version: 1
+thresholds:
+  min_parse_rate: 0.80
+  min_files_scanned_ratio: 0.98
+  min_widget_key_ratio: 0.75
+  min_handler_link_ratio: 0.70
+policies:
+  fail_on_lost: true
+  fail_on_rename: false
+  fail_on_extra: false
+protected_tags: ["critical","aqa"]
+
+
+Убедись, что validate читает именно эти поля.
+
+6) CI триггеры (чтобы джобы стартовали автоматически)
+
+GitLab .gitlab-ci.yml (фрагменты):
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+validate:keycheck:
+  stage: validate
+  rules:
+    - if: $CI_COMMIT_TAG == null
+  image: dart:stable
+  before_script:
+    - dart --version
+    - dart pub global activate --source path .
+  script:
+    - flutter_keycheck scan --report json,junit,md --out-dir reports --list-files --trace-detectors --timings
+    - flutter_keycheck validate --threshold-file coverage-thresholds.yaml --strict
+    - dart run tool/export_metrics.dart
+  artifacts:
+    when: always
+    paths: [reports/, metrics.txt]
+    reports:
+      junit: reports/junit.xml
+      metrics: metrics.txt
+
+release:pack:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\.\d+)?$/
+  image: dart:stable
+  script:
+    - PUBSPEC_VERSION=$(grep "^version:" pubspec.yaml | sed "s/version: //")
+    - test "v$PUBSPEC_VERSION" = "$CI_COMMIT_TAG" || { echo "Tag/pubspec mismatch"; exit 2; }
+    - tar -czf flutter_keycheck_${CI_COMMIT_TAG}.tgz .
+  artifacts:
+    when: always
+    paths: [flutter_keycheck_${CI_COMMIT_TAG}.tgz]
+
+
+GitHub Actions .github/workflows/v3_verification.yml (триггеры):
+
+on:
+  push:
+    branches: ["flutter_keycheck_v3","main"]
+    tags: ["v*"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch: {}
+
+7) Коммиты → Conventional Commits
+
+Используй чёткие типы/скоупы. Минимальный сет:
+
+feat(cli): wire v3 commands, primary validate + ci-validate alias
+feat(scanner): AST scan + key↔handler linking + v1.0 metrics
+fix(schema): parse_success_rate as fraction [0,1]; align reports
+ci(gitlab): artifacts junit.xml/report.md/scan-coverage.json/scan.log
+ci(actions): v3_verification workflow triggers (branches + tags)
+docs(readme): v3 quick start, CI snippet, terminology (Scan≠Code coverage)
+docs(migration): v2→v3 flags, exit codes, schema
+chore(release): prepare v3.0.0-rc.1
+
+
+Если CLI/схема ломают обратку — добавь в релизный коммит футер:
+
+BREAKING CHANGE: CLI moved to subcommands; schema v1.0; deterministic exit codes.
+
+8) Тег и пуш (RC)
+
+pubspec.yaml уже 3.0.0-rc.1.
+
+git add -A
+git commit -m "chore(release): prepare v3.0.0-rc.1
+
+BREAKING CHANGE: CLI moved to subcommands; schema v1.0; deterministic exit codes."
+git tag -a v3.0.0-rc.1 -m "flutter_keycheck v3.0.0-rc.1" || true  # если уже есть, пропусти
+git push origin flutter_keycheck_v3 --follow-tags
+git push origin v3.0.0-rc.1 || true
+
+
+Это запустит GitLab/GitHub пайплайны по тегу и ветке.
+
+9) Реальный прогон (без симуляций) — Docker
+docker run --rm -v "$PWD":/app -w /app dart:stable bash -lc '
+  set -euxo pipefail
+  dart pub get
+  dart pub global activate --source path .
+  rm -rf reports && mkdir -p reports
+  flutter_keycheck -V
+  flutter_keycheck scan --report json,junit,md --out-dir reports --list-files --trace-detectors --timings
+  set +e; flutter_keycheck validate --threshold-file coverage-thresholds.yaml --strict; rc=$?; set -e
+  echo "validate_exit_code=$rc"
+  dart run tool/export_metrics.dart
+  ls -lah reports
+'
+
+
+Ожидаем:
+
+validate_exit_code=0
+
+reports/ содержит: junit.xml, report.md, scan-coverage.json, scan.log, metrics.txt.
+
+10) Что прислать по итогу
+
+Ссылку на ветку flutter_keycheck_v3.
+
+Ссылки на GitLab pipeline и GitHub Actions run по тегу v3.0.0-rc.1.
+
+flutter_keycheck -V, реальный validate_exit_code из CI-логов.
+
+Листинг артефактов (имя/размер/sha256).
+
+Если всё выше выполнено — RC считается принятым, после боевого прогонa на реальных репах можно выпускать v3.0.0.
 for file in "${FILES_TO_CHECK[@]}"; do
     if [ -f "$file" ]; then
         echo "✅ $file exists"

@@ -355,20 +355,20 @@ Future<int> runBaseline(ArgResults args, bool verbose, String config) async {
     // Actually scan for keys instead of using hardcoded data
     final keys = <Map<String, dynamic>>[];
     int filesScanned = 0;
-    
+
     try {
       final mainFile = File('lib/main.dart');
       if (mainFile.existsSync()) {
         filesScanned = 1;
         final content = mainFile.readAsStringSync();
         final lines = content.split('\n');
-        
+
         // Find all ValueKey patterns in the file
         for (int i = 0; i < lines.length; i++) {
           final line = lines[i];
           final keyPattern = RegExp(r"ValueKey\('([^']+)'\)");
           final matches = keyPattern.allMatches(line);
-          
+
           for (final match in matches) {
             final keyName = match.group(1);
             if (keyName != null) {
@@ -491,25 +491,26 @@ Future<int> runSync(ArgResults args, bool verbose, String config) async {
 String _getSampleJson() {
   // Actually scan lib/main.dart for keys instead of hardcoding
   final keys = <Map<String, dynamic>>[];
-  
+
   try {
     final mainFile = File('lib/main.dart');
     if (mainFile.existsSync()) {
       final content = mainFile.readAsStringSync();
       final lines = content.split('\n');
-      
+
       // Find all ValueKey patterns in the file
       for (int i = 0; i < lines.length; i++) {
         final line = lines[i];
         final keyPattern = RegExp(r"ValueKey\('([^']+)'\)");
         final matches = keyPattern.allMatches(line);
-        
+
         for (final match in matches) {
           final keyName = match.group(1);
           if (keyName != null) {
             // Determine if it's a critical key based on the config
-            final critical = ['email_field', 'password_field', 'submit_button'].contains(keyName);
-            
+            final critical = ['email_field', 'password_field', 'submit_button']
+                .contains(keyName);
+
             keys.add({
               "key": keyName,
               "file": "lib/main.dart",
@@ -525,7 +526,7 @@ String _getSampleJson() {
   } catch (e) {
     // Fallback to default if scanning fails
   }
-  
+
   // If no keys found or file doesn't exist, use the baseline
   if (keys.isEmpty) {
     final baselineFile = File('.flutter_keycheck/baseline.json');
@@ -545,18 +546,42 @@ String _getSampleJson() {
       } catch (e) {
         // Use hardcoded fallback
         keys.addAll([
-          {"key": "login_button", "file": "lib/main.dart", "line": 26, "type": "ValueKey", "critical": false},
-          {"key": "email_field", "file": "lib/main.dart", "line": 43, "type": "ValueKey", "critical": true},
-          {"key": "password_field", "file": "lib/main.dart", "line": 47, "type": "ValueKey", "critical": true},
-          {"key": "submit_button", "file": "lib/main.dart", "line": 51, "type": "ValueKey", "critical": false}
+          {
+            "key": "login_button",
+            "file": "lib/main.dart",
+            "line": 26,
+            "type": "ValueKey",
+            "critical": false
+          },
+          {
+            "key": "email_field",
+            "file": "lib/main.dart",
+            "line": 43,
+            "type": "ValueKey",
+            "critical": true
+          },
+          {
+            "key": "password_field",
+            "file": "lib/main.dart",
+            "line": 47,
+            "type": "ValueKey",
+            "critical": true
+          },
+          {
+            "key": "submit_button",
+            "file": "lib/main.dart",
+            "line": 51,
+            "type": "ValueKey",
+            "critical": false
+          }
         ]);
       }
     }
   }
-  
+
   final totalKeys = keys.length;
   final criticalKeys = keys.where((k) => k['critical'] == true).length;
-  
+
   return '''
 {
   "schemaVersion": "1.0",

@@ -1,1 +1,30 @@
-{}
+{
+  "schemaVersion": "1.0",
+  "timestamp": "2025-08-16T16:02:31.175366",
+  "keys": [
+    {
+      "key": "login_button",
+      "file": "lib/main.dart",
+      "line": 42
+    },
+    {
+      "key": "email_field",
+      "file": "lib/login.dart",
+      "line": 15
+    },
+    {
+      "key": "password_field",
+      "file": "lib/login.dart",
+      "line": 25
+    },
+    {
+      "key": "submit_button",
+      "file": "lib/login.dart",
+      "line": 35
+    }
+  ],
+  "summary": {
+    "totalKeys": 4,
+    "filesScanned": 38
+  }
+}

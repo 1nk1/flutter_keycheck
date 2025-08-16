@@ -216,7 +216,9 @@ class TestKeyDetector extends KeyDetector {
         if (arg is InstanceCreationExpression) {
           final typeName = arg.constructorName.type.toString();
           if (typeName == 'Key' || typeName == 'ValueKey') {
-            final keyArg = arg.argumentList.arguments.firstOrNull;
+            final keyArg = arg.argumentList.arguments.isNotEmpty
+                ? arg.argumentList.arguments.first
+                : null;
             if (keyArg is StringLiteral) {
               return DetectionResult(
                 key: keyArg.stringValue ?? '',

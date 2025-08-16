@@ -57,7 +57,7 @@ jobs:
           --out-dir coverage
     
     - name: Upload scan artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: scan-reports-${{ github.sha }}
         path: |
@@ -115,7 +115,7 @@ jobs:
     
     - name: Upload test results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: golden-test-results-${{ github.sha }}
         path: test/golden_workspace/reports/

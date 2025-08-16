@@ -22,7 +22,13 @@ void main() {
         // Test that invalid config returns exit code 2
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck.dart', '--config', 'nonexistent.yaml', 'scan'],
+          [
+            'run',
+            'bin/flutter_keycheck.dart',
+            '--config',
+            'nonexistent.yaml',
+            'scan'
+          ],
         );
         // Since config doesn't exist but we use defaults, it might still work
         // In a real test, we'd create an invalid config file
@@ -142,9 +148,16 @@ registry:
         try {
           final result = await Process.run(
             'dart',
-            ['run', 'bin/flutter_keycheck.dart', '--config', 'test_config.yaml', 'scan'],
+            [
+              'run',
+              'bin/flutter_keycheck.dart',
+              '--config',
+              'test_config.yaml',
+              'scan'
+            ],
           );
-          expect(result.exitCode, anyOf(equals(0), equals(3))); // OK or IO error
+          expect(
+              result.exitCode, anyOf(equals(0), equals(3))); // OK or IO error
         } finally {
           if (await configFile.exists()) {
             await configFile.delete();

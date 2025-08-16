@@ -94,6 +94,59 @@ void main() {
 }
 ```
 
+### Updating Golden Baseline or Performance Thresholds
+
+When legitimate changes require updating the golden baseline or performance thresholds:
+
+1. **Run the baseline update tool:**
+   ```bash
+   dart run tool/update_baseline.dart
+   ```
+
+2. **Verify the changes:**
+   ```bash
+   # Run snapshot tests
+   dart test test/golden_workspace/snapshot_test.dart
+   
+   # Run performance tests
+   dart test test/golden_workspace/performance_test.dart
+   ```
+
+3. **Review the differences:**
+   ```bash
+   git diff test/golden_workspace/
+   ```
+
+4. **Commit with descriptive message:**
+   ```bash
+   git add test/golden_workspace/
+   git commit -m "chore(baseline): update golden snapshot and perf thresholds
+   
+   - Reason for update: [explain why baseline needs to change]
+   - Schema changes: [if applicable]
+   - Performance impact: [if applicable]
+   - Critical keys affected: [if applicable]"
+   ```
+
+5. **Create PR with full rationale:**
+   - Include before/after metrics
+   - Explain why the baseline change is necessary
+   - Document any schema version changes
+   - Note impact on CI/CD pipelines
+
+**Important:** Baseline updates should be rare and well-justified. They typically occur when:
+- The output schema version changes
+- Critical keys are intentionally added or removed
+- Significant refactoring legitimately improves performance
+- New features require baseline adjustments
+
+**Note:** These baselines are used as regression gates in CI. Any PR that causes:
+- Schema version mismatch
+- Missing critical keys
+- >20% performance regression
+
+Will automatically fail CI checks and require review.
+
 ## 🐛 Reporting Issues
 
 When reporting issues, please include:

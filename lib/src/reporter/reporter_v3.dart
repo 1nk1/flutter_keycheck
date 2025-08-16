@@ -82,13 +82,15 @@ class JsonReporter extends ReporterV3 {
       };
 
       if (includeLocations) {
-        keyData['locations'] = entry.value.locations.map((loc) => {
-          'file': loc.file,
-          'line': loc.line,
-          'column': loc.column,
-          'detector': loc.detector,
-          'context': loc.context,
-        }).toList();
+        keyData['locations'] = entry.value.locations
+            .map((loc) => {
+                  'file': loc.file,
+                  'line': loc.line,
+                  'column': loc.column,
+                  'detector': loc.detector,
+                  'context': loc.context,
+                })
+            .toList();
       }
 
       keys.add(keyData);
@@ -97,12 +99,14 @@ class JsonReporter extends ReporterV3 {
 
     // Add blind spots
     if (result.blindSpots.isNotEmpty) {
-      report['blind_spots'] = result.blindSpots.map((spot) => spot.toMap()).toList();
+      report['blind_spots'] =
+          result.blindSpots.map((spot) => spot.toMap()).toList();
     }
 
     // Add errors if any
     if (result.metrics.errors.isNotEmpty) {
-      report['errors'] = result.metrics.errors.map((err) => err.toMap()).toList();
+      report['errors'] =
+          result.metrics.errors.map((err) => err.toMap()).toList();
     }
 
     // Write to file
@@ -118,7 +122,7 @@ class JsonReporter extends ReporterV3 {
     bool includeMetrics = true,
   }) async {
     final report = result.toMap();
-    
+
     // Write to file
     await outputFile.writeAsString(
       const JsonEncoder.withIndent('  ').convert(report),
@@ -136,22 +140,25 @@ class JUnitReporter extends ReporterV3 {
     bool includeLocations = false,
   }) async {
     final buffer = StringBuffer();
-    
+
     buffer.writeln('<?xml version="1.0" encoding="UTF-8"?>');
-    buffer.writeln('<testsuites name="Flutter KeyCheck Scan" tests="${result.keyUsages.length}">');
-    
+    buffer.writeln(
+        '<testsuites name="Flutter KeyCheck Scan" tests="${result.keyUsages.length}">');
+
     // Group by package
     final keysByPackage = <String, List<MapEntry<String, KeyUsage>>>{};
     for (final entry in result.keyUsages.entries) {
       final package = _getPackageFromPath(entry.value.locations.first.file);
       keysByPackage.putIfAbsent(package, () => []).add(entry);
     }
-    
+
     for (final packageEntry in keysByPackage.entries) {
-      buffer.writeln('  <testsuite name="${packageEntry.key}" tests="${packageEntry.value.length}">');
-      
+      buffer.writeln(
+          '  <testsuite name="${packageEntry.key}" tests="${packageEntry.value.length}">');
+
       for (final keyEntry in packageEntry.value) {
-        buffer.writeln('    <testcase name="Key: ${keyEntry.key}" classname="Found">');
+        buffer.writeln(
+            '    <testcase name="Key: ${keyEntry.key}" classname="Found">');
         if (includeLocations) {
           buffer.writeln('      <system-out>');
           for (final loc in keyEntry.value.locations) {
@@ -161,12 +168,12 @@ class JUnitReporter extends ReporterV3 {
         }
         buffer.writeln('    </testcase>');
       }
-      
+
       buffer.writeln('  </testsuite>');
     }
-    
+
     buffer.writeln('</testsuites>');
-    
+
     await outputFile.writeAsString(buffer.toString());
   }
 
@@ -177,12 +184,12 @@ class JUnitReporter extends ReporterV3 {
     bool includeMetrics = true,
   }) async {
     final buffer = StringBuffer();
-    
+
     buffer.writeln('<?xml version="1.0" encoding="UTF-8"?>');
     buffer.writeln('<testsuites name="Flutter KeyCheck Validation" '
         'tests="${result.summary.totalKeys}" '
         'failures="${result.violations.length}">');
-    
+
     // Group violations by package
     final violationsByPackage = <String, List<Violation>>{};
     for (final violation in result.violations) {
@@ -191,17 +198,19 @@ class JUnitReporter extends ReporterV3 {
         violationsByPackage.putIfAbsent(package, () => []).add(violation);
       }
     }
-    
+
     // Add test suites
     for (final entry in violationsByPackage.entries) {
       buffer.writeln('  <testsuite name="${entry.key}" '
           'tests="${entry.value.length}" '
           'failures="${entry.value.length}">');
-      
+
       for (final violation in entry.value) {
-        buffer.writeln('    <testcase name="Key: ${violation.key?.id ?? 'policy'}" '
+        buffer.writeln(
+            '    <testcase name="Key: ${violation.key?.id ?? 'policy'}" '
             'classname="${violation.type}">');
-        buffer.writeln('      <failure message="${_escapeXml(violation.message)}">');
+        buffer.writeln(
+            '      <failure message="${_escapeXml(violation.message)}">');
         buffer.writeln('        ${_escapeXml(violation.message)}');
         if (violation.key != null) {
           buffer.writeln('        Key: ${violation.key!.id}');
@@ -210,25 +219,31 @@ class JUnitReporter extends ReporterV3 {
             buffer.writeln('        Last seen: ${violation.key!.lastSeen}');
           }
         }
-        buffer.writeln('        Remediation: ${_escapeXml(violation.remediation)}');
+        buffer.writeln(
+            '        Remediation: ${_escapeXml(violation.remediation)}');
         buffer.writeln('      </failure>');
         buffer.writeln('    </testcase>');
       }
-      
+
       buffer.writeln('  </testsuite>');
     }
-    
+
     // Add summary as properties
     buffer.writeln('  <properties>');
-    buffer.writeln('    <property name="total_keys" value="${result.summary.totalKeys}"/>');
-    buffer.writeln('    <property name="lost_keys" value="${result.summary.lostKeys}"/>');
-    buffer.writeln('    <property name="added_keys" value="${result.summary.addedKeys}"/>');
-    buffer.writeln('    <property name="renamed_keys" value="${result.summary.renamedKeys}"/>');
-    buffer.writeln('    <property name="drift_percentage" value="${result.summary.driftPercentage.toStringAsFixed(1)}"/>');
+    buffer.writeln(
+        '    <property name="total_keys" value="${result.summary.totalKeys}"/>');
+    buffer.writeln(
+        '    <property name="lost_keys" value="${result.summary.lostKeys}"/>');
+    buffer.writeln(
+        '    <property name="added_keys" value="${result.summary.addedKeys}"/>');
+    buffer.writeln(
+        '    <property name="renamed_keys" value="${result.summary.renamedKeys}"/>');
+    buffer.writeln(
+        '    <property name="drift_percentage" value="${result.summary.driftPercentage.toStringAsFixed(1)}"/>');
     buffer.writeln('  </properties>');
-    
+
     buffer.writeln('</testsuites>');
-    
+
     await outputFile.writeAsString(buffer.toString());
   }
 
@@ -263,30 +278,33 @@ class MarkdownReporter extends ReporterV3 {
     bool includeLocations = false,
   }) async {
     final buffer = StringBuffer();
-    
+
     buffer.writeln('# 🔍 Key Scan Report');
     buffer.writeln();
     buffer.writeln('Generated: ${DateTime.now().toIso8601String()}');
     buffer.writeln();
-    
+
     // Summary section
     buffer.writeln('## Summary');
     buffer.writeln();
     buffer.writeln('- **Total Files**: ${result.metrics.totalFiles}');
     buffer.writeln('- **Scanned Files**: ${result.metrics.scannedFiles}');
     buffer.writeln('- **Total Keys**: ${result.keyUsages.length}');
-    buffer.writeln('- **File Coverage**: ${result.metrics.fileCoverage.toStringAsFixed(1)}%');
-    buffer.writeln('- **Widget Coverage**: ${result.metrics.widgetCoverage.toStringAsFixed(1)}%');
-    buffer.writeln('- **Handler Coverage**: ${result.metrics.handlerCoverage.toStringAsFixed(1)}%');
+    buffer.writeln(
+        '- **File Coverage**: ${result.metrics.fileCoverage.toStringAsFixed(1)}%');
+    buffer.writeln(
+        '- **Widget Coverage**: ${result.metrics.widgetCoverage.toStringAsFixed(1)}%');
+    buffer.writeln(
+        '- **Handler Coverage**: ${result.metrics.handlerCoverage.toStringAsFixed(1)}%');
     buffer.writeln();
-    
+
     // Keys by status
     final keysByStatus = <String, List<String>>{};
     for (final entry in result.keyUsages.entries) {
       final status = entry.value.status;
       keysByStatus.putIfAbsent(status, () => []).add(entry.key);
     }
-    
+
     buffer.writeln('## Keys by Status');
     buffer.writeln();
     for (final entry in keysByStatus.entries) {
@@ -302,19 +320,22 @@ class MarkdownReporter extends ReporterV3 {
       }
       buffer.writeln();
     }
-    
+
     // Blind spots
     if (result.blindSpots.isNotEmpty) {
       buffer.writeln('## ⚠️ Blind Spots');
       buffer.writeln();
       for (final spot in result.blindSpots) {
-        final icon = spot.severity == 'error' ? '🔴' : 
-                     spot.severity == 'warning' ? '🟡' : 'ℹ️';
+        final icon = spot.severity == 'error'
+            ? '🔴'
+            : spot.severity == 'warning'
+                ? '🟡'
+                : 'ℹ️';
         buffer.writeln('- $icon ${spot.message}');
       }
       buffer.writeln();
     }
-    
+
     // Metrics
     if (includeMetrics) {
       buffer.writeln('## 📊 Metrics');
@@ -328,7 +349,7 @@ class MarkdownReporter extends ReporterV3 {
       }
       buffer.writeln();
     }
-    
+
     await outputFile.writeAsString(buffer.toString());
   }
 
@@ -339,12 +360,12 @@ class MarkdownReporter extends ReporterV3 {
     bool includeMetrics = true,
   }) async {
     final buffer = StringBuffer();
-    
+
     buffer.writeln('# 🔑 Key Validation Report');
     buffer.writeln();
     buffer.writeln('Generated: ${result.timestamp.toIso8601String()}');
     buffer.writeln();
-    
+
     // Summary
     buffer.writeln('## Summary');
     buffer.writeln();
@@ -352,9 +373,10 @@ class MarkdownReporter extends ReporterV3 {
     buffer.writeln('- **Lost**: ${result.summary.lostKeys} 🔥');
     buffer.writeln('- **Added**: ${result.summary.addedKeys} ➕');
     buffer.writeln('- **Renamed**: ${result.summary.renamedKeys} ♻️');
-    buffer.writeln('- **Drift**: ${result.summary.driftPercentage.toStringAsFixed(1)}% 📈');
+    buffer.writeln(
+        '- **Drift**: ${result.summary.driftPercentage.toStringAsFixed(1)}% 📈');
     buffer.writeln();
-    
+
     // Status
     if (result.hasViolations) {
       buffer.writeln('## ❌ Validation Failed');
@@ -362,19 +384,23 @@ class MarkdownReporter extends ReporterV3 {
       buffer.writeln('## ✅ Validation Passed');
     }
     buffer.writeln();
-    
+
     // Violations
     if (result.violations.isNotEmpty) {
       buffer.writeln('## Critical Issues');
       buffer.writeln();
       buffer.writeln('| Type | Key | Package | Tags | Action |');
       buffer.writeln('|------|-----|---------|------|--------|');
-      
+
       for (final violation in result.violations) {
-        final icon = violation.type == 'lost' ? '🔥' :
-                     violation.type == 'renamed' ? '♻️' :
-                     violation.type == 'extra' ? '➕' : '⚠️';
-        
+        final icon = violation.type == 'lost'
+            ? '🔥'
+            : violation.type == 'renamed'
+                ? '♻️'
+                : violation.type == 'extra'
+                    ? '➕'
+                    : '⚠️';
+
         buffer.write('| $icon ${violation.type} ');
         buffer.write('| ${violation.key?.id ?? 'N/A'} ');
         buffer.write('| ${violation.key?.package ?? 'N/A'} ');
@@ -383,7 +409,7 @@ class MarkdownReporter extends ReporterV3 {
       }
       buffer.writeln();
     }
-    
+
     // Warnings
     if (result.warnings.isNotEmpty) {
       buffer.writeln('## Warnings');
@@ -393,14 +419,14 @@ class MarkdownReporter extends ReporterV3 {
       }
       buffer.writeln();
     }
-    
+
     // Scanned packages
     buffer.writeln('## Scanned Packages');
     buffer.writeln();
     for (final package in result.summary.scannedPackages) {
       buffer.writeln('- `$package`');
     }
-    
+
     await outputFile.writeAsString(buffer.toString());
   }
 

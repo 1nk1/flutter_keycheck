@@ -6,13 +6,13 @@ import 'dart:io';
 void main() async {
   print('Flutter KeyCheck v3 Verification');
   print('=' * 60);
-  
+
   // Create reports directory
   final reportsDir = Directory('reports');
   if (!reportsDir.existsSync()) {
     reportsDir.createSync();
   }
-  
+
   // Simulate scan results
   final scanResult = {
     'version': '3.0.0',
@@ -29,7 +29,7 @@ void main() async {
       'total_widgets': 156,
       'widgets_with_keys': 148,
       'coverage_percentage': 94.87,
-      'parse_success_rate': 0.952,  // This MUST be a fraction, not percentage!
+      'parse_success_rate': 0.952, // This MUST be a fraction, not percentage!
     },
     'detectors': [
       {
@@ -80,12 +80,12 @@ void main() async {
       },
     ],
   };
-  
+
   // Save JSON report
   final jsonFile = File('reports/scan-coverage.json');
   jsonFile.writeAsStringSync(JsonEncoder.withIndent('  ').convert(scanResult));
   print('✅ Created reports/scan-coverage.json');
-  
+
   // Save scan log
   final logFile = File('reports/scan.log');
   final logContent = '''
@@ -119,7 +119,7 @@ Coverage Summary:
 ''';
   logFile.writeAsStringSync(logContent);
   print('✅ Created reports/scan.log');
-  
+
   // Save Markdown report
   final mdFile = File('reports/report.md');
   final mdContent = '''
@@ -166,7 +166,7 @@ Generated: ${DateTime.now().toIso8601String()}
 ''';
   mdFile.writeAsStringSync(mdContent);
   print('✅ Created reports/report.md');
-  
+
   // Save JUnit XML
   final junitFile = File('reports/scan-junit.xml');
   final junitContent = '''
@@ -187,7 +187,7 @@ Generated: ${DateTime.now().toIso8601String()}
 ''';
   junitFile.writeAsStringSync(junitContent);
   print('✅ Created reports/scan-junit.xml');
-  
+
   // Simulate validation
   print('\nRunning validation...');
   final threshold = 90.0;

@@ -3,10 +3,10 @@ import 'package:analyzer/dart/ast/ast.dart';
 /// Base class for key detectors
 abstract class KeyDetector {
   String get name;
-  
+
   /// Detect key in a method invocation
   DetectionResult? detect(MethodInvocation node);
-  
+
   /// Detect key in an expression
   DetectionResult? detectExpression(Expression expression);
 }
@@ -33,10 +33,10 @@ class ValueKeyDetector extends KeyDetector {
 
   @override
   DetectionResult? detect(MethodInvocation node) {
-    if (node.methodName.name == 'ValueKey' || 
+    if (node.methodName.name == 'ValueKey' ||
         node.target?.toString() == 'ValueKey') {
-      final arg = node.argumentList?.arguments.isNotEmpty == true 
-          ? node.argumentList!.arguments.first 
+      final arg = node.argumentList.arguments.isNotEmpty == true
+          ? node.argumentList.arguments.first
           : null;
       if (arg is StringLiteral) {
         return DetectionResult(
@@ -79,8 +79,8 @@ class BasicKeyDetector extends KeyDetector {
   @override
   DetectionResult? detect(MethodInvocation node) {
     if (node.methodName.name == 'Key') {
-      final arg = node.argumentList?.arguments.isNotEmpty == true 
-          ? node.argumentList!.arguments.first 
+      final arg = node.argumentList.arguments.isNotEmpty == true
+          ? node.argumentList.arguments.first
           : null;
       if (arg is StringLiteral) {
         return DetectionResult(
@@ -126,9 +126,9 @@ class ConstKeyDetector extends KeyDetector {
     final parent = node.parent;
     if (parent is NamedExpression && parent.name.label.name == 'key') {
       if (node.methodName.name == 'Key') {
-        final arg = node.argumentList?.arguments.isNotEmpty == true 
-          ? node.argumentList!.arguments.first 
-          : null;
+        final arg = node.argumentList.arguments.isNotEmpty == true
+            ? node.argumentList.arguments.first
+            : null;
         if (arg is StringLiteral) {
           return DetectionResult(
             key: arg.stringValue ?? '',
@@ -172,7 +172,7 @@ class SemanticKeyDetector extends KeyDetector {
   DetectionResult? detect(MethodInvocation node) {
     // Check for Semantics widget with identifier
     if (node.methodName.name == 'Semantics') {
-      for (final arg in node.argumentList?.arguments ?? []) {
+      for (final arg in node.argumentList.arguments ?? []) {
         if (arg is NamedExpression) {
           if (arg.name.label.name == 'identifier') {
             final value = arg.expression;
@@ -210,9 +210,9 @@ class TestKeyDetector extends KeyDetector {
     if (node.methodName.name == 'byKey') {
       final target = node.target;
       if (target is SimpleIdentifier && target.name == 'find') {
-        final arg = node.argumentList?.arguments.isNotEmpty == true 
-          ? node.argumentList!.arguments.first 
-          : null;
+        final arg = node.argumentList.arguments.isNotEmpty == true
+            ? node.argumentList.arguments.first
+            : null;
         if (arg is InstanceCreationExpression) {
           final typeName = arg.constructorName.type.toString();
           if (typeName == 'Key' || typeName == 'ValueKey') {

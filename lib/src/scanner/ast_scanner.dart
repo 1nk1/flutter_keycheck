@@ -13,12 +13,12 @@ class AstScanner {
   final bool includeTests;
   final bool includeGenerated;
   final String? gitDiffBase;
-  
+
   // Metrics
   final ScanMetrics metrics = ScanMetrics();
   final Map<String, FileAnalysis> fileAnalyses = {};
   final Map<String, KeyUsage> keyUsages = {};
-  
+
   AstScanner({
     required this.projectPath,
     required this.detectors,
@@ -30,30 +30,30 @@ class AstScanner {
   /// Perform full AST scan with metrics
   Future<ScanResult> scan() async {
     final startTime = DateTime.now();
-    
+
     // Get files to scan (incremental if git-diff provided)
     final files = await _getFilesToScan();
     metrics.totalFiles = files.length;
-    
+
     // Create analysis context
     final collection = AnalysisContextCollection(
       includedPaths: [projectPath],
       excludedPaths: _getExcludedPaths(),
     );
-    
+
     // Scan each file
     for (final filePath in files) {
       await _scanFile(filePath, collection);
     }
-    
+
     // Calculate coverage metrics
     _calculateCoverageMetrics();
-    
+
     // Detect blind spots
     final blindSpots = _detectBlindSpots();
-    
+
     final duration = DateTime.now().difference(startTime);
-    
+
     return ScanResult(
       metrics: metrics,
       fileAnalyses: fileAnalyses,
@@ -72,7 +72,7 @@ class AstScanner {
         ['diff', '--name-only', gitDiffBase!, '--', '*.dart'],
         workingDirectory: projectPath,
       );
-      
+
       if (result.exitCode == 0) {
         final files = result.stdout
             .toString()
@@ -80,13 +80,13 @@ class AstScanner {
             .where((f) => f.isNotEmpty && f.endsWith('.dart'))
             .map((f) => path.join(projectPath, f))
             .toList();
-        
+
         metrics.incrementalScan = true;
         metrics.incrementalBase = gitDiffBase!;
         return files;
       }
     }
-    
+
     // Full scan
     return _getAllDartFiles();
   }
@@ -95,35 +95,38 @@ class AstScanner {
   List<String> _getAllDartFiles() {
     final files = <String>[];
     final dir = Directory(projectPath);
-    
+
     for (final entity in dir.listSync(recursive: true)) {
       if (entity is File && entity.path.endsWith('.dart')) {
         final relativePath = path.relative(entity.path, from: projectPath);
-        
+
         // Apply filters
         if (!includeTests && relativePath.contains('test/')) continue;
         if (!includeGenerated && relativePath.endsWith('.g.dart')) continue;
-        if (!includeGenerated && relativePath.endsWith('.freezed.dart')) continue;
-        
+        if (!includeGenerated && relativePath.endsWith('.freezed.dart')) {
+          continue;
+        }
+
         files.add(entity.path);
       }
     }
-    
+
     return files;
   }
 
   /// Scan single file with AST
-  Future<void> _scanFile(String filePath, AnalysisContextCollection collection) async {
+  Future<void> _scanFile(
+      String filePath, AnalysisContextCollection collection) async {
     try {
       final context = collection.contextFor(filePath);
       final result = await context.currentSession.getResolvedUnit(filePath);
-      
+
       if (result is ResolvedUnitResult) {
         final analysis = FileAnalysis(
           path: filePath,
           relativePath: path.relative(filePath, from: projectPath),
         );
-        
+
         // Create visitor with all detectors
         final visitor = KeyVisitor(
           detectors: detectors,
@@ -131,21 +134,21 @@ class AstScanner {
           keyUsages: keyUsages,
           filePath: filePath,
         );
-        
+
         // Visit AST
         result.unit.visitChildren(visitor);
-        
+
         // Store analysis
         fileAnalyses[filePath] = analysis;
         metrics.scannedFiles++;
         metrics.totalLines += _countLines(File(filePath));
         metrics.analyzedNodes += analysis.nodesAnalyzed;
-        
+
         // Update detector metrics
         for (final detector in detectors) {
-          metrics.detectorHits[detector.name] = 
-              (metrics.detectorHits[detector.name] ?? 0) + 
-              analysis.detectorHits[detector.name]!;
+          metrics.detectorHits[detector.name] =
+              (metrics.detectorHits[detector.name] ?? 0) +
+                  analysis.detectorHits[detector.name]!;
         }
       }
     } catch (e) {
@@ -161,40 +164,38 @@ class AstScanner {
   void _calculateCoverageMetrics() {
     // File coverage
     metrics.fileCoverage = (metrics.scannedFiles / metrics.totalFiles * 100);
-    
+
     // Widget coverage
     int totalWidgets = 0;
     int widgetsWithKeys = 0;
-    
+
     for (final analysis in fileAnalyses.values) {
       totalWidgets += analysis.widgetCount;
       widgetsWithKeys += analysis.widgetsWithKeys;
     }
-    
-    metrics.widgetCoverage = totalWidgets > 0 
-        ? (widgetsWithKeys / totalWidgets * 100) 
-        : 0;
-    
+
+    metrics.widgetCoverage =
+        totalWidgets > 0 ? (widgetsWithKeys / totalWidgets * 100) : 0;
+
     // Action handler coverage
     int totalHandlers = 0;
     int handlersWithKeys = 0;
-    
+
     for (final usage in keyUsages.values) {
       if (usage.handlers.isNotEmpty) {
         handlersWithKeys++;
       }
       totalHandlers++;
     }
-    
-    metrics.handlerCoverage = totalHandlers > 0
-        ? (handlersWithKeys / totalHandlers * 100)
-        : 0;
+
+    metrics.handlerCoverage =
+        totalHandlers > 0 ? (handlersWithKeys / totalHandlers * 100) : 0;
   }
 
   /// Detect blind spots in scanning
   List<BlindSpot> _detectBlindSpots() {
     final blindSpots = <BlindSpot>[];
-    
+
     // Check for files with no keys detected
     for (final entry in fileAnalyses.entries) {
       if (entry.value.keysFound.isEmpty && entry.value.widgetCount > 5) {
@@ -206,22 +207,23 @@ class AstScanner {
         ));
       }
     }
-    
+
     // Check for uncovered widget types
     final uncoveredWidgets = <String>{};
     for (final analysis in fileAnalyses.values) {
       uncoveredWidgets.addAll(analysis.uncoveredWidgetTypes);
     }
-    
+
     if (uncoveredWidgets.isNotEmpty) {
       blindSpots.add(BlindSpot(
         type: 'uncovered_widget_types',
         location: 'global',
         severity: 'info',
-        message: 'Widget types without key detection: ${uncoveredWidgets.join(', ')}',
+        message:
+            'Widget types without key detection: ${uncoveredWidgets.join(', ')}',
       ));
     }
-    
+
     // Check for detector effectiveness
     for (final entry in metrics.detectorHits.entries) {
       if (entry.value == 0) {
@@ -233,7 +235,7 @@ class AstScanner {
         ));
       }
     }
-    
+
     return blindSpots;
   }
 
@@ -258,7 +260,7 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
   final FileAnalysis analysis;
   final Map<String, KeyUsage> keyUsages;
   final String filePath;
-  
+
   KeyVisitor({
     required this.detectors,
     required this.analysis,
@@ -269,7 +271,7 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
   @override
   void visitMethodInvocation(MethodInvocation node) {
     analysis.nodesAnalyzed++;
-    
+
     // Check each detector
     for (final detector in detectors) {
       if (detector.matches(node)) {
@@ -279,55 +281,49 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
         }
       }
     }
-    
+
     // Check for action handlers
     _checkActionHandler(node);
-    
+
     super.visitMethodInvocation(node);
   }
 
   @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
     analysis.nodesAnalyzed++;
-    
+
     // Track widget creation
     final typeName = node.constructorName.type.name;
     if (typeName is PrefixedIdentifier) {
       analysis.widgetTypes.add(typeName.identifier.name);
     } else if (typeName is SimpleIdentifier) {
       analysis.widgetTypes.add(typeName.name);
-      
+
       // Check if it's a widget
       if (_isWidget(typeName.name)) {
         analysis.widgetCount++;
-        
+
         // Check for key parameter
-        final keyArg = node.argumentList.arguments
-            .whereType<NamedExpression>()
-            .firstWhere(
-              (arg) => arg.name.label.name == 'key',
-              orElse: () => null as NamedExpression,
-            );
-        
-        if (keyArg != null) {
-          analysis.widgetsWithKeys++;
-          
-          // Extract key value
-          for (final detector in detectors) {
-            if (detector.matchesExpression(keyArg.expression)) {
-              final key = detector.extractFromExpression(keyArg.expression);
-              if (key != null) {
-                _recordKey(key, node, detector);
-              }
+        final keyArg =
+            node.argumentList.arguments.whereType<NamedExpression>().firstWhere(
+                  (arg) => arg.name.label.name == 'key',
+                  orElse: () => null as NamedExpression,
+                );
+
+        analysis.widgetsWithKeys++;
+
+        // Extract key value
+        for (final detector in detectors) {
+          if (detector.matchesExpression(keyArg.expression)) {
+            final key = detector.extractFromExpression(keyArg.expression);
+            if (key != null) {
+              _recordKey(key, node, detector);
             }
           }
-        } else {
-          // Widget without key - potential blind spot
-          analysis.uncoveredWidgetTypes.add(typeName.name);
         }
-      }
+            }
     }
-    
+
     super.visitInstanceCreationExpression(node);
   }
 
@@ -348,19 +344,19 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
   void _recordKey(String key, AstNode node, KeyDetector detector) {
     // Record in file analysis
     analysis.keysFound.add(key);
-    analysis.detectorHits[detector.name] = 
+    analysis.detectorHits[detector.name] =
         (analysis.detectorHits[detector.name] ?? 0) + 1;
-    
+
     // Get location info
     final lineInfo = node.root.lineInfo;
     final location = lineInfo?.getLocation(node.offset);
-    
+
     // Create or update key usage
     final usage = keyUsages.putIfAbsent(
       key,
       () => KeyUsage(id: key),
     );
-    
+
     usage.locations.add(KeyLocation(
       file: filePath,
       line: location?.lineNumber ?? 0,
@@ -374,7 +370,7 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
     // Check for common action patterns
     final methodName = node.methodName.name;
     final actionPatterns = ['onPressed', 'onTap', 'onSubmit', 'onChanged'];
-    
+
     if (actionPatterns.contains(methodName)) {
       // Find associated key
       final parent = node.parent;
@@ -388,27 +384,25 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
                 (arg) => arg.name.label.name == 'key',
                 orElse: () => null as NamedExpression,
               );
-          
-          if (keyArg != null) {
-            // Extract key and link to handler
-            for (final detector in detectors) {
-              if (detector.matchesExpression(keyArg.expression)) {
-                final key = detector.extractFromExpression(keyArg.expression);
-                if (key != null) {
-                  final usage = keyUsages[key];
-                  if (usage != null) {
-                    usage.handlers.add(HandlerInfo(
-                      type: methodName,
-                      method: _extractHandlerMethod(node),
-                      file: filePath,
-                      line: node.offset,
-                    ));
-                  }
+
+          // Extract key and link to handler
+          for (final detector in detectors) {
+            if (detector.matchesExpression(keyArg.expression)) {
+              final key = detector.extractFromExpression(keyArg.expression);
+              if (key != null) {
+                final usage = keyUsages[key];
+                if (usage != null) {
+                  usage.handlers.add(HandlerInfo(
+                    type: methodName,
+                    method: _extractHandlerMethod(node),
+                    file: filePath,
+                    line: node.offset,
+                  ));
                 }
               }
             }
           }
-        }
+                }
       }
     }
   }
@@ -433,7 +427,7 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
 
   String? _extractHandlerMethod(MethodInvocation node) {
     // Extract the handler method name
-    final args = node.argumentList?.arguments ?? [];
+    final args = node.argumentList.arguments ?? [];
     final arg = args.isNotEmpty ? args.first : null;
     if (arg is SimpleIdentifier) {
       return arg.name;
@@ -447,23 +441,33 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
   bool _isWidget(String typeName) {
     // Common Flutter widget suffixes and names
     return typeName.endsWith('Widget') ||
-           typeName.endsWith('Button') ||
-           typeName.endsWith('Field') ||
-           typeName.endsWith('View') ||
-           typeName.endsWith('Screen') ||
-           typeName.endsWith('Page') ||
-           typeName.endsWith('Dialog') ||
-           typeName.endsWith('Card') ||
-           typeName.endsWith('List') ||
-           typeName.endsWith('Grid') ||
-           typeName.endsWith('Container') ||
-           typeName.endsWith('Box') ||
-           typeName.endsWith('Text') ||
-           typeName.endsWith('Image') ||
-           typeName.endsWith('Icon') ||
-           ['Column', 'Row', 'Stack', 'Scaffold', 'AppBar', 'Center', 
-            'Padding', 'Expanded', 'Flexible', 'ListView', 'GridView']
-               .contains(typeName);
+        typeName.endsWith('Button') ||
+        typeName.endsWith('Field') ||
+        typeName.endsWith('View') ||
+        typeName.endsWith('Screen') ||
+        typeName.endsWith('Page') ||
+        typeName.endsWith('Dialog') ||
+        typeName.endsWith('Card') ||
+        typeName.endsWith('List') ||
+        typeName.endsWith('Grid') ||
+        typeName.endsWith('Container') ||
+        typeName.endsWith('Box') ||
+        typeName.endsWith('Text') ||
+        typeName.endsWith('Image') ||
+        typeName.endsWith('Icon') ||
+        [
+          'Column',
+          'Row',
+          'Stack',
+          'Scaffold',
+          'AppBar',
+          'Center',
+          'Padding',
+          'Expanded',
+          'Flexible',
+          'ListView',
+          'GridView'
+        ].contains(typeName);
   }
 }
 

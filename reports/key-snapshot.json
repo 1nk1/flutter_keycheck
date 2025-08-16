@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2025-08-16T12:42:59.568170",
+  "metrics": {
+    "files_total": 42,
+    "files_scanned": 38,
+    "parse_success_rate": 0.952,
+    "widgets_total": 156,
+    "widgets_with_keys": 124,
+    "handlers_total": 28,
+    "handlers_linked": 22
+  },
+  "keys": [
+    "login_button",
+    "email_field", 
+    "password_field",
+    "submit_button"
+  ],
+  "detectors": [
+    {"name": "ValueKey", "hits": 78, "keys_found": 78, "effectiveness": 87.6},
+    {"name": "Key", "hits": 20, "keys_found": 20, "effectiveness": 87.0},
+    {"name": "FindByKey", "hits": 15, "keys_found": 15, "effectiveness": 100.0},
+    {"name": "Semantics", "hits": 11, "keys_found": 11, "effectiveness": 100.0}
+  ],
+  "blind_spots": []
+}

@@ -165,7 +165,8 @@ class NoKeysScreen extends StatelessWidget {
 
         expect(result.blindSpots, isNotEmpty);
         expect(
-          result.blindSpots.any((spot) => spot.type == 'no_keys_in_ui_heavy_file'),
+          result.blindSpots
+              .any((spot) => spot.type == 'no_keys_in_ui_heavy_file'),
           isTrue,
         );
       });
@@ -196,7 +197,7 @@ class BasicWidget extends StatelessWidget {
         final ineffectiveDetectors = result.blindSpots
             .where((spot) => spot.type == 'ineffective_detector')
             .toList();
-        
+
         // This is expected as not all detector types will match
         expect(ineffectiveDetectors, isNotNull);
       });
@@ -213,7 +214,7 @@ class BasicWidget extends StatelessWidget {
         );
 
         final result = await scanner.scan();
-        
+
         // If not in a git repo, should fall back to full scan
         expect(result.metrics.incrementalScan, isFalse);
       });

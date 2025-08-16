@@ -34,15 +34,17 @@ abstract class BaseCommandV3 extends Command<int> {
   Future<ConfigV3> loadConfig() async {
     final configPath = argResults!['config'] as String;
     final verbose = argResults!['verbose'] as bool;
-    
+
     try {
       final config = await ConfigV3.load(configPath);
       config.verbose = verbose;
       return config;
     } on FileSystemException catch (e) {
-      throw ConfigException('Failed to load config from $configPath: ${e.message}');
+      throw ConfigException(
+          'Failed to load config from $configPath: ${e.message}');
     } on FormatException catch (e) {
-      throw ConfigException('Invalid config format in $configPath: ${e.message}');
+      throw ConfigException(
+          'Invalid config format in $configPath: ${e.message}');
     }
   }
 

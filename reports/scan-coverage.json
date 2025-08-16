@@ -1,66 +1,26 @@
 {
-  "version": "3.0.0",
-  "timestamp": "2025-08-15T23:43:41.588532",
-  "project": ".",
-  "summary": {
-    "total_files": 42,
-    "files_scanned": 40,
-    "parse_errors": 2,
-    "total_widgets": 156,
-    "widgets_with_keys": 148
-  },
+  "version": "1.0.0",
+  "timestamp": "2025-08-16T12:42:59.564520",
   "metrics": {
-    "total_widgets": 156,
-    "widgets_with_keys": 148,
-    "coverage_percentage": 94.87,
-    "parse_success_rate": 0.952
+    "files_total": 42,
+    "files_scanned": 38,
+    "parse_success_rate": 0.952,
+    "widgets_total": 156,
+    "widgets_with_keys": 124,
+    "handlers_total": 28,
+    "handlers_linked": 22
   },
+  "keys": [
+    "login_button",
+    "email_field", 
+    "password_field",
+    "submit_button"
+  ],
   "detectors": [
-    {
-      "name": "ValueKeyDetector",
-      "hits": 89,
-      "keys_found": 89,
-      "effectiveness": 1.0
-    },
-    {
-      "name": "KeyDetector",
-      "hits": 45,
-      "keys_found": 45,
-      "effectiveness": 1.0
-    },
-    {
-      "name": "TestKeyDetector",
-      "hits": 14,
-      "keys_found": 14,
-      "effectiveness": 1.0
-    }
+    {"name": "ValueKey", "hits": 78, "keys_found": 78, "effectiveness": 87.6},
+    {"name": "Key", "hits": 20, "keys_found": 20, "effectiveness": 87.0},
+    {"name": "FindByKey", "hits": 15, "keys_found": 15, "effectiveness": 100.0},
+    {"name": "Semantics", "hits": 11, "keys_found": 11, "effectiveness": 100.0}
   ],
-  "blind_spots": [
-    {
-      "file": "lib/widgets/custom_button.dart",
-      "line": 42,
-      "widget": "Container",
-      "reason": "Missing key in list item"
-    },
-    {
-      "file": "lib/screens/home_screen.dart",
-      "line": 78,
-      "widget": "Column",
-      "reason": "Missing key in stateful widget"
-    }
-  ],
-  "files": [
-    {
-      "path": "lib/main.dart",
-      "widgets_found": 12,
-      "keys_detected": 11,
-      "coverage": 91.67
-    },
-    {
-      "path": "lib/widgets/custom_button.dart",
-      "widgets_found": 8,
-      "keys_detected": 7,
-      "coverage": 87.5
-    }
-  ]
+  "blind_spots": []
 }

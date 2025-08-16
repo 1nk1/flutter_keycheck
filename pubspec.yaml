@@ -14,7 +14,7 @@ topics:
   - static-analysis
 
 environment:
-  sdk: ">=3.5.0 <4.0.0"
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   analyzer: ^8.1.1
@@ -25,8 +25,10 @@ dependencies:
   yaml: ^3.1.2
 
 dev_dependencies:
-  test: ^1.24.9
-  lints: ^6.0.0
+  test: ^1.25.0
+  path: ^1.9.0
+  collection: ^1.18.0
+  lints: ^3.0.0
 
 executables:
   flutter_keycheck: flutter_keycheck

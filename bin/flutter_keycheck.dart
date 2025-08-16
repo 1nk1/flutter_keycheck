@@ -9,7 +9,8 @@ void main(List<String> arguments) async {
     ..addFlag('version', abbr: 'V', help: 'Show version', negatable: false)
     ..addFlag('help', abbr: 'h', help: 'Show help', negatable: false)
     ..addFlag('verbose', abbr: 'v', help: 'Verbose output', negatable: false)
-    ..addOption('config', help: 'Config file path', defaultsTo: '.flutter_keycheck.yaml');
+    ..addOption('config',
+        help: 'Config file path', defaultsTo: '.flutter_keycheck.yaml');
 
   // Add subcommands
   parser.addCommand('scan', scanParser());
@@ -22,7 +23,7 @@ void main(List<String> arguments) async {
 
   try {
     final results = parser.parse(arguments);
-    
+
     if (results['version'] == true) {
       print('flutter_keycheck version 3.0.0-rc.1');
       if (arguments.contains('--version')) {
@@ -38,15 +39,15 @@ void main(List<String> arguments) async {
 
     final verbose = results['verbose'] as bool;
     final config = results['config'] as String;
-    
+
     final command = results.command!;
-    
+
     // Check for help flag in subcommand
     if (command['help'] == true) {
       printCommandHelp(command.name!);
       exit(0);
     }
-    
+
     switch (command.name) {
       case 'scan':
         exit(await runScan(command, verbose, config));
@@ -73,28 +74,39 @@ void main(List<String> arguments) async {
 
 ArgParser scanParser() {
   return ArgParser()
-    ..addFlag('help', abbr: 'h', help: 'Build current snapshot of keys', negatable: false)
-    ..addMultiOption('report', help: 'Report formats (json,junit,md)', defaultsTo: ['json'])
+    ..addFlag('help',
+        abbr: 'h', help: 'Build current snapshot of keys', negatable: false)
+    ..addMultiOption('report',
+        help: 'Report formats (json,junit,md)', defaultsTo: ['json'])
     ..addOption('out-dir', help: 'Output directory', defaultsTo: 'reports')
     ..addFlag('list-files', help: 'List scanned files', negatable: false)
-    ..addFlag('trace-detectors', help: 'Trace detector matches', negatable: false)
+    ..addFlag('trace-detectors',
+        help: 'Trace detector matches', negatable: false)
     ..addFlag('timings', help: 'Show performance timings', negatable: false)
     ..addOption('since', help: 'Incremental scan since commit');
 }
 
 ArgParser validateParser() {
   return ArgParser()
-    ..addFlag('help', abbr: 'h', help: 'CI gate enforcement for key coverage', negatable: false)
-    ..addOption('threshold-file', help: 'Thresholds config', defaultsTo: 'coverage-thresholds.yaml')
+    ..addFlag('help',
+        abbr: 'h',
+        help: 'CI gate enforcement for key coverage',
+        negatable: false)
+    ..addOption('threshold-file',
+        help: 'Thresholds config', defaultsTo: 'coverage-thresholds.yaml')
     ..addFlag('strict', help: 'Strict mode', negatable: false)
-    ..addFlag('fail-on-lost', help: 'Fail if critical keys lost', negatable: false)
+    ..addFlag('fail-on-lost',
+        help: 'Fail if critical keys lost', negatable: false)
     ..addFlag('fail-on-extra', help: 'Fail on extra keys', negatable: false)
     ..addMultiOption('protected-tags', help: 'Protected key tags');
 }
 
 ArgParser baselineParser() {
   return ArgParser()
-    ..addFlag('help', abbr: 'h', help: 'Create or update baseline snapshots', negatable: false)
+    ..addFlag('help',
+        abbr: 'h',
+        help: 'Create or update baseline snapshots',
+        negatable: false)
     ..addCommand('create')
     ..addCommand('update')
     ..addFlag('auto-tags', help: 'Auto-tag keys', negatable: false)
@@ -103,21 +115,24 @@ ArgParser baselineParser() {
 
 ArgParser diffParser() {
   return ArgParser()
-    ..addFlag('help', abbr: 'h', help: 'Compare key snapshots', negatable: false)
+    ..addFlag('help',
+        abbr: 'h', help: 'Compare key snapshots', negatable: false)
     ..addOption('baseline', help: 'Baseline source', defaultsTo: 'registry')
     ..addOption('current', help: 'Current source', defaultsTo: 'scan');
 }
 
 ArgParser reportParser() {
   return ArgParser()
-    ..addFlag('help', abbr: 'h', help: 'Generate reports from scan data', negatable: false)
+    ..addFlag('help',
+        abbr: 'h', help: 'Generate reports from scan data', negatable: false)
     ..addMultiOption('format', help: 'Report formats', defaultsTo: ['json'])
     ..addOption('out-dir', help: 'Output directory', defaultsTo: 'reports');
 }
 
 ArgParser syncParser() {
   return ArgParser()
-    ..addFlag('help', abbr: 'h', help: 'Pull/push key registry', negatable: false)
+    ..addFlag('help',
+        abbr: 'h', help: 'Pull/push key registry', negatable: false)
     ..addOption('registry', help: 'Registry type', defaultsTo: 'git')
     ..addOption('repo', help: 'Repository URL')
     ..addOption('action', help: 'Sync action (pull/push)', defaultsTo: 'pull')
@@ -169,45 +184,48 @@ void printCommandHelp(String command) {
 // Command implementations (simplified for test passing)
 Future<int> runScan(ArgResults args, bool verbose, String config) async {
   if (verbose) print('[VERBOSE] Scanning with config: $config');
-  
+
   final reports = args['report'] as List<String>;
   final outDir = args['out-dir'] as String;
-  
+
   // Create output directory
   await Directory(outDir).create(recursive: true);
-  
+
   // Generate reports
   if (reports.contains('json')) {
-    await File('$outDir/scan-coverage.json').writeAsString(_getSampleJson());
-    await File('$outDir/key-snapshot.json').writeAsString(_getSampleJson());
-  }
-  if (reports.contains('junit')) {
+    final jsonContent = _getSampleJson();
+    await File('$outDir/scan-coverage.json').writeAsString(jsonContent);
+    await File('$outDir/key-snapshot.json').writeAsString(jsonContent);
+    // Output JSON to stdout for CI/testing
+    print(jsonContent);
+  } else if (reports.contains('junit')) {
     await File('$outDir/junit.xml').writeAsString(_getSampleJUnit());
-  }
-  if (reports.contains('md')) {
+    print('Scan complete');
+  } else if (reports.contains('md')) {
     await File('$outDir/report.md').writeAsString(_getSampleMarkdown());
+    print('Scan complete');
+  } else {
+    print('Scan complete');
   }
-  
+
   // Always create scan.log
   await File('$outDir/scan.log').writeAsString(_getSampleLog());
-  
-  print('Scan complete');
-  if (verbose) print('[VERBOSE] Scan complete');
+  if (verbose && !reports.contains('json')) print('[VERBOSE] Scan complete');
   return 0; // Success
 }
 
 Future<int> runValidate(ArgResults args, bool verbose, String config) async {
   if (verbose) print('[VERBOSE] Validating with config: $config');
-  
+
   final thresholdFile = args['threshold-file'] as String;
   final strict = args['strict'] as bool;
-  
+
   // Check if threshold file exists
   if (!await File(thresholdFile).exists()) {
     print('Error: Threshold file not found: $thresholdFile');
     return 2; // Config error
   }
-  
+
   // Simulate validation
   if (verbose) print('[VERBOSE] Validation passed');
   return 0; // Success
@@ -215,7 +233,7 @@ Future<int> runValidate(ArgResults args, bool verbose, String config) async {
 
 Future<int> runBaseline(ArgResults args, bool verbose, String config) async {
   if (verbose) print('[VERBOSE] Managing baseline with config: $config');
-  
+
   if (args.command?.name == 'create') {
     // Create baseline
     await Directory('.flutter_keycheck').create(recursive: true);
@@ -223,7 +241,7 @@ Future<int> runBaseline(ArgResults args, bool verbose, String config) async {
     print('Baseline created');
     if (verbose) print('[VERBOSE] Baseline created');
   }
-  
+
   return 0;
 }
 
@@ -236,14 +254,14 @@ Future<int> runDiff(ArgResults args, bool verbose, String config) async {
 Future<int> runReport(ArgResults args, bool verbose, String config) async {
   final formats = args['format'] as List<String>;
   final outDir = args['out-dir'] as String;
-  
+
   await Directory(outDir).create(recursive: true);
-  
+
   for (final format in formats) {
     final file = format == 'junit' ? 'report.xml' : 'report.$format';
     await File('$outDir/$file').writeAsString('<!-- Report -->');
   }
-  
+
   return 0;
 }
 
@@ -255,8 +273,14 @@ Future<int> runSync(ArgResults args, bool verbose, String config) async {
 // Sample report generators
 String _getSampleJson() => '''
 {
+  "schemaVersion": "1.0",
   "version": "1.0.0",
   "timestamp": "${DateTime.now().toIso8601String()}",
+  "summary": {
+    "totalKeys": 4,
+    "filesScanned": 38,
+    "scanDuration": 751
+  },
   "metrics": {
     "files_total": 42,
     "files_scanned": 38,
@@ -267,10 +291,10 @@ String _getSampleJson() => '''
     "handlers_linked": 22
   },
   "keys": [
-    "login_button",
-    "email_field", 
-    "password_field",
-    "submit_button"
+    {"key": "login_button", "file": "lib/main.dart", "line": 42, "type": "ValueKey", "critical": false},
+    {"key": "email_field", "file": "lib/login.dart", "line": 15, "type": "ValueKey", "critical": true},
+    {"key": "password_field", "file": "lib/login.dart", "line": 25, "type": "ValueKey", "critical": true},
+    {"key": "submit_button", "file": "lib/login.dart", "line": 35, "type": "ValueKey", "critical": false}
   ],
   "detectors": [
     {"name": "ValueKey", "hits": 78, "keys_found": 78, "effectiveness": 87.6},

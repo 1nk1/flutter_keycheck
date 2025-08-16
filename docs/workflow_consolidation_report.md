@@ -120,6 +120,9 @@ Verified that no workflows contain references to deprecated binaries:
 - [x] Use Dart SDK throughout (not Flutter SDK)
 - [x] Add quality gates and validation steps
 - [x] Document required status checks
+- [x] Add snapshot comparison tests for format stability
+- [x] Add performance regression gates (±20% threshold)
+- [x] Configure performance baseline artifact handling
 
 ## Recommendations
 

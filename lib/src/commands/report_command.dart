@@ -42,15 +42,15 @@ class ReportCommand extends BaseCommandV3 {
   Future<int> run() async {
     try {
       logInfo('📊 Generating reports...');
-      
+
       final config = await loadConfig();
       final outDir = await ensureOutputDir();
       final formats = argResults!['format'] as List<String>;
-      
+
       // Load or generate data
       final source = argResults!['source'] as String;
       dynamic data;
-      
+
       if (source == 'scan') {
         // Perform scan
         logInfo('Scanning project...');
@@ -61,7 +61,8 @@ class ReportCommand extends BaseCommandV3 {
         data = await scanner.scan();
       } else if (source == 'validation') {
         // Load latest validation result
-        final validationFile = File(path.join(outDir.path, 'validation-result.json'));
+        final validationFile =
+            File(path.join(outDir.path, 'validation-result.json'));
         if (!await validationFile.exists()) {
           logError('No validation result found. Run "validate" command first.');
           return ExitCode.ioError;
@@ -85,7 +86,7 @@ class ReportCommand extends BaseCommandV3 {
           return ExitCode.invalidConfig;
         }
       }
-      
+
       // Generate reports
       for (final format in formats) {
         final reporter = getReporter(format);
@@ -93,7 +94,7 @@ class ReportCommand extends BaseCommandV3 {
           outDir.path,
           'report.${_getExtension(format)}',
         ));
-        
+
         if (data is ScanResult) {
           await reporter.generateScanReport(
             data,
@@ -108,10 +109,11 @@ class ReportCommand extends BaseCommandV3 {
             includeMetrics: argResults!['include-metrics'] as bool,
           );
         }
-        
-        logInfo('✅ ${format.toUpperCase()} report saved to: ${reportFile.path}');
+
+        logInfo(
+            '✅ ${format.toUpperCase()} report saved to: ${reportFile.path}');
       }
-      
+
       return ExitCode.ok;
     } catch (e) {
       return handleError(e);

@@ -18,7 +18,7 @@ class DiffResult {
     required this.current,
   });
 
-  bool get hasChanges => 
+  bool get hasChanges =>
       added.isNotEmpty || removed.isNotEmpty || renamed.isNotEmpty;
 
   int get totalChanges => added.length + removed.length + renamed.length;

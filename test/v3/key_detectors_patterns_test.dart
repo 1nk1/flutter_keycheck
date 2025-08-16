@@ -128,7 +128,8 @@ void main() {
 
       test('handles MaterialKey with complex key names', () {
         final re = RegExp(r'''key:\s*MaterialKey\(["']([^"']+)["']\)''');
-        final match = re.firstMatch(r'''key: MaterialKey("widget_123.sub-component")''');
+        final match =
+            re.firstMatch(r'''key: MaterialKey("widget_123.sub-component")''');
         expect(match?.group(1), 'widget_123.sub-component');
       });
     });
@@ -172,7 +173,8 @@ void main() {
 
       test('handles CupertinoKey with complex key names', () {
         final re = RegExp(r'''key:\s*CupertinoKey\(["']([^"']+)["']\)''');
-        final match = re.firstMatch(r'''key: CupertinoKey("ios.widget_123-component")''');
+        final match =
+            re.firstMatch(r'''key: CupertinoKey("ios.widget_123-component")''');
         expect(match?.group(1), 'ios.widget_123-component');
       });
     });
@@ -182,8 +184,10 @@ void main() {
         // Ensure no parsing errors on compilation
         expect(() => RegExp(r'''\$\((["'])(.*?)\1\)'''), returnsNormally);
         expect(() => RegExp(r'''key:\s*["']([^"']+)["']'''), returnsNormally);
-        expect(() => RegExp(r'''key:\s*MaterialKey\(["']([^"']+)["']\)'''), returnsNormally);
-        expect(() => RegExp(r'''key:\s*CupertinoKey\(["']([^"']+)["']\)'''), returnsNormally);
+        expect(() => RegExp(r'''key:\s*MaterialKey\(["']([^"']+)["']\)'''),
+            returnsNormally);
+        expect(() => RegExp(r'''key:\s*CupertinoKey\(["']([^"']+)["']\)'''),
+            returnsNormally);
       });
 
       test('patterns work with multiline strings', () {
@@ -204,10 +208,10 @@ void main() {
         // Should NOT interpret the brackets or special chars as regex
         final match = re.firstMatch(r'''key: "[test]"''');
         expect(match?.group(1), '[test]');
-        
+
         final match2 = re.firstMatch(r'''key: "test.key"''');
         expect(match2?.group(1), 'test.key');
-        
+
         final match3 = re.firstMatch(r'''key: "test*key"''');
         expect(match3?.group(1), 'test*key');
       });

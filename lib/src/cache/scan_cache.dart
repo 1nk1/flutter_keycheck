@@ -23,7 +23,7 @@ class ScanCache {
   String generateKey(String filePath) {
     final file = File(filePath);
     if (!file.existsSync()) return '';
-    
+
     final content = file.readAsStringSync();
     final bytes = utf8.encode(content);
     final digest = sha256.convert(bytes);
@@ -48,7 +48,7 @@ class ScanCache {
         final content = cacheFile.readAsStringSync();
         final json = jsonDecode(content) as Map<String, dynamic>;
         final entry = CacheEntry.fromJson(json);
-        
+
         if (!entry.isExpired) {
           _memoryCache[key] = entry;
           return entry.result;
@@ -93,7 +93,7 @@ class ScanCache {
     if (key.isEmpty) return;
 
     _memoryCache.remove(key);
-    
+
     final cacheFile = File(p.join(cacheDir, '$key.json'));
     if (cacheFile.existsSync()) {
       cacheFile.deleteSync();
@@ -103,7 +103,7 @@ class ScanCache {
   /// Clear all cache
   void clear() {
     _memoryCache.clear();
-    
+
     if (_cacheDirectory.existsSync()) {
       _cacheDirectory.listSync().forEach((entity) {
         if (entity is File && entity.path.endsWith('.json')) {
@@ -116,7 +116,7 @@ class ScanCache {
   /// Get cache statistics
   CacheStats getStats() {
     final diskFiles = _cacheDirectory.existsSync()
-        ? _cacheDirectory.listSync().where((e) => e is File).length
+        ? _cacheDirectory.listSync().whereType<File>().length
         : 0;
 
     var totalSize = 0;
@@ -145,7 +145,7 @@ class ScanCache {
           final content = entity.readAsStringSync();
           final json = jsonDecode(content) as Map<String, dynamic>;
           final entry = CacheEntry.fromJson(json);
-          
+
           if (!entry.isExpired) {
             _memoryCache[entry.key] = entry;
           } else {
@@ -184,11 +184,11 @@ class CacheEntry {
   }
 
   Map<String, dynamic> toJson() => {
-    'key': key,
-    'filePath': filePath,
-    'timestamp': timestamp.toIso8601String(),
-    'result': result.toJson(),
-  };
+        'key': key,
+        'filePath': filePath,
+        'timestamp': timestamp.toIso8601String(),
+        'result': result.toJson(),
+      };
 
   factory CacheEntry.fromJson(Map<String, dynamic> json) {
     return CacheEntry(
@@ -215,11 +215,11 @@ class ScanResult {
   });
 
   Map<String, dynamic> toJson() => {
-    'keys': keys,
-    'nodeCount': nodeCount,
-    'nodesWithKeys': nodesWithKeys,
-    'keysByType': keysByType,
-  };
+        'keys': keys,
+        'nodeCount': nodeCount,
+        'nodesWithKeys': nodesWithKeys,
+        'keysByType': keysByType,
+      };
 
   factory ScanResult.fromJson(Map<String, dynamic> json) {
     return ScanResult(
@@ -256,6 +256,6 @@ class CacheStats {
   @override
   String toString() {
     return 'CacheStats(memory: $memoryEntries, disk: $diskEntries, '
-           'size: $formattedSize, hitRate: ${(hitRate * 100).toStringAsFixed(1)}%)';
+        'size: $formattedSize, hitRate: ${(hitRate * 100).toStringAsFixed(1)}%)';
   }
 }

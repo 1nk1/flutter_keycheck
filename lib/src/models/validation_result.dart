@@ -40,8 +40,8 @@ class ValidationResult {
   }
 
   String toJson() => json.encode(toMap());
-  
-  factory ValidationResult.fromJson(String source) => 
+
+  factory ValidationResult.fromJson(String source) =>
       ValidationResult.fromMap(json.decode(source));
 }
 

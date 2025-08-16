@@ -53,13 +53,13 @@ class ScanCommandV3 extends Command<void> {
     // Write scan log
     final logFile = File(p.join(outDir, 'scan.log'));
     final logBuffer = StringBuffer();
-    
+
     logBuffer.writeln('Flutter KeyCheck Scan Log');
     logBuffer.writeln('=' * 50);
     logBuffer.writeln('Version: 3.0.0-rc1');
     logBuffer.writeln('Timestamp: ${DateTime.now().toIso8601String()}');
     logBuffer.writeln('');
-    
+
     if (listFiles) {
       logBuffer.writeln('Files Scanned:');
       logBuffer.writeln('-' * 30);
@@ -68,7 +68,7 @@ class ScanCommandV3 extends Command<void> {
       }
       logBuffer.writeln('');
     }
-    
+
     if (traceDetectors) {
       logBuffer.writeln('Detector Trace:');
       logBuffer.writeln('-' * 30);
@@ -77,14 +77,18 @@ class ScanCommandV3 extends Command<void> {
       logBuffer.writeln('  HandlerDetector: 8 handlers found');
       logBuffer.writeln('');
     }
-    
+
     if (showTimings) {
       logBuffer.writeln('Timing Information:');
       logBuffer.writeln('-' * 30);
-      logBuffer.writeln('  Total scan time: ${stopwatch.elapsedMilliseconds}ms');
-      logBuffer.writeln('  File parsing: ${(stopwatch.elapsedMilliseconds * 0.6).round()}ms');
-      logBuffer.writeln('  Analysis: ${(stopwatch.elapsedMilliseconds * 0.3).round()}ms');
-      logBuffer.writeln('  Report generation: ${(stopwatch.elapsedMilliseconds * 0.1).round()}ms');
+      logBuffer
+          .writeln('  Total scan time: ${stopwatch.elapsedMilliseconds}ms');
+      logBuffer.writeln(
+          '  File parsing: ${(stopwatch.elapsedMilliseconds * 0.6).round()}ms');
+      logBuffer.writeln(
+          '  Analysis: ${(stopwatch.elapsedMilliseconds * 0.3).round()}ms');
+      logBuffer.writeln(
+          '  Report generation: ${(stopwatch.elapsedMilliseconds * 0.1).round()}ms');
     }
 
     await logFile.writeAsString(logBuffer.toString());
@@ -145,12 +149,12 @@ class ScanCommandV3 extends Command<void> {
         await file.writeAsString(
             const JsonEncoder.withIndent('  ').convert(scanResult));
         break;
-      
+
       case 'junit':
         final file = File(p.join(outDir, 'report.xml'));
         await file.writeAsString(_generateJUnitReport(scanResult));
         break;
-      
+
       case 'md':
         final file = File(p.join(outDir, 'report.md'));
         await file.writeAsString(_generateMarkdownReport(scanResult));
@@ -161,8 +165,9 @@ class ScanCommandV3 extends Command<void> {
   String _generateJUnitReport(Map<String, dynamic> scanResult) {
     final metrics = scanResult['metrics'] as Map<String, dynamic>;
     final coverage = (metrics['widgets_with_keys'] as int) /
-        (metrics['widgets_total'] as int) * 100;
-    
+        (metrics['widgets_total'] as int) *
+        100;
+
     return '''<?xml version="1.0" encoding="UTF-8"?>
 <testsuites name="Flutter KeyCheck" tests="3" failures="0" errors="0" time="0.123">
   <testsuite name="Coverage Analysis" tests="3" failures="0" errors="0" time="0.123">
@@ -183,8 +188,9 @@ class ScanCommandV3 extends Command<void> {
     final metrics = scanResult['metrics'] as Map<String, dynamic>;
     final detectors = scanResult['detectors'] as List<dynamic>;
     final coverage = (metrics['widgets_with_keys'] as int) /
-        (metrics['widgets_total'] as int) * 100;
-    
+        (metrics['widgets_total'] as int) *
+        100;
+
     final buffer = StringBuffer();
     buffer.writeln('# Flutter KeyCheck Coverage Report');
     buffer.writeln();
@@ -192,7 +198,8 @@ class ScanCommandV3 extends Command<void> {
     buffer.writeln();
     buffer.writeln('- **Version**: ${scanResult['version']}');
     buffer.writeln('- **Timestamp**: ${scanResult['timestamp']}');
-    buffer.writeln('- **Widget Key Coverage**: ${coverage.toStringAsFixed(1)}%');
+    buffer
+        .writeln('- **Widget Key Coverage**: ${coverage.toStringAsFixed(1)}%');
     buffer.writeln();
     buffer.writeln('## Metrics');
     buffer.writeln();
@@ -200,7 +207,8 @@ class ScanCommandV3 extends Command<void> {
     buffer.writeln('|--------|-------|');
     buffer.writeln('| Files Total | ${metrics['files_total']} |');
     buffer.writeln('| Files Scanned | ${metrics['files_scanned']} |');
-    buffer.writeln('| Parse Success Rate | ${metrics['parse_success_rate']}% |');
+    buffer
+        .writeln('| Parse Success Rate | ${metrics['parse_success_rate']}% |');
     buffer.writeln('| Widgets Total | ${metrics['widgets_total']} |');
     buffer.writeln('| Widgets with Keys | ${metrics['widgets_with_keys']} |');
     buffer.writeln('| Handlers Total | ${metrics['handlers_total']} |');
@@ -210,11 +218,12 @@ class ScanCommandV3 extends Command<void> {
     buffer.writeln();
     buffer.writeln('| Detector | Hits | Keys Found | Effectiveness |');
     buffer.writeln('|----------|------|------------|---------------|');
-    
+
     for (final detector in detectors) {
-      buffer.writeln('| ${detector['name']} | ${detector['hits']} | ${detector['keys_found']} | ${detector['effectiveness']}% |');
+      buffer.writeln(
+          '| ${detector['name']} | ${detector['hits']} | ${detector['keys_found']} | ${detector['effectiveness']}% |');
     }
-    
+
     return buffer.toString();
   }
 }

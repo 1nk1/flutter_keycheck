@@ -88,6 +88,42 @@ jobs:
           }
           echo "✓ CLI compiles successfully"
       
+      - name: Golden snapshot validation
+        run: |
+          echo "Validating golden snapshot..."
+          
+          # Check baseline exists
+          if [ ! -f "test/golden_workspace/expected_keycheck.json" ]; then
+            echo "::error::Golden baseline missing! Cannot release without baseline."
+            exit 1
+          }
+          
+          # Run snapshot test
+          dart test test/golden_workspace/snapshot_test.dart --reporter expanded || {
+            echo "::error::Golden snapshot validation failed"
+            exit 1
+          }
+          echo "✓ Golden snapshot valid"
+      
+      - name: Performance regression check
+        env:
+          FAIL_ON_PERF_REGRESSION: true
+          PERF_REGRESSION_THRESHOLD: 0.2
+        run: |
+          echo "Checking for performance regressions..."
+          
+          # Check baseline exists
+          if [ ! -f "test/golden_workspace/performance_baseline.json" ]; then
+            echo "::warning::Performance baseline not found, skipping regression check"
+          else
+            # Run performance test
+            dart test test/golden_workspace/performance_test.dart --reporter expanded || {
+              echo "::error::Performance regression detected! Cannot release with >20% regression."
+              exit 1
+            }
+            echo "✓ No performance regressions"
+          fi
+      
       - name: Pana score check
         run: |
           dart pub global activate pana

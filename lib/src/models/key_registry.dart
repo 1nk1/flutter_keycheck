@@ -19,7 +19,7 @@ class KeyRegistry {
 
   factory KeyRegistry.fromYaml(String yaml) {
     final doc = loadYaml(yaml) as Map;
-    
+
     return KeyRegistry(
       version: doc['version'] as int? ?? 1,
       monorepo: doc['monorepo'] as bool? ?? false,
@@ -37,7 +37,7 @@ class KeyRegistry {
 
   factory KeyRegistry.fromJson(String json) {
     final map = jsonDecode(json) as Map<String, dynamic>;
-    
+
     return KeyRegistry(
       version: map['version'] as int? ?? 1,
       monorepo: map['monorepo'] as bool? ?? false,
@@ -68,7 +68,7 @@ class KeyRegistry {
     if (lastUpdated != null) {
       buffer.writeln('last_updated: ${lastUpdated!.toIso8601String()}');
     }
-    
+
     buffer.writeln('packages:');
     for (final package in packages) {
       buffer.writeln('  - name: ${package.name}');
@@ -84,14 +84,14 @@ class KeyRegistry {
         }
       }
     }
-    
+
     buffer.writeln('policies:');
     buffer.writeln('  fail_on_lost: ${policies.failOnLost}');
     buffer.writeln('  fail_on_rename: ${policies.failOnRename}');
     buffer.writeln('  fail_on_extra: ${policies.failOnExtra}');
     buffer.writeln('  protected_tags: ${jsonEncode(policies.protectedTags)}');
     buffer.writeln('  drift_threshold: ${policies.driftThreshold}');
-    
+
     return buffer.toString();
   }
 
@@ -173,12 +173,13 @@ class KeyDefinition {
         'status': status.name,
         if (notes != null) 'notes': notes,
         if (addedAt != null) 'added_at': addedAt!.toIso8601String(),
-        if (deprecatedAt != null) 'deprecated_at': deprecatedAt!.toIso8601String(),
+        if (deprecatedAt != null)
+          'deprecated_at': deprecatedAt!.toIso8601String(),
       };
 
   bool hasTag(String tag) => tags.contains(tag);
-  
-  bool hasAnyTag(List<String> checkTags) => 
+
+  bool hasAnyTag(List<String> checkTags) =>
       checkTags.any((tag) => tags.contains(tag));
 }
 

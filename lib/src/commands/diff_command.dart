@@ -41,39 +41,39 @@ class DiffCommand extends BaseCommandV3 {
   Future<int> run() async {
     try {
       logInfo('🔍 Comparing key snapshots...');
-      
+
       final config = await loadConfig();
-      
+
       // Load baseline
       final baseline = await _loadSnapshot(
         argResults!['baseline'] as String,
         'baseline',
         config,
       );
-      
+
       if (baseline == null) {
         logError('Failed to load baseline snapshot');
         return ExitCode.ioError;
       }
-      
+
       // Load current
       final current = await _loadSnapshot(
         argResults!['current'] as String,
         'current',
         config,
       );
-      
+
       if (current == null) {
         logError('Failed to load current snapshot');
         return ExitCode.ioError;
       }
-      
+
       // Perform diff
       final diff = _performDiff(baseline, current);
-      
+
       // Display results
       _displayDiff(diff);
-      
+
       // Return exit code based on changes
       if (diff.hasChanges) {
         return ExitCode.policyViolation; // Exit 1 when changes found
@@ -116,11 +116,11 @@ class DiffCommand extends BaseCommandV3 {
   DiffResult _performDiff(ScanResult baseline, ScanResult current) {
     final baselineKeys = baseline.keyUsages.keys.toSet();
     final currentKeys = current.keyUsages.keys.toSet();
-    
+
     final added = currentKeys.difference(baselineKeys);
     final removed = baselineKeys.difference(currentKeys);
     final unchanged = baselineKeys.intersection(currentKeys);
-    
+
     // Check for renamed keys (heuristic based on similarity)
     final renamed = <String, String>{};
     for (final removedKey in removed) {
@@ -130,13 +130,13 @@ class DiffCommand extends BaseCommandV3 {
         }
       }
     }
-    
+
     // Remove renamed from added/removed
     for (final entry in renamed.entries) {
       removed.remove(entry.key);
       added.remove(entry.value);
     }
-    
+
     return DiffResult(
       added: added,
       removed: removed,
@@ -151,11 +151,11 @@ class DiffCommand extends BaseCommandV3 {
     // Simple heuristic: check if keys share significant parts
     final parts1 = key1.split(RegExp(r'[._-]'));
     final parts2 = key2.split(RegExp(r'[._-]'));
-    
+
     final common = parts1.toSet().intersection(parts2.toSet());
-    final similarity = common.length / 
-        (parts1.length + parts2.length - common.length);
-    
+    final similarity =
+        common.length / (parts1.length + parts2.length - common.length);
+
     return similarity > 0.6; // 60% similarity threshold
   }
 
@@ -163,7 +163,7 @@ class DiffCommand extends BaseCommandV3 {
     logInfo('📊 Diff Summary:');
     logInfo('  • Total keys: ${diff.current.keyUsages.length}');
     logInfo('  • Unchanged: ${diff.unchanged.length}');
-    
+
     if (diff.added.isNotEmpty) {
       logInfo('  • Added: ${diff.added.length}');
       if (argResults!['verbose'] as bool || !argResults!['only-changes']) {
@@ -178,7 +178,7 @@ class DiffCommand extends BaseCommandV3 {
         }
       }
     }
-    
+
     if (diff.removed.isNotEmpty) {
       logWarning('  • Removed: ${diff.removed.length}');
       if (argResults!['verbose'] as bool || !argResults!['only-changes']) {
@@ -193,7 +193,7 @@ class DiffCommand extends BaseCommandV3 {
         }
       }
     }
-    
+
     if (diff.renamed.isNotEmpty) {
       logInfo('  • Renamed: ${diff.renamed.length}');
       if (argResults!['verbose'] as bool || !argResults!['only-changes']) {
@@ -202,18 +202,16 @@ class DiffCommand extends BaseCommandV3 {
         }
       }
     }
-    
+
     // Calculate drift
-    final totalChanges = diff.added.length + 
-        diff.removed.length + 
-        diff.renamed.length;
+    final totalChanges =
+        diff.added.length + diff.removed.length + diff.renamed.length;
     final totalKeys = diff.baseline.keyUsages.length;
-    final driftPercentage = totalKeys > 0 
-        ? (totalChanges / totalKeys * 100) 
-        : 0.0;
-    
+    final driftPercentage =
+        totalKeys > 0 ? (totalChanges / totalKeys * 100) : 0.0;
+
     logInfo('  • Drift: ${driftPercentage.toStringAsFixed(1)}%');
-    
+
     if (diff.hasChanges) {
       logWarning('⚠️  Changes detected');
     } else {

@@ -67,17 +67,18 @@ class ValidateCommandV3 extends BaseCommandV3 {
   Future<int> run() async {
     try {
       logInfo('🔍 Validating keys...');
-      
+
       final config = await loadConfig();
       final outDir = await ensureOutputDir();
-      
+
       // Load or fetch baseline
       final baseline = await _loadBaseline(config);
       if (baseline == null) {
-        logError('No baseline found. Run "flutter_keycheck baseline create" first.');
+        logError(
+            'No baseline found. Run "flutter_keycheck baseline create" first.');
         return ExitCode.invalidConfig;
       }
-      
+
       // Perform current scan
       logVerbose('Scanning current project state...');
       final scanner = AstScannerV3(
@@ -85,7 +86,7 @@ class ValidateCommandV3 extends BaseCommandV3 {
         config: config,
       );
       final scanResult = await scanner.scan();
-      
+
       // Configure policy engine
       final policyEngine = PolicyEngine(
         strict: argResults!['strict'] as bool,
@@ -95,16 +96,16 @@ class ValidateCommandV3 extends BaseCommandV3 {
         protectedTags: argResults!['protected-tags'] as List<String>,
         maxDrift: double.parse(argResults!['max-drift'] as String),
       );
-      
+
       // Run validation
-      final validationResult = await policyEngine.validate(
+      final validationResult = policyEngine.validate(
         baseline: baseline,
         current: scanResult,
       );
-      
+
       // Log results
       _logValidationResults(validationResult);
-      
+
       // Generate reports
       final formats = argResults!['report'] as List<String>;
       for (final format in formats) {
@@ -114,12 +115,14 @@ class ValidateCommandV3 extends BaseCommandV3 {
           'validation-report.${_getExtension(format)}',
         ));
         await reporter.generateValidationReport(validationResult, reportFile);
-        logInfo('📊 ${format.toUpperCase()} report saved to: ${reportFile.path}');
+        logInfo(
+            '📊 ${format.toUpperCase()} report saved to: ${reportFile.path}');
       }
-      
+
       // Return appropriate exit code
       if (validationResult.hasViolations) {
-        logError('❌ Validation failed with ${validationResult.violations.length} violations');
+        logError(
+            '❌ Validation failed with ${validationResult.violations.length} violations');
         return ExitCode.policyViolation;
       } else {
         logInfo('✅ All validation checks passed!');
@@ -132,7 +135,7 @@ class ValidateCommandV3 extends BaseCommandV3 {
 
   Future<ScanResult?> _loadBaseline(ConfigV3 config) async {
     final baselineSource = argResults!['baseline'] as String;
-    
+
     if (baselineSource == 'registry') {
       // Load from registry
       final registry = await getRegistry(config);
@@ -154,7 +157,7 @@ class ValidateCommandV3 extends BaseCommandV3 {
     logInfo('  • Added keys: ${result.summary.addedKeys}');
     logInfo('  • Renamed keys: ${result.summary.renamedKeys}');
     logInfo('  • Drift: ${result.summary.driftPercentage.toStringAsFixed(1)}%');
-    
+
     if (result.violations.isNotEmpty) {
       logWarning('⚠️  Violations found:');
       for (final violation in result.violations) {
@@ -164,11 +167,11 @@ class ValidateCommandV3 extends BaseCommandV3 {
         }
       }
     }
-    
+
     if (result.warnings.isNotEmpty) {
       logWarning('⚠️  Warnings:');
       for (final warning in result.warnings) {
-        logWarning('  • ${warning}');
+        logWarning('  • $warning');
       }
     }
   }

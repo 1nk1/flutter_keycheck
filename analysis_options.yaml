@@ -23,6 +23,9 @@ analyzer:
     todo: ignore
   exclude:
     - example/**
+    - test/golden_workspace/lib/**
+    - test/golden_workspace/test/golden_workspace/**
+    - test_legacy/**
 
 linter:
   rules:

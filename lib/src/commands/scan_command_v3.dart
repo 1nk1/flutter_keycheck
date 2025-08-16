@@ -52,10 +52,10 @@ class ScanCommandV3 extends BaseCommandV3 {
   Future<int> run() async {
     try {
       logInfo('🔍 Scanning for keys...');
-      
+
       final config = await loadConfig();
       final outDir = await ensureOutputDir();
-      
+
       // Configure scanner
       final scanner = AstScannerV3(
         projectPath: Directory.current.path,
@@ -69,22 +69,25 @@ class ScanCommandV3 extends BaseCommandV3 {
 
       // Perform scan
       final result = await scanner.scan();
-      
+
       // Log results
       logInfo('✅ Scan complete:');
-      logInfo('  • Files scanned: ${result.metrics.scannedFiles}/${result.metrics.totalFiles}');
+      logInfo(
+          '  • Files scanned: ${result.metrics.scannedFiles}/${result.metrics.totalFiles}');
       logInfo('  • Keys found: ${result.keyUsages.length}');
-      logInfo('  • Coverage: ${result.metrics.fileCoverage.toStringAsFixed(1)}%');
-      
+      logInfo(
+          '  • Coverage: ${result.metrics.fileCoverage.toStringAsFixed(1)}%');
+
       if (result.metrics.incrementalScan) {
-        logInfo('  • Incremental scan since: ${result.metrics.incrementalBase}');
+        logInfo(
+            '  • Incremental scan since: ${result.metrics.incrementalBase}');
       }
 
       // Generate report
       final format = argResults!['report'] as String;
       final reporter = getReporter(format);
       final reportFile = File(path.join(outDir.path, 'key-snapshot.$format'));
-      
+
       await reporter.generateScanReport(result, reportFile);
       logInfo('📊 Report saved to: ${reportFile.path}');
 
@@ -113,7 +116,7 @@ class ScanCommandV3 extends BaseCommandV3 {
       projectPath: Directory.current.path,
       scanResult: result,
     );
-    
+
     await file.writeAsString(snapshot.toJson());
   }
 }

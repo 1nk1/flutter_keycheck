@@ -47,8 +47,8 @@ class ScanResult {
   }
 
   String toJson() => json.encode(toMap());
-  
-  factory ScanResult.fromJson(String source) => 
+
+  factory ScanResult.fromJson(String source) =>
       ScanResult.fromMap(json.decode(source));
 }
 
@@ -146,11 +146,12 @@ class FileAnalysis {
     );
     analysis.keysFound.addAll(List<String>.from(map['keys_found'] ?? []));
     analysis.widgetTypes.addAll(List<String>.from(map['widget_types'] ?? []));
-    analysis.uncoveredWidgetTypes.addAll(
-        List<String>.from(map['uncovered_widget_types'] ?? []));
+    analysis.uncoveredWidgetTypes
+        .addAll(List<String>.from(map['uncovered_widget_types'] ?? []));
     analysis.functions.addAll(List<String>.from(map['functions'] ?? []));
     analysis.methods.addAll(List<String>.from(map['methods'] ?? []));
-    analysis.detectorHits.addAll(Map<String, int>.from(map['detector_hits'] ?? {}));
+    analysis.detectorHits
+        .addAll(Map<String, int>.from(map['detector_hits'] ?? {}));
     analysis.nodesAnalyzed = map['nodes_analyzed'] ?? 0;
     analysis.widgetCount = map['widget_count'] ?? 0;
     analysis.widgetsWithKeys = map['widgets_with_keys'] ?? 0;
@@ -357,7 +358,7 @@ class ScanSnapshot {
   }
 
   String toJson() => json.encode(toMap());
-  
-  factory ScanSnapshot.fromJson(String source) => 
+
+  factory ScanSnapshot.fromJson(String source) =>
       ScanSnapshot.fromMap(json.decode(source));
 }

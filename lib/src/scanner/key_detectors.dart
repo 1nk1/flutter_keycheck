@@ -7,7 +7,7 @@ abstract class KeyDetector {
   final String description;
   final int priority;
   final Map<String, dynamic> config;
-  
+
   // Metrics
   int matchCount = 0;
   int extractCount = 0;
@@ -22,23 +22,23 @@ abstract class KeyDetector {
 
   /// Check if AST node matches this detector
   bool matches(AstNode node);
-  
+
   /// Extract key value from matched node
   String? extractKey(AstNode node);
-  
+
   /// Check if expression matches
   bool matchesExpression(Expression expr);
-  
+
   /// Extract from expression
   String? extractFromExpression(Expression expr);
-  
+
   /// Get detector metrics
   Map<String, dynamic> getMetrics() => {
-    'name': name,
-    'matches': matchCount,
-    'extracted': extractCount,
-    'patterns': matchedPatterns.toSet().toList(),
-  };
+        'name': name,
+        'matches': matchCount,
+        'extracted': extractCount,
+        'patterns': matchedPatterns.toSet().toList(),
+      };
 }
 
 /// Detector for ValueKey patterns
@@ -206,7 +206,7 @@ class FindByKeyDetector extends KeyDetector {
       final args = node.argumentList.arguments;
       if (args.isNotEmpty) {
         final firstArg = args.first;
-        
+
         // Handle direct string
         if (firstArg is SimpleStringLiteral) {
           extractCount++;
@@ -214,7 +214,7 @@ class FindByKeyDetector extends KeyDetector {
           matchedPatterns.add('find.byKey("$key")');
           return key;
         }
-        
+
         // Handle Key/ValueKey creation
         if (firstArg is InstanceCreationExpression) {
           final innerArgs = firstArg.argumentList.arguments;
@@ -244,13 +244,12 @@ class CustomPatternDetector extends KeyDetector {
   final RegExp? regex;
 
   CustomPatternDetector({
-    required String name,
+    required super.name,
     required this.pattern,
     required this.extraction,
     Map<String, dynamic>? config,
-  }) : regex = RegExp(pattern),
-       super(
-          name: name,
+  })  : regex = RegExp(pattern),
+        super(
           description: 'Custom pattern: $pattern',
           priority: 5,
           config: config ?? {},
@@ -322,14 +321,13 @@ class SemanticsDetector extends KeyDetector {
   @override
   String? extractKey(AstNode node) {
     if (node is InstanceCreationExpression) {
-      final labelArg = node.argumentList.arguments
-          .whereType<NamedExpression>()
-          .firstWhere(
-            (arg) => arg.name.label.name == 'label',
-            orElse: () => null as NamedExpression,
-          );
-      
-      if (labelArg != null && labelArg.expression is SimpleStringLiteral) {
+      final labelArg =
+          node.argumentList.arguments.whereType<NamedExpression>().firstWhere(
+                (arg) => arg.name.label.name == 'label',
+                orElse: () => null as NamedExpression,
+              );
+
+      if (labelArg.expression is SimpleStringLiteral) {
         extractCount++;
         final label = (labelArg.expression as SimpleStringLiteral).value;
         matchedPatterns.add('Semantics(label: "$label")');
@@ -350,13 +348,13 @@ class SemanticsDetector extends KeyDetector {
 class DetectorFactory {
   static List<KeyDetector> createFromConfig(YamlMap? config) {
     final detectors = <KeyDetector>[];
-    
+
     // Always include built-in detectors
     detectors.add(ValueKeyDetector());
     detectors.add(BasicKeyDetector());
     detectors.add(FindByKeyDetector());
     detectors.add(SemanticsDetector());
-    
+
     // Add custom detectors from config
     if (config != null && config['custom_detectors'] != null) {
       final customList = config['custom_detectors'] as YamlList;
@@ -371,13 +369,13 @@ class DetectorFactory {
         }
       }
     }
-    
+
     // Sort by priority
     detectors.sort((a, b) => b.priority.compareTo(a.priority));
-    
+
     return detectors;
   }
-  
+
   /// Create detectors for specific testing frameworks
   static List<KeyDetector> createTestDetectors() {
     return [
@@ -394,7 +392,7 @@ class DetectorFactory {
       ),
     ];
   }
-  
+
   /// Create detectors for specific UI frameworks
   static List<KeyDetector> createFrameworkDetectors(String framework) {
     switch (framework) {

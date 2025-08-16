@@ -9,7 +9,7 @@ class ScanCache {
   final String cacheDir;
   final Duration maxAge;
   final bool enabled;
-  
+
   late final File _indexFile;
   late final Directory _cacheDirectory;
   final Map<String, CacheEntry> _memoryCache = {};
@@ -19,10 +19,11 @@ class ScanCache {
     String? cacheDir,
     this.maxAge = const Duration(hours: 24),
     this.enabled = true,
-  }) : cacheDir = cacheDir ?? path.join(projectPath, '.flutter_keycheck', 'cache') {
+  }) : cacheDir =
+            cacheDir ?? path.join(projectPath, '.flutter_keycheck', 'cache') {
     _cacheDirectory = Directory(this.cacheDir);
     _indexFile = File(path.join(this.cacheDir, 'cache_index.json'));
-    
+
     if (enabled) {
       _initializeCache();
     }
@@ -33,7 +34,7 @@ class ScanCache {
     if (!_cacheDirectory.existsSync()) {
       _cacheDirectory.createSync(recursive: true);
     }
-    
+
     if (_indexFile.existsSync()) {
       _loadIndex();
     }
@@ -44,10 +45,11 @@ class ScanCache {
     try {
       final content = _indexFile.readAsStringSync();
       final index = jsonDecode(content) as Map<String, dynamic>;
-      
+
       for (final entry in index.entries) {
-        final cacheEntry = CacheEntry.fromJson(entry.value as Map<String, dynamic>);
-        
+        final cacheEntry =
+            CacheEntry.fromJson(entry.value as Map<String, dynamic>);
+
         // Check if entry is still valid
         if (!_isExpired(cacheEntry)) {
           _memoryCache[entry.key] = cacheEntry;
@@ -62,12 +64,12 @@ class ScanCache {
   /// Save cache index to disk
   void _saveIndex() {
     if (!enabled) return;
-    
+
     final index = <String, dynamic>{};
     for (final entry in _memoryCache.entries) {
       index[entry.key] = entry.value.toJson();
     }
-    
+
     _indexFile.writeAsStringSync(
       const JsonEncoder.withIndent('  ').convert(index),
     );
@@ -76,43 +78,43 @@ class ScanCache {
   /// Get cached file analysis
   FileAnalysisCache? getFileAnalysis(String filePath) {
     if (!enabled) return null;
-    
+
     final key = _getFileKey(filePath);
     final entry = _memoryCache[key];
-    
+
     if (entry == null || _isExpired(entry)) {
       return null;
     }
-    
+
     // Check if file has been modified
     final file = File(filePath);
     if (!file.existsSync()) {
       _memoryCache.remove(key);
       return null;
     }
-    
+
     final currentHash = _getFileHash(file);
     if (currentHash != entry.fileHash) {
       _memoryCache.remove(key);
       return null;
     }
-    
+
     // Load cached data
     final cacheFile = File(path.join(cacheDir, entry.cacheFile));
     if (!cacheFile.existsSync()) {
       _memoryCache.remove(key);
       return null;
     }
-    
+
     try {
       final content = cacheFile.readAsStringSync();
       final data = jsonDecode(content) as Map<String, dynamic>;
-      
+
       // Update hit count
       entry.hits++;
       entry.lastAccessed = DateTime.now();
       _saveIndex();
-      
+
       return FileAnalysisCache.fromJson(data);
     } catch (e) {
       _memoryCache.remove(key);
@@ -123,21 +125,21 @@ class ScanCache {
   /// Cache file analysis
   void cacheFileAnalysis(String filePath, FileAnalysisCache analysis) {
     if (!enabled) return;
-    
+
     final key = _getFileKey(filePath);
     final file = File(filePath);
-    
+
     if (!file.existsSync()) return;
-    
+
     final fileHash = _getFileHash(file);
     final cacheFileName = '${_sanitizeFileName(filePath)}_$fileHash.json';
     final cacheFile = File(path.join(cacheDir, cacheFileName));
-    
+
     // Save analysis data
     cacheFile.writeAsStringSync(
       jsonEncode(analysis.toJson()),
     );
-    
+
     // Update index
     _memoryCache[key] = CacheEntry(
       filePath: filePath,
@@ -148,22 +150,22 @@ class ScanCache {
       size: file.lengthSync(),
       hits: 0,
     );
-    
+
     _saveIndex();
   }
 
   /// Get cache statistics
   CacheStats getStats() {
     final stats = CacheStats();
-    
+
     if (!enabled) {
       stats.enabled = false;
       return stats;
     }
-    
+
     stats.enabled = true;
     stats.entries = _memoryCache.length;
-    
+
     // Calculate size
     for (final entry in _memoryCache.values) {
       final cacheFile = File(path.join(cacheDir, entry.cacheFile));
@@ -172,11 +174,11 @@ class ScanCache {
       }
       stats.totalHits += entry.hits;
     }
-    
+
     // Find hot entries
     final sortedByHits = _memoryCache.values.toList()
       ..sort((a, b) => b.hits.compareTo(a.hits));
-    
+
     stats.hotEntries = sortedByHits
         .take(10)
         .map((e) => HotEntry(
@@ -185,26 +187,26 @@ class ScanCache {
               lastAccessed: e.lastAccessed,
             ))
         .toList();
-    
+
     // Calculate hit rate
     if (stats.totalHits > 0 || _memoryCache.isNotEmpty) {
-      stats.hitRate = stats.totalHits / 
-          (stats.totalHits + _memoryCache.length).toDouble();
+      stats.hitRate =
+          stats.totalHits / (stats.totalHits + _memoryCache.length).toDouble();
     }
-    
+
     return stats;
   }
 
   /// Clear expired entries
   void cleanExpired() {
     if (!enabled) return;
-    
+
     final expired = <String>[];
-    
+
     for (final entry in _memoryCache.entries) {
       if (_isExpired(entry.value)) {
         expired.add(entry.key);
-        
+
         // Delete cache file
         final cacheFile = File(path.join(cacheDir, entry.value.cacheFile));
         if (cacheFile.existsSync()) {
@@ -212,11 +214,11 @@ class ScanCache {
         }
       }
     }
-    
+
     for (final key in expired) {
       _memoryCache.remove(key);
     }
-    
+
     if (expired.isNotEmpty) {
       _saveIndex();
     }
@@ -225,28 +227,28 @@ class ScanCache {
   /// Clear all cache
   void clear() {
     if (!enabled) return;
-    
+
     _memoryCache.clear();
-    
+
     // Delete all cache files
     if (_cacheDirectory.existsSync()) {
       _cacheDirectory.deleteSync(recursive: true);
       _cacheDirectory.createSync(recursive: true);
     }
-    
+
     _saveIndex();
   }
 
   /// Warm cache by pre-scanning files
   Future<void> warmCache(List<String> files) async {
     if (!enabled) return;
-    
+
     for (final filePath in files) {
       // Check if already cached
       if (getFileAnalysis(filePath) != null) {
         continue;
       }
-      
+
       // TODO: Trigger background scan of file
       // This would require integration with AST scanner
     }
@@ -266,7 +268,8 @@ class ScanCache {
 
   /// Sanitize file name for cache storage
   String _sanitizeFileName(String filePath) {
-    return path.relative(filePath, from: projectPath)
+    return path
+        .relative(filePath, from: projectPath)
         .replaceAll(path.separator, '_')
         .replaceAll('.', '_');
   }

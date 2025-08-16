@@ -99,3 +99,67 @@ jobs:
               echo "::warning::README.md is missing section: $section"
             fi
           done
+
+  golden-snapshot-check:
+    name: Golden Snapshot Check
+    runs-on: ubuntu-latest
+    needs: quick-check
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      
+      - name: Install dependencies
+        run: dart pub get
+      
+      - name: Verify golden baseline exists
+        run: |
+          if [ ! -f "test/golden_workspace/expected_keycheck.json" ]; then
+            echo "::error::Golden baseline file is missing! Run: dart run tool/update_baseline.dart"
+            exit 1
+          fi
+      
+      - name: Run snapshot test
+        run: |
+          dart test test/golden_workspace/snapshot_test.dart --reporter expanded || {
+            echo "::error::Golden snapshot test failed. If this is expected, update baseline with: dart run tool/update_baseline.dart"
+            exit 1
+          }
+
+  performance-check:
+    name: Performance Check
+    runs-on: ubuntu-latest
+    needs: quick-check
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      
+      - name: Install dependencies
+        run: dart pub get
+      
+      - name: Verify performance baseline exists
+        run: |
+          if [ ! -f "test/golden_workspace/performance_baseline.json" ]; then
+            echo "::warning::Performance baseline not found, will establish new baseline"
+          fi
+      
+      - name: Run performance test
+        env:
+          FAIL_ON_PERF_REGRESSION: true
+          PERF_REGRESSION_THRESHOLD: 0.2
+        run: |
+          dart test test/golden_workspace/performance_test.dart --reporter expanded || {
+            echo "::error::Performance regression detected (>20%). Review changes for performance impact."
+            exit 1
+          }

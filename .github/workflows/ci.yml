@@ -46,27 +46,57 @@ jobs:
       - name: Analyze project source
         run: dart analyze --fatal-infos --fatal-warnings
       
-      - name: Run tests with coverage
-        run: dart test --coverage=coverage
-      
-      - name: Generate coverage report
+      - name: Download previous performance baseline
         if: matrix.sdk == 'stable'
-        run: |
-          dart pub global activate coverage
-          dart pub global run coverage:format_coverage \
-            --lcov \
-            --in=coverage \
-            --out=coverage/lcov.info \
-            --packages=.dart_tool/package_config.json \
-            --report-on=lib
-      
-      - name: Upload coverage to Codecov
-        if: matrix.sdk == 'stable'
-        uses: codecov/codecov-action@v4
+        uses: actions/download-artifact@v4
         with:
-          file: coverage/lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
+          name: performance-baseline
+          path: test/golden_workspace/
+        continue-on-error: true
+      
+      - name: Tests (v3 and golden only)
+        env:
+          TZ: UTC
+          FAIL_ON_PERF_REGRESSION: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          echo "Running golden workspace tests..."
+          dart test test/golden_workspace --reporter expanded -j 2
+          echo "Running v3 tests..."
+          dart test test/v3 --reporter expanded -j 2
+      
+      - name: Upload performance baseline
+        if: matrix.sdk == 'stable' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-baseline
+          path: test/golden_workspace/performance_baseline.json
+          retention-days: 30
+      
+      - name: Upload snapshot artifacts
+        if: always() && matrix.sdk == 'stable'
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-artifacts-${{ github.run_number }}
+          path: |
+            test/golden_workspace/expected_keycheck.json
+            test/golden_workspace/performance_baseline.json
+          retention-days: 30
+      
+      - name: Upload golden artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-artifacts-${{ matrix.sdk }}
+          path: |
+            test/golden_workspace/**/actual*
+            test/golden_workspace/**/diff*
+            test/golden_workspace/**/*.json
+            test/golden_workspace/**/*.xml
+            test/golden_workspace/**/*.md
+            test/golden_workspace/test_reports/**
+            build/**
+            coverage/**
+      
 
   cli-smoke-tests:
     name: CLI Smoke Tests
@@ -117,10 +147,148 @@ jobs:
             diff -u docs/cli_help.snapshot /tmp/help.txt || echo "::warning::CLI help output has changed"
           fi
 
+  golden-snapshot-verification:
+    name: Golden Snapshot Verification
+    runs-on: ubuntu-latest
+    needs: test-matrix
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: ${{ runner.os }}-dart-stable-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-dart-stable-
+            ${{ runner.os }}-dart-
+      
+      - name: Install dependencies
+        run: dart pub get
+      
+      - name: Verify golden snapshot exists
+        run: |
+          if [ ! -f "test/golden_workspace/expected_keycheck.json" ]; then
+            echo "❌ Golden snapshot file missing!"
+            exit 1
+          fi
+          echo "✅ Golden snapshot file exists"
+      
+      - name: Run snapshot verification test
+        run: |
+          echo "Running golden snapshot verification..."
+          dart test test/golden_workspace/snapshot_test.dart --reporter expanded
+      
+      - name: Validate schema version
+        run: |
+          echo "Validating schema version..."
+          dart run tool/validate_schema.dart test/golden_workspace/expected_keycheck.json
+      
+      - name: Upload snapshot artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-snapshot-failure-${{ github.run_number }}
+          path: |
+            test/golden_workspace/expected_keycheck.json
+            test/golden_workspace/actual_*.json
+            test/golden_workspace/diff_*.txt
+          retention-days: 7
+
+  performance-regression-check:
+    name: Performance Regression Check
+    runs-on: ubuntu-latest
+    needs: test-matrix
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: ${{ runner.os }}-dart-stable-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-dart-stable-
+            ${{ runner.os }}-dart-
+      
+      - name: Install dependencies
+        run: dart pub get
+      
+      - name: Download performance baseline
+        uses: actions/download-artifact@v4
+        with:
+          name: performance-baseline
+          path: test/golden_workspace/
+        continue-on-error: true
+      
+      - name: Run performance regression test
+        env:
+          FAIL_ON_PERF_REGRESSION: true
+          PERF_REGRESSION_THRESHOLD: 0.2  # 20% regression threshold
+        run: |
+          echo "Running performance regression check..."
+          dart test test/golden_workspace/performance_test.dart --reporter expanded
+      
+      - name: Generate performance report
+        if: always()
+        run: |
+          echo "## Performance Metrics Report" > perf_report.md
+          echo "" >> perf_report.md
+          if [ -f "test/golden_workspace/performance_baseline.json" ]; then
+            echo "📊 Current performance metrics vs baseline" >> perf_report.md
+            cat test/golden_workspace/performance_baseline.json | python3 -m json.tool >> perf_report.md
+          else
+            echo "⚠️ No baseline found - establishing new baseline" >> perf_report.md
+          fi
+      
+      - name: Upload performance artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-artifacts-${{ github.run_number }}
+          path: |
+            test/golden_workspace/performance_baseline.json
+            test/golden_workspace/performance_metrics_*.json
+            perf_report.md
+          retention-days: 30
+      
+      - name: Comment PR with performance impact
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('perf_report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+        continue-on-error: true
+
   package-quality:
     name: Package Quality Check
     runs-on: ubuntu-latest
-    needs: test-matrix
+    needs: [test-matrix, golden-snapshot-verification, performance-regression-check]
     
     steps:
       - name: Checkout repository

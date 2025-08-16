@@ -30,16 +30,16 @@ class PolicyEngine {
   }) {
     final violations = <Violation>[];
     final warnings = <String>[];
-    
+
     // Get key sets
     final baselineKeys = baseline.keyUsages.keys.toSet();
     final currentKeys = current.keyUsages.keys.toSet();
-    
+
     // Find changes
     final lostKeys = baselineKeys.difference(currentKeys);
     final addedKeys = currentKeys.difference(baselineKeys);
     final unchangedKeys = baselineKeys.intersection(currentKeys);
-    
+
     // Detect renames (heuristic)
     final renamedKeys = <String, String>{};
     for (final lost in lostKeys) {
@@ -49,19 +49,19 @@ class PolicyEngine {
         }
       }
     }
-    
+
     // Remove renamed from lost/added
     for (final entry in renamedKeys.entries) {
       lostKeys.remove(entry.key);
       addedKeys.remove(entry.value);
     }
-    
+
     // Check lost keys
     if (config.failOnLost && lostKeys.isNotEmpty) {
       for (final key in lostKeys) {
         final usage = baseline.keyUsages[key]!;
         final isProtected = _hasProtectedTag(usage.tags, config.protectedTags);
-        
+
         if (isProtected) {
           violations.add(Violation(
             type: 'lost',
@@ -73,7 +73,7 @@ class PolicyEngine {
               lastSeen: usage.locations.first.file,
               status: usage.status,
             ),
-            message: isProtected 
+            message: isProtected
                 ? "Critical key '$key' not found"
                 : "Key '$key' not found in scan",
             remediation: 'Restore key or update registry',
@@ -84,13 +84,13 @@ class PolicyEngine {
         }
       }
     }
-    
+
     // Check renamed keys
     if (config.failOnRename && renamedKeys.isNotEmpty) {
       for (final entry in renamedKeys.entries) {
         final usage = baseline.keyUsages[entry.key]!;
         final isProtected = _hasProtectedTag(usage.tags, config.protectedTags);
-        
+
         if (isProtected) {
           violations.add(Violation(
             type: 'renamed',
@@ -107,11 +107,12 @@ class PolicyEngine {
             policy: 'fail_on_rename',
           ));
         } else {
-          warnings.add("Key '${entry.key}' appears renamed to '${entry.value}'");
+          warnings
+              .add("Key '${entry.key}' appears renamed to '${entry.value}'");
         }
       }
     }
-    
+
     // Check extra keys
     if (config.failOnExtra && addedKeys.isNotEmpty) {
       for (final key in addedKeys) {
@@ -120,7 +121,8 @@ class PolicyEngine {
           severity: 'warning',
           key: KeyInfo(
             id: key,
-            package: _getPackageFromPath(current.keyUsages[key]!.locations.first.file),
+            package: _getPackageFromPath(
+                current.keyUsages[key]!.locations.first.file),
             tags: current.keyUsages[key]!.tags.toList(),
             status: 'new',
           ),
@@ -130,7 +132,7 @@ class PolicyEngine {
         ));
       }
     }
-    
+
     // Check deprecated keys still in use
     int deprecatedInUse = 0;
     for (final key in unchangedKeys) {
@@ -140,31 +142,32 @@ class PolicyEngine {
         warnings.add("Deprecated key '$key' is still in use");
       }
     }
-    
+
     // Calculate drift
-    final totalChanges = lostKeys.length + addedKeys.length + renamedKeys.length;
+    final totalChanges =
+        lostKeys.length + addedKeys.length + renamedKeys.length;
     final totalKeys = baselineKeys.length;
-    final driftPercentage = totalKeys > 0 
-        ? (totalChanges / totalKeys * 100) 
-        : 0.0;
-    
+    final driftPercentage =
+        totalKeys > 0 ? (totalChanges / totalKeys * 100) : 0.0;
+
     // Check drift threshold
     if (driftPercentage > config.maxDrift) {
       violations.add(Violation(
         type: 'drift',
         severity: 'error',
-        message: 'Key drift ${driftPercentage.toStringAsFixed(1)}% exceeds maximum ${config.maxDrift}%',
+        message:
+            'Key drift ${driftPercentage.toStringAsFixed(1)}% exceeds maximum ${config.maxDrift}%',
         remediation: 'Review changes and update baseline',
         policy: 'max_drift',
       ));
     }
-    
+
     // Get scanned packages
     final scannedPackages = <String>{};
     for (final analysis in current.fileAnalyses.values) {
       scannedPackages.add(_getPackageFromPath(analysis.path));
     }
-    
+
     // Create summary
     final summary = ValidationSummary(
       totalKeys: currentKeys.length,
@@ -175,7 +178,7 @@ class PolicyEngine {
       driftPercentage: driftPercentage,
       scannedPackages: scannedPackages.toList(),
     );
-    
+
     return ValidationResult(
       summary: summary,
       violations: violations,
@@ -192,13 +195,13 @@ class PolicyEngine {
     // Simple heuristic: check if keys share significant parts
     final parts1 = key1.split(RegExp(r'[._-]'));
     final parts2 = key2.split(RegExp(r'[._-]'));
-    
+
     final common = parts1.toSet().intersection(parts2.toSet());
     if (common.isEmpty) return false;
-    
-    final similarity = common.length / 
-        (parts1.length + parts2.length - common.length);
-    
+
+    final similarity =
+        common.length / (parts1.length + parts2.length - common.length);
+
     return similarity > 0.6; // 60% similarity threshold
   }
 

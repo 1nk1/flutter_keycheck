@@ -11,10 +11,11 @@ import 'package:flutter_keycheck/src/commands/validate_command_v3.dart';
 
 /// Main CLI runner with proper error handling and exit codes
 class CliRunner extends CommandRunner<int> {
-  CliRunner() : super(
-    'flutter_keycheck',
-    'Track, validate, and synchronize automation keys across Flutter teams.',
-  ) {
+  CliRunner()
+      : super(
+          'flutter_keycheck',
+          'Track, validate, and synchronize automation keys across Flutter teams.',
+        ) {
     // Add global flags
     argParser
       ..addFlag(

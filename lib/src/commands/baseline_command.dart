@@ -60,7 +60,7 @@ class BaselineCommand extends BaseCommandV3 {
     // Use provided scan or perform new scan
     ScanResult scanResult;
     final scanPath = argResults!.command!['scan'] as String?;
-    
+
     if (scanPath != null) {
       // Load from existing scan
       final scanFile = File(scanPath);
@@ -88,9 +88,9 @@ class BaselineCommand extends BaseCommandV3 {
     // Save baseline to registry
     final registry = await getRegistry(config);
     await registry.saveBaseline(scanResult);
-    
+
     logInfo('✅ Baseline created with ${scanResult.keyUsages.length} keys');
-    
+
     // Also save local copy
     final baselineFile = File(path.join(outDir.path, 'baseline.json'));
     await baselineFile.writeAsString(scanResult.toJson());
@@ -105,7 +105,7 @@ class BaselineCommand extends BaseCommandV3 {
     // Load current baseline
     final registry = await getRegistry(config);
     final currentBaseline = await registry.getBaseline();
-    
+
     if (currentBaseline == null) {
       logError('No existing baseline found. Use "baseline create" first.');
       return ExitCode.invalidConfig;
@@ -124,11 +124,11 @@ class BaselineCommand extends BaseCommandV3 {
 
     // Save updated baseline
     await registry.saveBaseline(mergedBaseline);
-    
+
     logInfo('✅ Baseline updated:');
     logInfo('  • Previous keys: ${currentBaseline.keyUsages.length}');
     logInfo('  • Current keys: ${mergedBaseline.keyUsages.length}');
-    
+
     // Calculate changes
     final added = mergedBaseline.keyUsages.keys
         .toSet()
@@ -136,7 +136,7 @@ class BaselineCommand extends BaseCommandV3 {
     final removed = currentBaseline.keyUsages.keys
         .toSet()
         .difference(mergedBaseline.keyUsages.keys.toSet());
-    
+
     if (added.isNotEmpty) {
       logInfo('  • Added: ${added.length} keys');
     }
@@ -149,11 +149,11 @@ class BaselineCommand extends BaseCommandV3 {
 
   void _applyAutoTags(ScanResult result, ConfigV3 config) {
     logVerbose('Applying auto-tags based on patterns...');
-    
+
     for (final entry in result.keyUsages.entries) {
       final key = entry.key;
       final usage = entry.value;
-      
+
       // Apply pattern-based tags
       if (key.contains('auth') || key.contains('login')) {
         usage.tags.add('critical');
@@ -182,14 +182,14 @@ class BaselineCommand extends BaseCommandV3 {
       final key = entry.key;
       final newUsage = entry.value;
       final currentUsage = current.keyUsages[key];
-      
+
       if (currentUsage != null) {
         // Preserve tags and status from current
         newUsage.tags.addAll(currentUsage.tags);
         newUsage.status = currentUsage.status;
         newUsage.notes = currentUsage.notes;
       }
-      
+
       merged.keyUsages[key] = newUsage;
     }
 

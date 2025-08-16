@@ -6,16 +6,16 @@ class ConfigV3 {
   String version = '3';
   bool monorepo = false;
   bool verbose = false;
-  
+
   // Registry settings
   final RegistryConfig registry;
-  
+
   // Scanning settings
   final ScanConfig scan;
-  
+
   // Policy settings
   final PolicyConfig policies;
-  
+
   // Reporting settings
   final ReportConfig report;
 
@@ -29,15 +29,15 @@ class ConfigV3 {
   /// Load configuration from file
   static Future<ConfigV3> load(String path) async {
     final file = File(path);
-    
+
     // Create default config if file doesn't exist
     if (!await file.exists()) {
       return ConfigV3.defaults();
     }
-    
+
     final content = await file.readAsString();
     final yaml = loadYaml(content) as Map;
-    
+
     return ConfigV3(
       registry: RegistryConfig.fromYaml(yaml['registry'] ?? {}),
       scan: ScanConfig.fromYaml(yaml['scan'] ?? {}),
@@ -185,7 +185,8 @@ class PolicyConfig {
       failOnLost: yaml['fail_on_lost'] ?? true,
       failOnRename: yaml['fail_on_rename'] ?? false,
       failOnExtra: yaml['fail_on_extra'] ?? false,
-      protectedTags: List<String>.from(yaml['protected_tags'] ?? ['critical', 'aqa']),
+      protectedTags:
+          List<String>.from(yaml['protected_tags'] ?? ['critical', 'aqa']),
       maxDrift: (yaml['max_drift'] ?? 10).toDouble(),
     );
   }

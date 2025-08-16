@@ -5,9 +5,9 @@ import 'package:flutter_keycheck/src/models/scan_result.dart';
 /// Key registry for central key management v3
 class KeyRegistry {
   final RegistryConfig config;
-  
+
   KeyRegistry(this.config);
-  
+
   /// Create registry based on configuration
   static Future<KeyRegistry> create(RegistryConfig config) async {
     switch (config.type) {
@@ -21,12 +21,12 @@ class KeyRegistry {
         return PathKeyRegistry(config);
     }
   }
-  
+
   /// Get baseline from registry
   Future<ScanResult?> getBaseline() async {
     throw UnimplementedError('Subclass must implement');
   }
-  
+
   /// Save baseline to registry
   Future<void> saveBaseline(ScanResult result) async {
     throw UnimplementedError('Subclass must implement');
@@ -35,32 +35,39 @@ class KeyRegistry {
 
 /// Git-based registry
 class GitKeyRegistry extends KeyRegistry {
-  GitKeyRegistry(RegistryConfig config) : super(config);
-  
+  GitKeyRegistry(super.config);
+
   @override
   Future<ScanResult?> getBaseline() async {
     // Clone or pull the registry repo
     final tempDir = await Directory.systemTemp.createTemp('keycheck_');
-    
+
     try {
       // Clone repo
       final cloneResult = await Process.run(
         'git',
-        ['clone', '--depth', '1', '-b', config.branch ?? 'main', 
-         config.repo!, tempDir.path],
+        [
+          'clone',
+          '--depth',
+          '1',
+          '-b',
+          config.branch ?? 'main',
+          config.repo!,
+          tempDir.path
+        ],
       );
-      
+
       if (cloneResult.exitCode != 0) {
         return null;
       }
-      
+
       // Read baseline file
       final baselineFile = File('${tempDir.path}/${config.path}');
       if (await baselineFile.exists()) {
         final content = await baselineFile.readAsString();
         return ScanResult.fromJson(content);
       }
-      
+
       return null;
     } finally {
       // Cleanup temp directory
@@ -69,7 +76,7 @@ class GitKeyRegistry extends KeyRegistry {
       }
     }
   }
-  
+
   @override
   Future<void> saveBaseline(ScanResult result) async {
     // For Git registry, this would push to the repo
@@ -82,8 +89,8 @@ class GitKeyRegistry extends KeyRegistry {
 
 /// Path-based registry (local file)
 class PathKeyRegistry extends KeyRegistry {
-  PathKeyRegistry(RegistryConfig config) : super(config);
-  
+  PathKeyRegistry(super.config);
+
   @override
   Future<ScanResult?> getBaseline() async {
     final file = File(config.path ?? '.flutter_keycheck/baseline.json');
@@ -93,7 +100,7 @@ class PathKeyRegistry extends KeyRegistry {
     }
     return null;
   }
-  
+
   @override
   Future<void> saveBaseline(ScanResult result) async {
     final file = File(config.path ?? '.flutter_keycheck/baseline.json');
@@ -104,15 +111,15 @@ class PathKeyRegistry extends KeyRegistry {
 
 /// Package-based registry
 class PackageKeyRegistry extends KeyRegistry {
-  PackageKeyRegistry(RegistryConfig config) : super(config);
-  
+  PackageKeyRegistry(super.config);
+
   @override
   Future<ScanResult?> getBaseline() async {
     // Would resolve package and load baseline
     // For now, return null
     return null;
   }
-  
+
   @override
   Future<void> saveBaseline(ScanResult result) async {
     // Would save to package assets

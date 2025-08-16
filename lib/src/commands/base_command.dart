@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:flutter_keycheck/src/config.dart';
 import 'package:flutter_keycheck/src/registry/registry.dart';
 import 'package:flutter_keycheck/src/reporter/reporter.dart';
 
@@ -52,7 +51,7 @@ abstract class BaseCommand extends Command<int> {
   Future<Config> loadConfig() async {
     final configPath = argResults!['config'] as String;
     final config = await Config.load(configPath);
-    
+
     // Override with CLI arguments
     if (argResults!.wasParsed('packages')) {
       config.packages = argResults!['packages'] as List<String>;
@@ -76,13 +75,13 @@ abstract class BaseCommand extends Command<int> {
       config.registryType = argResults!['registry'] as String;
     }
     config.verbose = argResults!['verbose'] as bool;
-    
+
     return config;
   }
 
   /// Get registry instance based on configuration
   Future<Registry> getRegistry(Config config) async {
-    return Registry.create(config);
+    return Config.create(config);
   }
 
   /// Get reporter instance based on configuration
@@ -103,7 +102,7 @@ abstract class BaseCommand extends Command<int> {
       stderr.writeln('Configuration error: ${error.message}');
       return exitInvalidConfig;
     } else if (error is IOException) {
-      stderr.writeln('IO error: ${error.message}');
+      stderr.writeln('IO error: $error');
       return exitIoError;
     } else if (error is PolicyViolation) {
       stderr.writeln('Policy violation: ${error.message}');

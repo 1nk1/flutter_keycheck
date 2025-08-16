@@ -66,6 +66,9 @@ class ScanMetrics {
   bool incrementalScan = false;
   String? incrementalBase;
 
+  // Default constructor
+  ScanMetrics();
+
   Map<String, dynamic> toMap() {
     return {
       'total_files': totalFiles,

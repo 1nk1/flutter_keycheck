@@ -2,7 +2,10 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 void main() {
-  group('Golden Workspace Tests', () {
+  // Skip golden workspace tests if dart command is not available
+  final isDartAvailable = Process.runSync('which', ['dart']).exitCode == 0;
+  
+  group('Golden Workspace Tests', skip: !isDartAvailable ? 'Dart command not available' : null, () {
     group('Scan Command', () {
       test('scans workspace successfully', () async {
         final result = await Process.run(

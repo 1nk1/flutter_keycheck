@@ -373,7 +373,8 @@ Future<int> runBaseline(ArgResults args, bool verbose, String config) async {
         // Find all ValueKey patterns in the file
         for (int i = 0; i < lines.length; i++) {
           final line = lines[i];
-          final keyPattern = RegExp(r"ValueKey\('([^']+)'\)");
+          // Updated pattern to match both 'ValueKey' and 'const ValueKey'
+          final keyPattern = RegExp(r"(?:const\s+)?ValueKey\('([^']+)'\)");
           final matches = keyPattern.allMatches(line);
 
           for (final match in matches) {
@@ -512,7 +513,8 @@ String _getSampleJson() {
       // Find all ValueKey patterns in the file
       for (int i = 0; i < lines.length; i++) {
         final line = lines[i];
-        final keyPattern = RegExp(r"ValueKey\('([^']+)'\)");
+        // Updated pattern to match both 'ValueKey' and 'const ValueKey'
+        final keyPattern = RegExp(r"(?:const\s+)?ValueKey\('([^']+)'\)");
         final matches = keyPattern.allMatches(line);
 
         for (final match in matches) {

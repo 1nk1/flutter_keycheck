@@ -11,7 +11,7 @@ topics:
   - automation
   - testing
   - cli
-  - validation
+  - static-analysis
 
 environment:
   sdk: ">=3.5.0 <4.0.0"

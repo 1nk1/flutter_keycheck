@@ -1,12 +1,11 @@
 # Flutter KeyCheck v3
 
+[![CI Status](https://github.com/1nk1/flutter_keycheck/actions/workflows/dart.yml/badge.svg)](https://github.com/1nk1/flutter_keycheck/actions)
 [![pub package](https://img.shields.io/pub/v/flutter_keycheck.svg)](https://pub.dev/packages/flutter_keycheck)
 [![pub points](https://img.shields.io/pub/points/flutter_keycheck)](https://pub.dev/packages/flutter_keycheck/score)
 [![Dart SDK Version](https://badgen.net/pub/sdk-version/flutter_keycheck)](https://pub.dev/packages/flutter_keycheck)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Actions](https://github.com/1nk1/flutter_keycheck/workflows/Dart/badge.svg)](https://github.com/1nk1/flutter_keycheck/actions)
-[![Dart 3](https://img.shields.io/badge/Dart-3.5%2B-blue)](https://dart.dev)
-[![CI Tested](https://img.shields.io/badge/CI-tested-green)](https://github.com/1nk1/flutter_keycheck/actions)
+[![Dart 3.5+](https://img.shields.io/badge/Dart-3.5%2B-blue)](https://dart.dev)
 
 A comprehensive Flutter widget key coverage analyzer with AST parsing, key↔handler linking, and enterprise CI/CD integration. Perfect for QA automation teams, Flutter development teams, and DevOps engineers.
 

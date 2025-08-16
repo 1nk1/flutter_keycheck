@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter_keycheck/src/cli/cli_runner.dart';
 import 'package:flutter_keycheck/src/commands/base_command_v3.dart';
@@ -51,7 +52,12 @@ class ScanCommandV3 extends BaseCommandV3 {
   @override
   Future<int> run() async {
     try {
-      logInfo('🔍 Scanning for keys...');
+      final format = argResults!['report'] as String;
+      final isJsonOutput = format == 'json';
+
+      if (!isJsonOutput) {
+        logInfo('🔍 Scanning for keys...');
+      }
 
       final config = await loadConfig();
       final outDir = await ensureOutputDir();
@@ -70,39 +76,52 @@ class ScanCommandV3 extends BaseCommandV3 {
       // Perform scan
       final result = await scanner.scan();
 
-      // Log results
-      logInfo('✅ Scan complete:');
-      logInfo(
-          '  • Files scanned: ${result.metrics.scannedFiles}/${result.metrics.totalFiles}');
-      logInfo('  • Keys found: ${result.keyUsages.length}');
-      logInfo(
-          '  • Coverage: ${result.metrics.fileCoverage.toStringAsFixed(1)}%');
-
-      if (result.metrics.incrementalScan) {
+      // For JSON output, write directly to stdout
+      if (isJsonOutput) {
+        final out = <String, dynamic>{
+          'schemaVersion': '1.0',
+          ...result.toMap(),
+        };
+        stdout.writeln(jsonEncode(out));
+      } else {
+        // Log results for non-JSON formats
+        logInfo('✅ Scan complete:');
         logInfo(
-            '  • Incremental scan since: ${result.metrics.incrementalBase}');
+            '  • Files scanned: ${result.metrics.scannedFiles}/${result.metrics.totalFiles}');
+        logInfo('  • Keys found: ${result.keyUsages.length}');
+        logInfo(
+            '  • Coverage: ${result.metrics.fileCoverage.toStringAsFixed(1)}%');
+
+        if (result.metrics.incrementalScan) {
+          logInfo(
+              '  • Incremental scan since: ${result.metrics.incrementalBase}');
+        }
+
+        // Log warnings if any
+        if (result.blindSpots.isNotEmpty) {
+          logWarning('Found ${result.blindSpots.length} blind spots:');
+          for (final spot in result.blindSpots) {
+            logVerbose('  • ${spot.message}');
+          }
+        }
       }
 
-      // Generate report
-      final format = argResults!['report'] as String;
+      // Generate report file
       final reporter = getReporter(format);
       final reportFile = File(path.join(outDir.path, 'key-snapshot.$format'));
-
       await reporter.generateScanReport(result, reportFile);
-      logInfo('📊 Report saved to: ${reportFile.path}');
 
-      // Log warnings if any
-      if (result.blindSpots.isNotEmpty) {
-        logWarning('Found ${result.blindSpots.length} blind spots:');
-        for (final spot in result.blindSpots) {
-          logVerbose('  • ${spot.message}');
-        }
+      if (!isJsonOutput) {
+        logInfo('📊 Report saved to: ${reportFile.path}');
       }
 
       // Save snapshot for baseline/diff commands
       final snapshotFile = File(path.join(outDir.path, 'key-snapshot.json'));
       await _saveSnapshot(result, snapshotFile);
-      logVerbose('Snapshot saved to: ${snapshotFile.path}');
+
+      if (!isJsonOutput) {
+        logVerbose('Snapshot saved to: ${snapshotFile.path}');
+      }
 
       return ExitCode.ok;
     } catch (e) {

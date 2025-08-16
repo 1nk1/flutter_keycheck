@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:flutter_keycheck/src/config/config.dart';
 import 'package:flutter_keycheck/src/registry/registry.dart';
 import 'package:flutter_keycheck/src/reporter/reporter.dart';
 
@@ -102,7 +103,7 @@ abstract class BaseCommand extends Command<int> {
       stderr.writeln('Configuration error: ${error.message}');
       return exitInvalidConfig;
     } else if (error is IOException) {
-      stderr.writeln('IO error: $error');
+      stderr.writeln('I/O error: $error');
       return exitIoError;
     } else if (error is PolicyViolation) {
       stderr.writeln('Policy violation: ${error.message}');

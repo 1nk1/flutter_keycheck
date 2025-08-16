@@ -40,11 +40,9 @@ abstract class BaseCommandV3 extends Command<int> {
       config.verbose = verbose;
       return config;
     } on FileSystemException catch (e) {
-      throw ConfigException(
-          'Failed to load config from $configPath: ${e.message}');
+      throw ConfigException('Failed to load config from $configPath: $e');
     } on FormatException catch (e) {
-      throw ConfigException(
-          'Invalid config format in $configPath: ${e.message}');
+      throw ConfigException('Invalid config format in $configPath: $e');
     }
   }
 

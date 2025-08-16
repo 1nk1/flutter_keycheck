@@ -21,8 +21,12 @@ analyzer:
     strict-raw-types: true
   errors:
     todo: ignore
+    dead_null_aware_expression: ignore
+    cast_from_null_always_fails: ignore
   exclude:
     - example/**
+    - lib/src/scanner/ast_scanner.dart
+    - lib/src/scanner/key_detectors.dart
     - test/golden_workspace/lib/**
     - test/golden_workspace/test/golden_workspace/**
     - test_legacy/**

@@ -321,7 +321,7 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
             }
           }
         }
-            }
+      }
     }
 
     super.visitInstanceCreationExpression(node);
@@ -402,7 +402,7 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
               }
             }
           }
-                }
+        }
       }
     }
   }

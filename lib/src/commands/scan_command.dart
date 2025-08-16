@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_keycheck/src/commands/base_command.dart';
 import 'package:flutter_keycheck/src/scanner/workspace_scanner.dart';
+import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 import 'package:flutter_keycheck/src/models/key_snapshot.dart';
 
 /// Scan command to build a current snapshot of keys
@@ -46,22 +47,21 @@ class ScanCommand extends BaseCommand {
   Future<int> run() async {
     try {
       final config = await loadConfig();
-      final scanner = WorkspaceScanner(config);
-
-      // Configure scanner options
-      scanner.includeTests = argResults!['include-tests'] as bool;
-      scanner.includeGenerated = argResults!['include-generated'] as bool;
-
-      // Perform incremental scan if requested
-      if (argResults!.wasParsed('since')) {
-        scanner.since = argResults!['since'] as String;
-      }
+      final scanner = AstScannerV3(
+        projectPath: Directory.current.path,
+        includeTests: argResults!['include-tests'] as bool,
+        includeGenerated: argResults!['include-generated'] as bool,
+        gitDiffBase: argResults!.wasParsed('since')
+            ? argResults!['since'] as String
+            : null,
+        config: config,
+      );
 
       if (config.verbose) {
         stdout.writeln('🔍 Scanning workspace...');
         stdout.writeln('  Packages mode: ${config.packages.join(', ')}');
-        if (scanner.since != null) {
-          stdout.writeln('  Incremental since: ${scanner.since}');
+        if (scanner.gitDiffBase != null) {
+          stdout.writeln('  Incremental since: ${scanner.gitDiffBase}');
         }
       }
 
@@ -93,7 +93,7 @@ class ScanCommand extends BaseCommand {
       }
 
       stdout.writeln(
-          '✅ Scan complete. Found ${snapshot.totalKeys} keys across ${snapshot.packages.length} packages');
+          '✅ Scan complete. Found ${snapshot.keyUsages.length} keys');
       stdout.writeln('📄 Reports saved to $outDir/');
 
       return BaseCommand.exitOk;

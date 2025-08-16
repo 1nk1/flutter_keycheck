@@ -1,6 +1,12 @@
 {
+  "schemaVersion": "1.0",
   "version": "1.0.0",
-  "timestamp": "2025-08-16T12:42:59.568170",
+  "timestamp": "2025-08-16T13:46:20.619209",
+  "summary": {
+    "totalKeys": 4,
+    "filesScanned": 38,
+    "scanDuration": 751
+  },
   "metrics": {
     "files_total": 42,
     "files_scanned": 38,
@@ -11,10 +17,10 @@
     "handlers_linked": 22
   },
   "keys": [
-    "login_button",
-    "email_field", 
-    "password_field",
-    "submit_button"
+    {"key": "login_button", "file": "lib/main.dart", "line": 42, "type": "ValueKey", "critical": false},
+    {"key": "email_field", "file": "lib/login.dart", "line": 15, "type": "ValueKey", "critical": true},
+    {"key": "password_field", "file": "lib/login.dart", "line": 25, "type": "ValueKey", "critical": true},
+    {"key": "submit_button", "file": "lib/login.dart", "line": 35, "type": "ValueKey", "critical": false}
   ],
   "detectors": [
     {"name": "ValueKey", "hits": 78, "keys_found": 78, "effectiveness": 87.6},

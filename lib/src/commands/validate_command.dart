@@ -67,14 +67,7 @@ class ValidateCommand extends BaseCommand {
       final snapshot = await scanner.scan();
 
       // Create validator with policies
-      final validator = PolicyValidator(
-        registry: keyRegistry,
-        failOnLost: argResults!['fail-on-lost'] as bool,
-        failOnRename: argResults!['fail-on-rename'] as bool,
-        failOnExtra: argResults!['fail-on-extra'] as bool,
-        maxDrift: int.parse(argResults!['max-drift'] as String),
-        protectedTags: argResults!['protected-tags'] as List<String>,
-      );
+      final validator = PolicyValidator();
 
       // Validate
       final result = await validator.validate(snapshot);

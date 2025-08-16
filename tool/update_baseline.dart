@@ -137,7 +137,7 @@ Future<void> _updatePerformanceBaseline() async {
       File(path.join(goldenWorkspacePath, performanceBaselineFile));
 
   // Run performance test to get current metrics
-  final result = await Process.run(
+  final _ = await Process.run(
     'dart',
     [
       'test',

@@ -57,12 +57,13 @@ class PolicyEngine {
     }
 
     // Check lost keys
-    if (config.failOnLost && lostKeys.isNotEmpty) {
+    if (lostKeys.isNotEmpty) {
       for (final key in lostKeys) {
         final usage = baseline.keyUsages[key]!;
         final isProtected = _hasProtectedTag(usage.tags, config.protectedTags);
+        final isCritical = isProtected || usage.tags.contains('critical');
 
-        if (isProtected) {
+        if (config.failOnLost && isCritical) {
           violations.add(Violation(
             type: 'lost',
             severity: isProtected ? 'error' : 'warning',
@@ -86,12 +87,13 @@ class PolicyEngine {
     }
 
     // Check renamed keys
-    if (config.failOnRename && renamedKeys.isNotEmpty) {
+    if (renamedKeys.isNotEmpty) {
       for (final entry in renamedKeys.entries) {
         final usage = baseline.keyUsages[entry.key]!;
         final isProtected = _hasProtectedTag(usage.tags, config.protectedTags);
+        final isCritical = isProtected || usage.tags.contains('critical');
 
-        if (isProtected) {
+        if (config.failOnRename && isCritical) {
           violations.add(Violation(
             type: 'renamed',
             severity: isProtected ? 'error' : 'warning',

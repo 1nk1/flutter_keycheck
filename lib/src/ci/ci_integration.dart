@@ -165,8 +165,8 @@ class CiIntegration {
       final baseline = jsonDecode(baselineContent) as Map<String, dynamic>;
 
       // Compare file coverage
-      final baselineFileCoverage = _asDouble(
-          baseline['coverage']?['files']?['percentage'], 0.0);
+      final baselineFileCoverage =
+          _asDouble(baseline['coverage']?['files']?['percentage'], 0.0);
       if (scanResult.metrics.fileCoverage < baselineFileCoverage - 5) {
         checks.add(RegressionCheck(
           metric: 'File Coverage',
@@ -177,8 +177,8 @@ class CiIntegration {
       }
 
       // Compare widget coverage
-      final baselineWidgetCoverage = _asDouble(
-          baseline['coverage']?['widgets']?['percentage'], 0.0);
+      final baselineWidgetCoverage =
+          _asDouble(baseline['coverage']?['widgets']?['percentage'], 0.0);
       if (scanResult.metrics.widgetCoverage < baselineWidgetCoverage - 5) {
         checks.add(RegressionCheck(
           metric: 'Widget Coverage',
@@ -189,7 +189,8 @@ class CiIntegration {
       }
 
       // Compare key count
-      final baselineKeyCount = (baseline['keys']?['total'] as num?)?.toInt() ?? 0;
+      final baselineKeyCount =
+          (baseline['keys']?['total'] as num?)?.toInt() ?? 0;
       final currentKeyCount = scanResult.keyUsages.length;
 
       if (currentKeyCount < baselineKeyCount * 0.9) {

@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_keycheck/src/cli/cli_runner.dart';
 import 'package:flutter_keycheck/src/commands/base_command_v3.dart';
+import 'package:flutter_keycheck/src/config/config_v3.dart';
+import 'package:flutter_keycheck/src/models/scan_result.dart';
 import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 import 'package:path/path.dart' as path;
 

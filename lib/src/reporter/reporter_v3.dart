@@ -46,14 +46,14 @@ class JsonReporter extends ReporterV3 {
     bool includeMetrics = true,
     bool includeLocations = false,
   }) async {
-    final report = {
+    final Map<String, dynamic> report = {
       'schema_version': '1.0',
       'timestamp': DateTime.now().toIso8601String(),
       'scan_type': result.metrics.incrementalScan ? 'incremental' : 'full',
     };
 
     if (result.metrics.incrementalScan) {
-      report['incremental_base'] = result.metrics.incrementalBase;
+      report['incremental_base'] = result.metrics.incrementalBase ?? '';
     }
 
     // Add summary

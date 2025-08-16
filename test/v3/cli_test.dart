@@ -20,7 +20,7 @@ void main() {
 
       test('returns 2 on invalid config', () async {
         // Test that invalid config returns exit code 2
-        final result = await Process.run(
+        final _ = await Process.run(
           'dart',
           [
             'run',

@@ -218,7 +218,7 @@ Future<int> runValidate(ArgResults args, bool verbose, String config) async {
   if (verbose) print('[VERBOSE] Validating with config: $config');
 
   final thresholdFile = args['threshold-file'] as String;
-  final strict = args['strict'] as bool;
+  final _strict = args['strict'] as bool;
 
   // Check if threshold file exists
   if (!await File(thresholdFile).exists()) {

@@ -105,7 +105,7 @@ void main() {
       });
 
       test('handles spaces around parentheses', () {
-        final re = RegExp(r'''key:\s*MaterialKey\(["']([^"']+)["']\)''');
+        final re = RegExp(r'''key:\s*MaterialKey\s*\(\s*["']([^"']+)["']\s*\)''');
         final match = re.firstMatch(r'''key: MaterialKey( "spaced_key" )''');
         expect(match?.group(1), 'spaced_key');
       });
@@ -150,7 +150,7 @@ void main() {
       });
 
       test('handles spaces around parentheses', () {
-        final re = RegExp(r'''key:\s*CupertinoKey\(["']([^"']+)["']\)''');
+        final re = RegExp(r'''key:\s*CupertinoKey\s*\(\s*["']([^"']+)["']\s*\)''');
         final match = re.firstMatch(r'''key: CupertinoKey( 'spaced_key' )''');
         expect(match?.group(1), 'spaced_key');
       });

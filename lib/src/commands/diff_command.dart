@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:flutter_keycheck/src/cli/cli_runner.dart';
 import 'package:flutter_keycheck/src/commands/base_command_v3.dart';
+import 'package:flutter_keycheck/src/config/config_v3.dart';
 import 'package:flutter_keycheck/src/models/diff_result.dart';
+import 'package:flutter_keycheck/src/models/scan_result.dart';
 import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 
 /// Diff command - compare snapshots
@@ -166,7 +168,8 @@ class DiffCommand extends BaseCommandV3 {
 
     if (diff.added.isNotEmpty) {
       logInfo('  • Added: ${diff.added.length}');
-      if (argResults!['verbose'] as bool || !argResults!['only-changes']) {
+      if (argResults!['verbose'] as bool ||
+          !(argResults!['only-changes'] as bool)) {
         for (final key in diff.added) {
           logInfo('    + $key');
           if (argResults!['show-locations'] as bool) {
@@ -181,7 +184,8 @@ class DiffCommand extends BaseCommandV3 {
 
     if (diff.removed.isNotEmpty) {
       logWarning('  • Removed: ${diff.removed.length}');
-      if (argResults!['verbose'] as bool || !argResults!['only-changes']) {
+      if (argResults!['verbose'] as bool ||
+          !(argResults!['only-changes'] as bool)) {
         for (final key in diff.removed) {
           logWarning('    - $key');
           if (argResults!['show-locations'] as bool) {
@@ -196,7 +200,8 @@ class DiffCommand extends BaseCommandV3 {
 
     if (diff.renamed.isNotEmpty) {
       logInfo('  • Renamed: ${diff.renamed.length}');
-      if (argResults!['verbose'] as bool || !argResults!['only-changes']) {
+      if (argResults!['verbose'] as bool ||
+          !(argResults!['only-changes'] as bool)) {
         for (final entry in diff.renamed.entries) {
           logInfo('    ~ ${entry.key} → ${entry.value}');
         }

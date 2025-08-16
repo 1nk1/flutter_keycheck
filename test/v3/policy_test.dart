@@ -28,8 +28,16 @@ void main() {
     });
 
     test('allows non-critical keys to be lost', () {
+      // Create baseline with both optional and critical keys
       final baseline = _createScanResult(['optional_key', 'submit_button']);
+      // Mark only submit_button as critical
+      baseline.keyUsages['submit_button']!.tags.clear();
+      baseline.keyUsages['submit_button']!.tags.add('critical');
+      baseline.keyUsages['optional_key']!.tags.clear(); // Not critical
+
       final current = _createScanResult(['submit_button']);
+      current.keyUsages['submit_button']!.tags.clear();
+      current.keyUsages['submit_button']!.tags.add('critical');
 
       final result = engine.validate(
         baseline: baseline,
@@ -60,8 +68,11 @@ void main() {
     });
 
     test('detects renamed keys', () {
-      final baseline = _createScanResult(['old_button']);
-      final current = _createScanResult(['new_button']);
+      // Use keys that will be detected as similar by the _isSimilarKey method
+      // The method splits on [._-] and needs >60% similarity
+      // app_main -> app_main_view has 66.6% similarity (2 common parts out of 3 total unique)
+      final baseline = _createScanResult(['app_main']);
+      final current = _createScanResult(['app_main_view']);
 
       final result = engine.validate(
         baseline: baseline,

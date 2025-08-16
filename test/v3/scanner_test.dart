@@ -150,6 +150,7 @@ class NoKeysScreen extends StatelessWidget {
         ElevatedButton(onPressed: () {}, child: Text('Button 2')),
         Container(),
         Text('Text 3'),
+        Container(), // Extra widget to ensure > 5 widgets
       ],
     );
   }

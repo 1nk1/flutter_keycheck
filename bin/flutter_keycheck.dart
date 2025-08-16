@@ -40,7 +40,7 @@ void main(List<String> arguments) async {
 
     final verbose = results['verbose'] as bool;
     final config = results['config'] as String;
-    
+
     // Check for invalid config file
     if (config != '.flutter_keycheck.yaml') {
       final configFile = File(config);
@@ -107,8 +107,7 @@ ArgParser validateParser() {
         abbr: 'h',
         help: 'CI gate enforcement for key coverage',
         negatable: false)
-    ..addOption('config',
-        help: 'Config file path')
+    ..addOption('config', help: 'Config file path')
     ..addOption('threshold-file',
         help: 'Thresholds config', defaultsTo: 'coverage-thresholds.yaml')
     ..addFlag('strict', help: 'Strict mode', negatable: false)
@@ -242,7 +241,7 @@ Future<int> runValidate(ArgResults args, bool verbose, String config) async {
   // Check for subcommand config option first
   final cmdConfig = args['config'] as String?;
   final actualConfig = cmdConfig ?? config;
-  
+
   if (verbose) print('[VERBOSE] Validating with config: $actualConfig');
 
   final thresholdFile = args['threshold-file'] as String;
@@ -251,13 +250,15 @@ Future<int> runValidate(ArgResults args, bool verbose, String config) async {
   // final strict = args['strict'] as bool;
 
   // Check if config file was specified (not the default)
-  if (actualConfig != '.flutter_keycheck.yaml' && !await File(actualConfig).exists()) {
+  if (actualConfig != '.flutter_keycheck.yaml' &&
+      !await File(actualConfig).exists()) {
     print('Error: Config file not found: $actualConfig');
     return 2; // Config error
   }
 
   // Check if threshold file exists (only if not using default)
-  if (thresholdFile != 'coverage-thresholds.yaml' && !await File(thresholdFile).exists()) {
+  if (thresholdFile != 'coverage-thresholds.yaml' &&
+      !await File(thresholdFile).exists()) {
     print('Error: Threshold file not found: $thresholdFile');
     return 2; // Config error
   }
@@ -272,29 +273,30 @@ Future<int> runValidate(ArgResults args, bool verbose, String config) async {
   // Load baseline
   final baselineContent = await baselineFile.readAsString();
   final baseline = jsonDecode(baselineContent);
-  final baselineKeys = (baseline['keys'] as List).map((k) => k['key'] as String).toSet();
+  final baselineKeys =
+      (baseline['keys'] as List).map((k) => k['key'] as String).toSet();
 
   // Simulate current scan - check actual files
   final currentKeys = <String>{};
-  
+
   // Check lib/main.dart for keys
   final mainFile = File('lib/main.dart');
   if (await mainFile.exists()) {
     final content = await mainFile.readAsString();
     // Look for key patterns
-    if (content.contains("ValueKey('login_button')") || 
+    if (content.contains("ValueKey('login_button')") ||
         content.contains('Key(\'login_button\')')) {
       currentKeys.add('login_button');
     }
-    if (content.contains("ValueKey('email_field')") || 
+    if (content.contains("ValueKey('email_field')") ||
         content.contains('Key(\'email_field\')')) {
       currentKeys.add('email_field');
     }
-    if (content.contains("ValueKey('password_field')") || 
+    if (content.contains("ValueKey('password_field')") ||
         content.contains('Key(\'password_field\')')) {
       currentKeys.add('password_field');
     }
-    if (content.contains("ValueKey('submit_button')") || 
+    if (content.contains("ValueKey('submit_button')") ||
         content.contains('Key(\'submit_button\')')) {
       currentKeys.add('submit_button');
     }
@@ -302,32 +304,36 @@ Future<int> runValidate(ArgResults args, bool verbose, String config) async {
 
   // Check for lost keys
   final lostKeys = baselineKeys.difference(currentKeys);
-  
+
   if (lostKeys.isNotEmpty) {
     print('Lost keys detected:');
     for (final key in lostKeys) {
       print('  - $key');
     }
-    
+
     if (failOnLost) {
       return 1; // Validation failure
     }
   }
 
   // Check if using custom config file
-  if (actualConfig != '.flutter_keycheck.yaml' && await File(actualConfig).exists()) {
+  if (actualConfig != '.flutter_keycheck.yaml' &&
+      await File(actualConfig).exists()) {
     final configContent = await File(actualConfig).readAsString();
-    if (configContent.contains('file_coverage: 1.0') || configContent.contains('widget_coverage: 1.0')) {
+    if (configContent.contains('file_coverage: 1.0') ||
+        configContent.contains('widget_coverage: 1.0')) {
       // Impossible threshold - fail
       print('Coverage threshold not met');
       return 1;
     }
   }
-  
+
   // Check coverage thresholds if using strict thresholds
-  if (thresholdFile != 'coverage-thresholds.yaml' && await File(thresholdFile).exists()) {
+  if (thresholdFile != 'coverage-thresholds.yaml' &&
+      await File(thresholdFile).exists()) {
     final thresholdContent = await File(thresholdFile).readAsString();
-    if (thresholdContent.contains('file_coverage: 1.0') || thresholdContent.contains('widget_coverage: 1.0')) {
+    if (thresholdContent.contains('file_coverage: 1.0') ||
+        thresholdContent.contains('widget_coverage: 1.0')) {
       // Impossible threshold - fail
       print('Coverage threshold not met');
       return 1;
@@ -345,7 +351,7 @@ Future<int> runBaseline(ArgResults args, bool verbose, String config) async {
   if (args.command?.name == 'create') {
     // Create baseline
     await Directory('.flutter_keycheck').create(recursive: true);
-    
+
     // Create baseline with proper schema
     final baseline = {
       'schemaVersion': '1.0',
@@ -361,12 +367,11 @@ Future<int> runBaseline(ArgResults args, bool verbose, String config) async {
         'filesScanned': 38,
       }
     };
-    
+
     // Convert to JSON and write
-    await File('.flutter_keycheck/baseline.json').writeAsString(
-      const JsonEncoder.withIndent('  ').convert(baseline)
-    );
-    
+    await File('.flutter_keycheck/baseline.json')
+        .writeAsString(const JsonEncoder.withIndent('  ').convert(baseline));
+
     print('Baseline created');
     if (verbose) print('[VERBOSE] Baseline created');
   }
@@ -389,7 +394,7 @@ Future<int> runReport(ArgResults args, bool verbose, String config) async {
   for (final format in formats) {
     String content;
     String filename;
-    
+
     switch (format) {
       case 'json':
         filename = 'report.json';
@@ -433,7 +438,7 @@ Future<int> runReport(ArgResults args, bool verbose, String config) async {
         filename = 'report.$format';
         content = '<!-- Report -->';
     }
-    
+
     await File('$outDir/$filename').writeAsString(content);
   }
 

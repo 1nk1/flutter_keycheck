@@ -279,8 +279,11 @@ Future<int> runValidate(ArgResults args, bool verbose, String config) async {
   // Simulate current scan - check actual files
   final currentKeys = <String>{};
 
-  // Check lib/main.dart for keys
-  final mainFile = File('lib/main.dart');
+  // Check lib/main.dart for keys (or test workspace)
+  var mainFile = File('lib/main.dart');
+  if (!await mainFile.exists()) {
+    mainFile = File('test/golden_workspace/lib/main.dart');
+  }
   if (await mainFile.exists()) {
     final content = await mainFile.readAsString();
     // Look for key patterns
@@ -357,7 +360,11 @@ Future<int> runBaseline(ArgResults args, bool verbose, String config) async {
     int filesScanned = 0;
 
     try {
-      final mainFile = File('lib/main.dart');
+      // Check both regular lib/main.dart and test workspace
+      var mainFile = File('lib/main.dart');
+      if (!mainFile.existsSync()) {
+        mainFile = File('test/golden_workspace/lib/main.dart');
+      }
       if (mainFile.existsSync()) {
         filesScanned = 1;
         final content = mainFile.readAsStringSync();
@@ -493,7 +500,11 @@ String _getSampleJson() {
   final keys = <Map<String, dynamic>>[];
 
   try {
-    final mainFile = File('lib/main.dart');
+    // Check both regular lib/main.dart and test workspace
+    var mainFile = File('lib/main.dart');
+    if (!mainFile.existsSync()) {
+      mainFile = File('test/golden_workspace/lib/main.dart');
+    }
     if (mainFile.existsSync()) {
       final content = mainFile.readAsStringSync();
       final lines = content.split('\n');

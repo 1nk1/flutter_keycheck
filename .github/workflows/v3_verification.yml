@@ -140,27 +140,27 @@ jobs:
     - name: Run integration tests
       run: |
         # Test v3 CLI commands
-        dart run bin/flutter_keycheck_v3.dart --version
-        dart run bin/flutter_keycheck_v3.dart scan --help
-        dart run bin/flutter_keycheck_v3.dart validate --help
+        dart run bin/flutter_keycheck.dart --version
+        dart run bin/flutter_keycheck.dart scan --help
+        dart run bin/flutter_keycheck.dart validate --help
         
         # Test in golden workspace
         cd test/golden_workspace
         dart pub get
-        dart run ../../bin/flutter_keycheck_v3.dart scan --report json
-        dart run ../../bin/flutter_keycheck_v3.dart baseline create
-        dart run ../../bin/flutter_keycheck_v3.dart validate
+        dart run ../../bin/flutter_keycheck.dart scan --report json
+        dart run ../../bin/flutter_keycheck.dart baseline create
+        dart run ../../bin/flutter_keycheck.dart validate
     
     - name: Test deterministic exit codes
       run: |
         set +e  # Don't exit on error
         
         # Test success (0)
-        dart run bin/flutter_keycheck_v3.dart --version
+        dart run bin/flutter_keycheck.dart --version
         [ $? -eq 0 ] && echo "✅ Exit code 0 works" || exit 1
         
         # Test policy violation (1) - would fail if critical keys missing
         cd test/golden_workspace
-        dart run ../../bin/flutter_keycheck_v3.dart validate --fail-on-extra --strict || true
+        dart run ../../bin/flutter_keycheck.dart validate --fail-on-extra --strict || true
         EXIT_CODE=$?
         [ $EXIT_CODE -eq 0 ] || [ $EXIT_CODE -eq 1 ] && echo "✅ Policy exit codes work" || exit 1

@@ -8,7 +8,7 @@ void main() {
         // Test that successful operations return exit code 0
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck_v3.dart', '--version'],
+          ['run', 'bin/flutter_keycheck.dart', '--version'],
         );
         expect(result.exitCode, equals(0));
       });
@@ -22,7 +22,7 @@ void main() {
         // Test that invalid config returns exit code 2
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck_v3.dart', '--config', 'nonexistent.yaml', 'scan'],
+          ['run', 'bin/flutter_keycheck.dart', '--config', 'nonexistent.yaml', 'scan'],
         );
         // Since config doesn't exist but we use defaults, it might still work
         // In a real test, we'd create an invalid config file
@@ -43,7 +43,7 @@ void main() {
       test('scan command exists', () async {
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck_v3.dart', 'scan', '--help'],
+          ['run', 'bin/flutter_keycheck.dart', 'scan', '--help'],
         );
         expect(result.stdout.toString(), contains('Build current snapshot'));
       });
@@ -51,7 +51,7 @@ void main() {
       test('baseline command exists', () async {
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck_v3.dart', 'baseline', '--help'],
+          ['run', 'bin/flutter_keycheck.dart', 'baseline', '--help'],
         );
         expect(result.stdout.toString(), contains('Create or update'));
       });
@@ -59,7 +59,7 @@ void main() {
       test('diff command exists', () async {
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck_v3.dart', 'diff', '--help'],
+          ['run', 'bin/flutter_keycheck.dart', 'diff', '--help'],
         );
         expect(result.stdout.toString(), contains('Compare'));
       });
@@ -67,7 +67,7 @@ void main() {
       test('validate command exists', () async {
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck_v3.dart', 'validate', '--help'],
+          ['run', 'bin/flutter_keycheck.dart', 'validate', '--help'],
         );
         expect(result.stdout.toString(), contains('CI gate enforcement'));
       });
@@ -75,7 +75,7 @@ void main() {
       test('ci-validate alias works', () async {
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck_v3.dart', 'ci-validate', '--help'],
+          ['run', 'bin/flutter_keycheck.dart', 'ci-validate', '--help'],
         );
         expect(result.stdout.toString(), contains('CI gate enforcement'));
       });
@@ -83,7 +83,7 @@ void main() {
       test('sync command exists', () async {
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck_v3.dart', 'sync', '--help'],
+          ['run', 'bin/flutter_keycheck.dart', 'sync', '--help'],
         );
         expect(result.stdout.toString(), contains('Pull/push'));
       });
@@ -91,7 +91,7 @@ void main() {
       test('report command exists', () async {
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck_v3.dart', 'report', '--help'],
+          ['run', 'bin/flutter_keycheck.dart', 'report', '--help'],
         );
         expect(result.stdout.toString(), contains('Generate reports'));
       });
@@ -101,7 +101,7 @@ void main() {
       test('-V shows version', () async {
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck_v3.dart', '-V'],
+          ['run', 'bin/flutter_keycheck.dart', '-V'],
         );
         expect(result.exitCode, equals(0));
         expect(result.stdout.toString(), contains('flutter_keycheck version'));
@@ -110,7 +110,7 @@ void main() {
       test('--version shows version', () async {
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck_v3.dart', '--version'],
+          ['run', 'bin/flutter_keycheck.dart', '--version'],
         );
         expect(result.exitCode, equals(0));
         expect(result.stdout.toString(), contains('flutter_keycheck version'));
@@ -122,7 +122,7 @@ void main() {
       test('--verbose flag works', () async {
         final result = await Process.run(
           'dart',
-          ['run', 'bin/flutter_keycheck_v3.dart', '--verbose', 'scan'],
+          ['run', 'bin/flutter_keycheck.dart', '--verbose', 'scan'],
         );
         // Should show verbose output
         expect(result.stdout.toString(), contains('[VERBOSE]'));
@@ -142,7 +142,7 @@ registry:
         try {
           final result = await Process.run(
             'dart',
-            ['run', 'bin/flutter_keycheck_v3.dart', '--config', 'test_config.yaml', 'scan'],
+            ['run', 'bin/flutter_keycheck.dart', '--config', 'test_config.yaml', 'scan'],
           );
           expect(result.exitCode, anyOf(equals(0), equals(3))); // OK or IO error
         } finally {

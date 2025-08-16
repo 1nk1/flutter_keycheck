@@ -30,7 +30,21 @@ A comprehensive Flutter widget key coverage analyzer with AST parsing, key↔han
 - **Deterministic exit codes**: 0 (success), 1 (policy), 2 (config), 3 (I/O), 4 (internal)
 - **Schema v1.0** with standardized metrics (parse_success_rate as fraction 0.0-1.0)
 
-See [MIGRATION_v3.md](MIGRATION_v3.md) for upgrade instructions.
+### Migration from v2.x
+
+**CLI entrypoints:** Legacy bins removed (`*_v2.dart`, `*_v3_*.dart`). Use the unified CLI:
+```bash
+# Old (v2.x)
+flutter_keycheck --keys file.yaml --strict
+
+# New (v3.0)
+flutter_keycheck validate --strict
+dart run flutter_keycheck:flutter_keycheck scan --path <project_root> --output keycheck.json
+```
+
+**Exit codes:** Now deterministic (0=OK, 1=Policy, 2=Config, 3=IO, 4=Internal)
+
+See [MIGRATION_v3.md](MIGRATION_v3.md) for detailed upgrade instructions.
 
 ## ✨ Features
 
@@ -87,7 +101,7 @@ dart pub global activate flutter_keycheck
 
 ```yaml
 dev_dependencies:
-  flutter_keycheck: ^2.1.0
+  flutter_keycheck: ^3.0.0-rc.1
 ```
 
 ## 🚀 Quick Start

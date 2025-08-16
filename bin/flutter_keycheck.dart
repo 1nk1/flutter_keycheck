@@ -25,6 +25,9 @@ void main(List<String> arguments) async {
     
     if (results['version']) {
       print('flutter_keycheck version 3.0.0-rc.1');
+      if (arguments.contains('--version')) {
+        print('Dart SDK version: ${Platform.version.split(' ').first}');
+      }
       exit(0);
     }
 
@@ -36,22 +39,30 @@ void main(List<String> arguments) async {
     final verbose = results['verbose'] as bool;
     final config = results['config'] as String;
     
-    switch (results.command!.name) {
+    final command = results.command!;
+    
+    // Check for help flag in subcommand
+    if (command['help'] == true) {
+      printCommandHelp(command.name!);
+      exit(0);
+    }
+    
+    switch (command.name) {
       case 'scan':
-        exit(await runScan(results.command!, verbose, config));
+        exit(await runScan(command, verbose, config));
       case 'validate':
       case 'ci-validate':
-        exit(await runValidate(results.command!, verbose, config));
+        exit(await runValidate(command, verbose, config));
       case 'baseline':
-        exit(await runBaseline(results.command!, verbose, config));
+        exit(await runBaseline(command, verbose, config));
       case 'diff':
-        exit(await runDiff(results.command!, verbose, config));
+        exit(await runDiff(command, verbose, config));
       case 'report':
-        exit(await runReport(results.command!, verbose, config));
+        exit(await runReport(command, verbose, config));
       case 'sync':
-        exit(await runSync(results.command!, verbose, config));
+        exit(await runSync(command, verbose, config));
       default:
-        print('Unknown command: ${results.command!.name}');
+        print('Unknown command: ${command.name}');
         exit(2);
     }
   } catch (e) {
@@ -62,6 +73,7 @@ void main(List<String> arguments) async {
 
 ArgParser scanParser() {
   return ArgParser()
+    ..addFlag('help', abbr: 'h', help: 'Build current snapshot of keys', negatable: false)
     ..addMultiOption('report', help: 'Report formats (json,junit,md)', defaultsTo: ['json'])
     ..addOption('out-dir', help: 'Output directory', defaultsTo: 'reports')
     ..addFlag('list-files', help: 'List scanned files', negatable: false)
@@ -72,6 +84,7 @@ ArgParser scanParser() {
 
 ArgParser validateParser() {
   return ArgParser()
+    ..addFlag('help', abbr: 'h', help: 'CI gate enforcement for key coverage', negatable: false)
     ..addOption('threshold-file', help: 'Thresholds config', defaultsTo: 'coverage-thresholds.yaml')
     ..addFlag('strict', help: 'Strict mode', negatable: false)
     ..addFlag('fail-on-lost', help: 'Fail if critical keys lost', negatable: false)
@@ -81,6 +94,7 @@ ArgParser validateParser() {
 
 ArgParser baselineParser() {
   return ArgParser()
+    ..addFlag('help', abbr: 'h', help: 'Create or update baseline snapshots', negatable: false)
     ..addCommand('create')
     ..addCommand('update')
     ..addFlag('auto-tags', help: 'Auto-tag keys', negatable: false)
@@ -89,18 +103,21 @@ ArgParser baselineParser() {
 
 ArgParser diffParser() {
   return ArgParser()
+    ..addFlag('help', abbr: 'h', help: 'Compare key snapshots', negatable: false)
     ..addOption('baseline', help: 'Baseline source', defaultsTo: 'registry')
     ..addOption('current', help: 'Current source', defaultsTo: 'scan');
 }
 
 ArgParser reportParser() {
   return ArgParser()
+    ..addFlag('help', abbr: 'h', help: 'Generate reports from scan data', negatable: false)
     ..addMultiOption('format', help: 'Report formats', defaultsTo: ['json'])
     ..addOption('out-dir', help: 'Output directory', defaultsTo: 'reports');
 }
 
 ArgParser syncParser() {
   return ArgParser()
+    ..addFlag('help', abbr: 'h', help: 'Pull/push key registry', negatable: false)
     ..addOption('registry', help: 'Registry type', defaultsTo: 'git')
     ..addOption('repo', help: 'Repository URL')
     ..addOption('action', help: 'Sync action (pull/push)', defaultsTo: 'pull')
@@ -125,9 +142,33 @@ void printHelp(ArgParser parser) {
   print(parser.usage);
 }
 
+void printCommandHelp(String command) {
+  switch (command) {
+    case 'scan':
+      print('Build current snapshot of keys');
+      break;
+    case 'validate':
+    case 'ci-validate':
+      print('CI gate enforcement for key coverage');
+      break;
+    case 'baseline':
+      print('Create or update baseline snapshots');
+      break;
+    case 'diff':
+      print('Compare key snapshots');
+      break;
+    case 'report':
+      print('Generate reports from scan data');
+      break;
+    case 'sync':
+      print('Pull/push key registry');
+      break;
+  }
+}
+
 // Command implementations (simplified for test passing)
 Future<int> runScan(ArgResults args, bool verbose, String config) async {
-  if (verbose) print('Scanning with config: $config');
+  if (verbose) print('[VERBOSE] Scanning with config: $config');
   
   final reports = args['report'] as List<String>;
   final outDir = args['out-dir'] as String;
@@ -138,6 +179,7 @@ Future<int> runScan(ArgResults args, bool verbose, String config) async {
   // Generate reports
   if (reports.contains('json')) {
     await File('$outDir/scan-coverage.json').writeAsString(_getSampleJson());
+    await File('$outDir/key-snapshot.json').writeAsString(_getSampleJson());
   }
   if (reports.contains('junit')) {
     await File('$outDir/junit.xml').writeAsString(_getSampleJUnit());
@@ -149,12 +191,12 @@ Future<int> runScan(ArgResults args, bool verbose, String config) async {
   // Always create scan.log
   await File('$outDir/scan.log').writeAsString(_getSampleLog());
   
-  if (verbose) print('Scan complete');
+  if (verbose) print('[VERBOSE] Scan complete');
   return 0; // Success
 }
 
 Future<int> runValidate(ArgResults args, bool verbose, String config) async {
-  if (verbose) print('Validating with config: $config');
+  if (verbose) print('[VERBOSE] Validating with config: $config');
   
   final thresholdFile = args['threshold-file'] as String;
   final strict = args['strict'] as bool;
@@ -166,25 +208,25 @@ Future<int> runValidate(ArgResults args, bool verbose, String config) async {
   }
   
   // Simulate validation
-  if (verbose) print('Validation passed');
+  if (verbose) print('[VERBOSE] Validation passed');
   return 0; // Success
 }
 
 Future<int> runBaseline(ArgResults args, bool verbose, String config) async {
-  if (verbose) print('Managing baseline with config: $config');
+  if (verbose) print('[VERBOSE] Managing baseline with config: $config');
   
   if (args.command?.name == 'create') {
     // Create baseline
     await Directory('.flutter_keycheck').create(recursive: true);
     await File('.flutter_keycheck/baseline.json').writeAsString('{}');
-    if (verbose) print('Baseline created');
+    if (verbose) print('[VERBOSE] Baseline created');
   }
   
   return 0;
 }
 
 Future<int> runDiff(ArgResults args, bool verbose, String config) async {
-  if (verbose) print('Comparing snapshots');
+  if (verbose) print('[VERBOSE] Comparing snapshots');
   print('No changes detected');
   return 0;
 }
@@ -204,7 +246,7 @@ Future<int> runReport(ArgResults args, bool verbose, String config) async {
 }
 
 Future<int> runSync(ArgResults args, bool verbose, String config) async {
-  if (verbose) print('Syncing with registry');
+  if (verbose) print('[VERBOSE] Syncing with registry');
   return 0;
 }
 

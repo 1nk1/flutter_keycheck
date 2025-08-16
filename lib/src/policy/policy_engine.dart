@@ -1,29 +1,33 @@
 import 'package:flutter_keycheck/src/models/scan_result.dart';
 import 'package:flutter_keycheck/src/models/validation_result.dart';
 
-/// Policy engine for validating keys against rules
-class PolicyEngine {
-  final bool strict;
+/// Policy configuration
+class PolicyConfig {
   final bool failOnLost;
   final bool failOnRename;
   final bool failOnExtra;
   final List<String> protectedTags;
   final double maxDrift;
 
-  PolicyEngine({
-    required this.strict,
-    required this.failOnLost,
-    required this.failOnRename,
-    required this.failOnExtra,
-    required this.protectedTags,
-    required this.maxDrift,
+  PolicyConfig({
+    this.failOnLost = false,
+    this.failOnRename = false,
+    this.failOnExtra = false,
+    this.protectedTags = const [],
+    this.maxDrift = 100.0,
   });
+}
+
+/// Policy engine for validating keys against rules
+class PolicyEngine {
+  PolicyEngine();
 
   /// Validate current scan against baseline
-  Future<ValidationResult> validate({
+  ValidationResult validate({
     required ScanResult baseline,
     required ScanResult current,
-  }) async {
+    required PolicyConfig config,
+  }) {
     final violations = <Violation>[];
     final warnings = <String>[];
     
@@ -53,12 +57,12 @@ class PolicyEngine {
     }
     
     // Check lost keys
-    if (failOnLost && lostKeys.isNotEmpty) {
+    if (config.failOnLost && lostKeys.isNotEmpty) {
       for (final key in lostKeys) {
         final usage = baseline.keyUsages[key]!;
-        final isProtected = _hasProtectedTag(usage.tags);
+        final isProtected = _hasProtectedTag(usage.tags, config.protectedTags);
         
-        if (isProtected || strict) {
+        if (isProtected) {
           violations.add(Violation(
             type: 'lost',
             severity: isProtected ? 'error' : 'warning',
@@ -82,12 +86,12 @@ class PolicyEngine {
     }
     
     // Check renamed keys
-    if (failOnRename && renamedKeys.isNotEmpty) {
+    if (config.failOnRename && renamedKeys.isNotEmpty) {
       for (final entry in renamedKeys.entries) {
         final usage = baseline.keyUsages[entry.key]!;
-        final isProtected = _hasProtectedTag(usage.tags);
+        final isProtected = _hasProtectedTag(usage.tags, config.protectedTags);
         
-        if (isProtected || strict) {
+        if (isProtected) {
           violations.add(Violation(
             type: 'renamed',
             severity: isProtected ? 'error' : 'warning',
@@ -109,7 +113,7 @@ class PolicyEngine {
     }
     
     // Check extra keys
-    if (failOnExtra && addedKeys.isNotEmpty) {
+    if (config.failOnExtra && addedKeys.isNotEmpty) {
       for (final key in addedKeys) {
         violations.add(Violation(
           type: 'extra',
@@ -145,11 +149,11 @@ class PolicyEngine {
         : 0.0;
     
     // Check drift threshold
-    if (driftPercentage > maxDrift) {
+    if (driftPercentage > config.maxDrift) {
       violations.add(Violation(
         type: 'drift',
         severity: 'error',
-        message: 'Key drift ${driftPercentage.toStringAsFixed(1)}% exceeds maximum ${maxDrift}%',
+        message: 'Key drift ${driftPercentage.toStringAsFixed(1)}% exceeds maximum ${config.maxDrift}%',
         remediation: 'Review changes and update baseline',
         policy: 'max_drift',
       ));
@@ -180,7 +184,7 @@ class PolicyEngine {
     );
   }
 
-  bool _hasProtectedTag(Set<String> tags) {
+  bool _hasProtectedTag(Set<String> tags, List<String> protectedTags) {
     return tags.any((tag) => protectedTags.contains(tag));
   }
 

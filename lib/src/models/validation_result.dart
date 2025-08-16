@@ -15,6 +15,8 @@ class ValidationResult {
     required this.timestamp,
   }) : hasViolations = violations.isNotEmpty;
 
+  bool get passed => !hasViolations;
+
   Map<String, dynamic> toMap() {
     return {
       'schema_version': '1.0',

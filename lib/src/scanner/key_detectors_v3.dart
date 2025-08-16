@@ -68,7 +68,7 @@ class ValueKeyDetector extends KeyDetector {
 }
 
 /// Detector for Key constructor usage
-class KeyDetector extends KeyDetector {
+class BasicKeyDetector extends KeyDetector {
   @override
   String get name => 'Key';
 

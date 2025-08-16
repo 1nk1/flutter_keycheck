@@ -24,10 +24,10 @@ class KeyRegistry {
       version: doc['version'] as int? ?? 1,
       monorepo: doc['monorepo'] as bool? ?? false,
       packages: (doc['packages'] as List? ?? [])
-          .map((p) => PackageKeys.fromMap(p as Map))
+          .map((p) => PackageKeys.fromMap(p as Map<dynamic, dynamic>))
           .toList(),
       policies: RegistryPolicies.fromMap(
-        doc['policies'] as Map? ?? {},
+        doc['policies'] as Map<dynamic, dynamic>? ?? {},
       ),
       lastUpdated: doc['last_updated'] != null
           ? DateTime.parse(doc['last_updated'] as String)
@@ -115,7 +115,7 @@ class PackageKeys {
       name: map['name'] as String,
       path: map['path'] as String? ?? '.',
       keys: (map['keys'] as List? ?? [])
-          .map((k) => KeyDefinition.fromMap(k as Map))
+          .map((k) => KeyDefinition.fromMap(k as Map<dynamic, dynamic>))
           .toList(),
     );
   }

@@ -35,7 +35,9 @@ class ValueKeyDetector extends KeyDetector {
   DetectionResult? detect(MethodInvocation node) {
     if (node.methodName.name == 'ValueKey' || 
         node.target?.toString() == 'ValueKey') {
-      final arg = node.argumentList?.arguments.firstOrNull;
+      final arg = node.argumentList?.arguments.isNotEmpty == true 
+          ? node.argumentList!.arguments.first 
+          : null;
       if (arg is StringLiteral) {
         return DetectionResult(
           key: arg.stringValue ?? '',
@@ -54,7 +56,9 @@ class ValueKeyDetector extends KeyDetector {
     if (expression is InstanceCreationExpression) {
       final typeName = expression.constructorName.type.toString();
       if (typeName == 'ValueKey') {
-        final arg = expression.argumentList.arguments.firstOrNull;
+        final arg = expression.argumentList.arguments.isNotEmpty
+            ? expression.argumentList.arguments.first
+            : null;
         if (arg is StringLiteral) {
           return DetectionResult(
             key: arg.stringValue ?? '',
@@ -75,7 +79,9 @@ class BasicKeyDetector extends KeyDetector {
   @override
   DetectionResult? detect(MethodInvocation node) {
     if (node.methodName.name == 'Key') {
-      final arg = node.argumentList?.arguments.firstOrNull;
+      final arg = node.argumentList?.arguments.isNotEmpty == true 
+          ? node.argumentList!.arguments.first 
+          : null;
       if (arg is StringLiteral) {
         return DetectionResult(
           key: arg.stringValue ?? '',
@@ -94,7 +100,9 @@ class BasicKeyDetector extends KeyDetector {
     if (expression is InstanceCreationExpression) {
       final typeName = expression.constructorName.type.toString();
       if (typeName == 'Key') {
-        final arg = expression.argumentList.arguments.firstOrNull;
+        final arg = expression.argumentList.arguments.isNotEmpty
+            ? expression.argumentList.arguments.first
+            : null;
         if (arg is StringLiteral) {
           return DetectionResult(
             key: arg.stringValue ?? '',
@@ -118,7 +126,9 @@ class ConstKeyDetector extends KeyDetector {
     final parent = node.parent;
     if (parent is NamedExpression && parent.name.label.name == 'key') {
       if (node.methodName.name == 'Key') {
-        final arg = node.argumentList?.arguments.firstOrNull;
+        final arg = node.argumentList?.arguments.isNotEmpty == true 
+          ? node.argumentList!.arguments.first 
+          : null;
         if (arg is StringLiteral) {
           return DetectionResult(
             key: arg.stringValue ?? '',
@@ -137,7 +147,9 @@ class ConstKeyDetector extends KeyDetector {
     if (expression is InstanceCreationExpression && expression.isConst) {
       final typeName = expression.constructorName.type.toString();
       if (typeName == 'Key' || typeName == 'ValueKey') {
-        final arg = expression.argumentList.arguments.firstOrNull;
+        final arg = expression.argumentList.arguments.isNotEmpty
+            ? expression.argumentList.arguments.first
+            : null;
         if (arg is StringLiteral) {
           return DetectionResult(
             key: arg.stringValue ?? '',
@@ -198,7 +210,9 @@ class TestKeyDetector extends KeyDetector {
     if (node.methodName.name == 'byKey') {
       final target = node.target;
       if (target is SimpleIdentifier && target.name == 'find') {
-        final arg = node.argumentList?.arguments.firstOrNull;
+        final arg = node.argumentList?.arguments.isNotEmpty == true 
+          ? node.argumentList!.arguments.first 
+          : null;
         if (arg is InstanceCreationExpression) {
           final typeName = arg.constructorName.type.toString();
           if (typeName == 'Key' || typeName == 'ValueKey') {

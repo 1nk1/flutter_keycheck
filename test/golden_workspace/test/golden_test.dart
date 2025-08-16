@@ -10,7 +10,7 @@ void main() {
       test('scans workspace successfully', () async {
         final result = await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'scan', '--report', 'json'],
+          ['../../bin/flutter_keycheck.dart', 'scan', '--report', 'json'],
           workingDirectory: Directory.current.path,
         );
 
@@ -21,7 +21,7 @@ void main() {
       test('finds expected keys', () async {
         final result = await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'scan', '--report', 'json', '--out-dir', 'reports'],
+          ['../../bin/flutter_keycheck.dart', 'scan', '--report', 'json', '--out-dir', 'reports'],
           workingDirectory: Directory.current.path,
         );
 
@@ -45,14 +45,14 @@ void main() {
         // First scan
         await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'scan'],
+          ['../../bin/flutter_keycheck.dart', 'scan'],
           workingDirectory: Directory.current.path,
         );
 
         // Create baseline
         final result = await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'baseline', 'create'],
+          ['../../bin/flutter_keycheck.dart', 'baseline', 'create'],
           workingDirectory: Directory.current.path,
         );
 
@@ -66,14 +66,14 @@ void main() {
         // Ensure baseline exists
         await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'baseline', 'create'],
+          ['../../bin/flutter_keycheck.dart', 'baseline', 'create'],
           workingDirectory: Directory.current.path,
         );
 
         // Run validation
         final result = await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'validate', '--strict'],
+          ['../../bin/flutter_keycheck.dart', 'validate', '--strict'],
           workingDirectory: Directory.current.path,
         );
 
@@ -85,14 +85,14 @@ void main() {
         // Ensure baseline exists
         await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'baseline', 'create'],
+          ['../../bin/flutter_keycheck.dart', 'baseline', 'create'],
           workingDirectory: Directory.current.path,
         );
 
         // Run validation using alias
         final result = await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'ci-validate'],
+          ['../../bin/flutter_keycheck.dart', 'ci-validate'],
           workingDirectory: Directory.current.path,
         );
 
@@ -103,7 +103,7 @@ void main() {
         // Create baseline
         await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'baseline', 'create'],
+          ['../../bin/flutter_keycheck.dart', 'baseline', 'create'],
           workingDirectory: Directory.current.path,
         );
 
@@ -120,7 +120,7 @@ void main() {
           // Run validation
           final result = await Process.run(
             'dart',
-            ['run', '../../bin/flutter_keycheck.dart', 'validate', '--fail-on-lost'],
+            ['../../bin/flutter_keycheck.dart', 'validate', '--fail-on-lost'],
             workingDirectory: Directory.current.path,
           );
 
@@ -139,14 +139,14 @@ void main() {
         // Create baseline
         await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'baseline', 'create'],
+          ['../../bin/flutter_keycheck.dart', 'baseline', 'create'],
           workingDirectory: Directory.current.path,
         );
 
         // Run diff
         final result = await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'diff', '--baseline', 'registry', '--current', 'scan'],
+          ['../../bin/flutter_keycheck.dart', 'diff', '--baseline', 'registry', '--current', 'scan'],
           workingDirectory: Directory.current.path,
         );
 
@@ -159,7 +159,7 @@ void main() {
       test('generates JSON report', () async {
         final result = await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'report', '--format', 'json'],
+          ['../../bin/flutter_keycheck.dart', 'report', '--format', 'json'],
           workingDirectory: Directory.current.path,
         );
 
@@ -172,7 +172,7 @@ void main() {
       test('generates JUnit report', () async {
         final result = await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'report', '--format', 'junit'],
+          ['../../bin/flutter_keycheck.dart', 'report', '--format', 'junit'],
           workingDirectory: Directory.current.path,
         );
 
@@ -189,7 +189,7 @@ void main() {
       test('generates Markdown report', () async {
         final result = await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', 'report', '--format', 'md'],
+          ['../../bin/flutter_keycheck.dart', 'report', '--format', 'md'],
           workingDirectory: Directory.current.path,
         );
 
@@ -208,7 +208,7 @@ void main() {
       test('returns 0 on success', () async {
         final result = await Process.run(
           'dart',
-          ['run', '../../bin/flutter_keycheck.dart', '--version'],
+          ['../../bin/flutter_keycheck.dart', '--version'],
           workingDirectory: Directory.current.path,
         );
 
@@ -223,7 +223,7 @@ void main() {
         try {
           final result = await Process.run(
             'dart',
-            ['run', '../../bin/flutter_keycheck.dart', '--config', 'invalid.yaml', 'scan'],
+            ['../../bin/flutter_keycheck.dart', '--config', 'invalid.yaml', 'scan'],
             workingDirectory: Directory.current.path,
           );
 

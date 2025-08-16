@@ -433,7 +433,8 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
 
   String? _extractHandlerMethod(MethodInvocation node) {
     // Extract the handler method name
-    final arg = node.argumentList?.arguments.firstOrNull;
+    final args = node.argumentList?.arguments ?? [];
+    final arg = args.isNotEmpty ? args.first : null;
     if (arg is SimpleIdentifier) {
       return arg.name;
     }

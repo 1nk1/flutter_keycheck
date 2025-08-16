@@ -356,10 +356,11 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
       analysis.widgetTypes.add(typeName);
       
       // Check for key parameter
-      final keyArg = node.argumentList.arguments
+      final keyArgs = node.argumentList.arguments
           .whereType<NamedExpression>()
           .where((arg) => arg.name.label.name == 'key')
-          .firstOrNull;
+          .toList();
+      final keyArg = keyArgs.isNotEmpty ? keyArgs.first : null;
       
       if (keyArg != null) {
         analysis.widgetsWithKeys++;
@@ -418,10 +419,11 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
       AstNode? current = node.parent;
       while (current != null) {
         if (current is InstanceCreationExpression) {
-          final keyArg = current.argumentList.arguments
+          final keyArgs = current.argumentList.arguments
               .whereType<NamedExpression>()
               .where((arg) => arg.name.label.name == 'key')
-              .firstOrNull;
+              .toList();
+          final keyArg = keyArgs.isNotEmpty ? keyArgs.first : null;
           
           if (keyArg != null) {
             for (final detector in detectors) {
@@ -465,7 +467,8 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
   }
 
   String? _extractHandlerMethod(MethodInvocation node) {
-    final arg = node.argumentList?.arguments.firstOrNull;
+    final args = node.argumentList?.arguments ?? [];
+    final arg = args.isNotEmpty ? args.first : null;
     if (arg is SimpleIdentifier) {
       return arg.name;
     }

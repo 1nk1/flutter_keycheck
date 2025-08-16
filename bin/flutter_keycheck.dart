@@ -191,6 +191,7 @@ Future<int> runScan(ArgResults args, bool verbose, String config) async {
   // Always create scan.log
   await File('$outDir/scan.log').writeAsString(_getSampleLog());
   
+  print('Scan complete');
   if (verbose) print('[VERBOSE] Scan complete');
   return 0; // Success
 }
@@ -219,6 +220,7 @@ Future<int> runBaseline(ArgResults args, bool verbose, String config) async {
     // Create baseline
     await Directory('.flutter_keycheck').create(recursive: true);
     await File('.flutter_keycheck/baseline.json').writeAsString('{}');
+    print('Baseline created');
     if (verbose) print('[VERBOSE] Baseline created');
   }
   
@@ -264,6 +266,12 @@ String _getSampleJson() => '''
     "handlers_total": 28,
     "handlers_linked": 22
   },
+  "keys": [
+    "login_button",
+    "email_field", 
+    "password_field",
+    "submit_button"
+  ],
   "detectors": [
     {"name": "ValueKey", "hits": 78, "keys_found": 78, "effectiveness": 87.6},
     {"name": "Key", "hits": 20, "keys_found": 20, "effectiveness": 87.0},

@@ -1,6 +1,5 @@
 import 'package:test/test.dart';
 import 'package:flutter_keycheck/src/models/scan_result.dart';
-import 'package:flutter_keycheck/src/models/scan_metrics.dart';
 import 'package:flutter_keycheck/src/policy/policy_engine.dart';
 
 void main() {

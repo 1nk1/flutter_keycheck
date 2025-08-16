@@ -233,7 +233,7 @@ void main() {
 
         final scanner = AstScannerV3(
           projectPath: tempDir.path,
-          packageMode: 'workspace',
+          scope: 'workspace-only',
           config: config,
         );
 
@@ -247,7 +247,7 @@ void main() {
         // For now, test that it falls back gracefully
         final scanner = AstScannerV3(
           projectPath: tempDir.path,
-          packageMode: 'resolve',
+          scope: 'all',
           config: config,
         );
 

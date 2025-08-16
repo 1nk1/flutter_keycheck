@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
@@ -16,13 +17,26 @@ class _Heuristics {
   _Heuristics({required this.widgetHits, required this.handlers});
 }
 
+/// File information with source tracking
+class FileInfo {
+  final String path;
+  final String source; // 'workspace' or 'package'
+  final String? packageInfo; // 'name@version' for dependencies
+
+  FileInfo({
+    required this.path,
+    this.source = 'workspace',
+    this.packageInfo,
+  });
+}
+
 /// Enhanced AST scanner with provable coverage
 class AstScannerV3 {
   final String projectPath;
   final bool includeTests;
   final bool includeGenerated;
   final String? gitDiffBase;
-  final String? packageMode;
+  final String scope; // 'workspace-only', 'deps-only', 'all'
   final String? packageFilter;
   final ConfigV3 config;
 
@@ -39,7 +53,7 @@ class AstScannerV3 {
     this.includeTests = false,
     this.includeGenerated = false,
     this.gitDiffBase,
-    this.packageMode,
+    this.scope = 'workspace-only',
     this.packageFilter,
     required this.config,
   }) {
@@ -62,8 +76,8 @@ class AstScannerV3 {
     final startTime = DateTime.now();
 
     // Get files to scan
-    final files = await _getFilesToScan();
-    metrics.totalFiles = files.length;
+    final filesWithInfo = await _getFilesToScanWithInfo();
+    metrics.totalFiles = filesWithInfo.length;
 
     // Create analysis context
     final collection = AnalysisContextCollection(
@@ -72,8 +86,13 @@ class AstScannerV3 {
     );
 
     // Scan each file
-    for (final filePath in files) {
-      await _scanFile(filePath, collection);
+    for (final fileInfo in filesWithInfo) {
+      await _scanFile(
+        fileInfo.path,
+        collection,
+        source: fileInfo.source,
+        packageInfo: fileInfo.packageInfo,
+      );
     }
 
     // Calculate coverage metrics
@@ -93,8 +112,8 @@ class AstScannerV3 {
     );
   }
 
-  /// Get files to scan
-  Future<List<String>> _getFilesToScan() async {
+  /// Get files to scan with source information
+  Future<List<FileInfo>> _getFilesToScanWithInfo() async {
     if (gitDiffBase != null) {
       // Incremental scan
       final result = await Process.run(
@@ -108,7 +127,10 @@ class AstScannerV3 {
             .toString()
             .split('\n')
             .where((f) => f.isNotEmpty && f.endsWith('.dart'))
-            .map((f) => path.join(projectPath, f))
+            .map((f) => FileInfo(
+                  path: path.join(projectPath, f),
+                  source: 'workspace',
+                ))
             .toList();
 
         metrics.incrementalScan = true;
@@ -117,17 +139,23 @@ class AstScannerV3 {
       }
     }
 
-    // Full scan based on package mode
-    if (packageMode == 'resolve') {
-      return await _getResolvedPackageFiles();
-    } else {
-      return _getWorkspaceFiles();
+    // Full scan based on scope
+    switch (scope) {
+      case 'deps-only':
+        return await _getDependencyFilesWithInfo();
+      case 'all':
+        final workspace = _getWorkspaceFilesWithInfo();
+        final deps = await _getDependencyFilesWithInfo();
+        return [...workspace, ...deps];
+      case 'workspace-only':
+      default:
+        return _getWorkspaceFilesWithInfo();
     }
   }
 
-  /// Get workspace files
-  List<String> _getWorkspaceFiles() {
-    final files = <String>[];
+  /// Get workspace files with info
+  List<FileInfo> _getWorkspaceFilesWithInfo() {
+    final files = <FileInfo>[];
     final dir = Directory(projectPath);
 
     for (final entity in dir.listSync(recursive: true)) {
@@ -143,41 +171,117 @@ class AstScannerV3 {
           if (!pattern.hasMatch(relativePath)) continue;
         }
 
-        files.add(entity.path);
+        files.add(FileInfo(
+          path: entity.path,
+          source: 'workspace',
+        ));
       }
     }
 
     return files;
   }
 
-  /// Get resolved package files (including dependencies)
-  Future<List<String>> _getResolvedPackageFiles() async {
-    // Try flutter pub deps first, fallback to dart pub deps
-    ProcessResult result;
+  /// Get dependency files with info
+  Future<List<FileInfo>> _getDependencyFilesWithInfo() async {
+    final files = <FileInfo>[];
+
+    // Read package_config.json to get dependency locations
+    final packageConfigFile =
+        File(path.join(projectPath, '.dart_tool', 'package_config.json'));
+    if (!packageConfigFile.existsSync()) {
+      // Try running pub get first
+      await _pubDepsJson();
+      if (!packageConfigFile.existsSync()) {
+        return files; // No dependencies available
+      }
+    }
+
     try {
-      result = await Process.run(
-        'flutter',
-        ['pub', 'deps', '--json'],
-        workingDirectory: projectPath,
-      );
-    } on ProcessException {
-      // Flutter not available, try dart
-      result = await Process.run(
-        'dart',
-        ['pub', 'deps', '--json'],
-        workingDirectory: projectPath,
-      );
+      final packageConfig = json.decode(packageConfigFile.readAsStringSync());
+      final packages = packageConfig['packages'] as List;
+
+      for (final package in packages) {
+        final packageName = package['name'] as String;
+        final packageUri = package['rootUri'] as String;
+
+        // Skip the current project itself
+        if (packageUri == '../' || packageUri == '..') continue;
+
+        // Get the actual package path
+        String packagePath;
+        if (packageUri.startsWith('file://')) {
+          packagePath = Uri.parse(packageUri).toFilePath();
+        } else if (packageUri.startsWith('../')) {
+          packagePath =
+              path.normalize(path.join(projectPath, '.dart_tool', packageUri));
+        } else {
+          packagePath = path.join(projectPath, '.dart_tool', packageUri);
+        }
+
+        // Scan lib folder of the package
+        final libPath = path.join(packagePath, 'lib');
+        if (Directory(libPath).existsSync()) {
+          // Get package version from pubspec or use default
+          final packageVersion =
+              await _getPackageVersion(packagePath) ?? '0.0.0';
+          final packageFullName = '$packageName@$packageVersion';
+
+          for (final entity in Directory(libPath).listSync(recursive: true)) {
+            if (entity is File && entity.path.endsWith('.dart')) {
+              files.add(FileInfo(
+                path: entity.path,
+                source: 'package',
+                packageInfo: packageFullName,
+              ));
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // If we can't parse package config, fallback to pub deps
+      await _pubDepsJson();
     }
 
-    if (result.exitCode != 0) {
-      // Fallback to workspace scan
-      return _getWorkspaceFiles();
-    }
+    return files;
+  }
 
-    // Parse dependencies and scan their lib folders
-    // This is simplified - full implementation would parse JSON
-    // and scan each package's lib folder
-    return _getWorkspaceFiles();
+  /// Get package version from pubspec.yaml
+  Future<String?> _getPackageVersion(String packagePath) async {
+    try {
+      final pubspecFile = File(path.join(packagePath, 'pubspec.yaml'));
+      if (pubspecFile.existsSync()) {
+        final content = pubspecFile.readAsStringSync();
+        final versionMatch =
+            RegExp(r'^version:\s*(.+)$', multiLine: true).firstMatch(content);
+        if (versionMatch != null) {
+          return versionMatch.group(1)?.trim();
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /// Run pub deps to get dependency information
+  Future<void> _pubDepsJson() async {
+    try {
+      // Try flutter pub deps first, fallback to dart pub deps
+      try {
+        await Process.run(
+          'flutter',
+          ['pub', 'get'],
+          workingDirectory: projectPath,
+        );
+      } on ProcessException {
+        // Flutter not available, try dart
+        await Process.run(
+          'dart',
+          ['pub', 'get'],
+          workingDirectory: projectPath,
+        );
+      }
+    } catch (e) {
+      // Ignore errors - we'll work with what we have
+    }
   }
 
   /// Check if file should be included
@@ -207,8 +311,8 @@ class AstScannerV3 {
   }
 
   /// Scan single file with AST
-  Future<void> _scanFile(
-      String filePath, AnalysisContextCollection collection) async {
+  Future<void> _scanFile(String filePath, AnalysisContextCollection collection,
+      {String source = 'workspace', String? packageInfo}) async {
     try {
       final context = collection.contextFor(filePath);
       final result = await context.currentSession.getResolvedUnit(filePath);
@@ -225,6 +329,8 @@ class AstScannerV3 {
           analysis: analysis,
           keyUsages: keyUsages,
           filePath: filePath,
+          source: source,
+          packageInfo: packageInfo,
         );
 
         // Visit AST - use accept to properly traverse the entire tree
@@ -408,12 +514,16 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
   final FileAnalysis analysis;
   final Map<String, KeyUsage> keyUsages;
   final String filePath;
+  final String source;
+  final String? packageInfo;
 
   KeyVisitorV3({
     required this.detectors,
     required this.analysis,
     required this.keyUsages,
     required this.filePath,
+    this.source = 'workspace',
+    this.packageInfo,
   });
 
   @override
@@ -571,7 +681,11 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
     // Create or update key usage
     final usage = keyUsages.putIfAbsent(
       key,
-      () => KeyUsage(id: key),
+      () => KeyUsage(
+        id: key,
+        source: source,
+        package: packageInfo,
+      ),
     );
 
     usage.locations.add(KeyLocation(

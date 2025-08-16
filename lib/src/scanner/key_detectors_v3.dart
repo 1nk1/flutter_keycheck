@@ -259,7 +259,7 @@ class MaterialKeyDetector extends KeyDetector {
   }
 }
 
-/// Detector for CupertinoKey usage  
+/// Detector for CupertinoKey usage
 class CupertinoKeyDetector extends KeyDetector {
   @override
   String get name => 'CupertinoKey';

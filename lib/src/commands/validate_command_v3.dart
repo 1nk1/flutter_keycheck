@@ -5,6 +5,7 @@ import 'package:flutter_keycheck/src/commands/base_command_v3.dart';
 import 'package:flutter_keycheck/src/config/config_v3.dart' as config_v3;
 import 'package:flutter_keycheck/src/models/scan_result.dart';
 import 'package:flutter_keycheck/src/policy/policy_engine.dart';
+import 'package:flutter_keycheck/src/policy/policy_engine_v3.dart';
 import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 import 'package:flutter_keycheck/src/models/validation_result.dart';
 import 'package:path/path.dart' as path;
@@ -40,6 +41,16 @@ class ValidateCommandV3 extends BaseCommandV3 {
       ..addFlag(
         'fail-on-extra',
         help: 'Fail if extra keys are found',
+        defaultsTo: false,
+      )
+      ..addFlag(
+        'fail-on-package-missing',
+        help: 'Fail if keys are in packages but missing in app',
+        defaultsTo: false,
+      )
+      ..addFlag(
+        'fail-on-collision',
+        help: 'Fail if keys are declared in multiple sources',
         defaultsTo: false,
       )
       ..addMultiOption(
@@ -91,7 +102,7 @@ class ValidateCommandV3 extends BaseCommandV3 {
 
       // Configure policy engine
       final policyEngine = PolicyEngine();
-      
+
       // Create policy config from arguments
       final policyConfig = PolicyConfig(
         failOnLost: argResults!['fail-on-lost'] as bool,
@@ -108,8 +119,65 @@ class ValidateCommandV3 extends BaseCommandV3 {
         config: policyConfig,
       );
 
+      // Check package policies if enabled
+      PackagePolicyResult? packagePolicyResult;
+      if (argResults!['fail-on-package-missing'] as bool ||
+          argResults!['fail-on-collision'] as bool) {
+        packagePolicyResult = PolicyEngineV3.checkPackagePolicies(
+          keyUsages: scanResult.keyUsages,
+          failOnPackageMissing: argResults!['fail-on-package-missing'] as bool,
+          failOnCollision: argResults!['fail-on-collision'] as bool,
+        );
+
+        // Add violations to validation result if policies failed
+        if (!packagePolicyResult.passed) {
+          if (packagePolicyResult.missingInApp.isNotEmpty &&
+              argResults!['fail-on-package-missing'] as bool) {
+            for (final key in packagePolicyResult.missingInApp) {
+              validationResult.violations.add(Violation(
+                type: 'package-missing',
+                severity: 'error',
+                key: KeyInfo(
+                  id: key,
+                  status: 'missing',
+                  package: 'unknown',
+                  tags: [],
+                ),
+                message: 'Key "$key" found in package but missing in app',
+                remediation:
+                    'Add the key to your app or remove it from the package',
+                policy: 'failOnPackageMissing',
+              ));
+            }
+          }
+
+          if (packagePolicyResult.collisions.isNotEmpty &&
+              argResults!['fail-on-collision'] as bool) {
+            for (final collision in packagePolicyResult.collisions) {
+              validationResult.violations.add(Violation(
+                type: 'collision',
+                severity: 'error',
+                key: KeyInfo(
+                  id: collision.key,
+                  status: 'collision',
+                  package: collision.sources.join(', '),
+                  tags: [],
+                ),
+                message:
+                    'Key "${collision.key}" declared in multiple sources: ${collision.sources.join(", ")}',
+                remediation: 'Ensure each key is declared in only one source',
+                policy: 'failOnCollision',
+              ));
+            }
+          }
+        }
+      }
+
       // Log results
       _logValidationResults(validationResult);
+      if (packagePolicyResult != null) {
+        _logPackagePolicyResults(packagePolicyResult);
+      }
 
       // Generate reports
       final formats = argResults!['report'] as List<String>;
@@ -177,6 +245,32 @@ class ValidateCommandV3 extends BaseCommandV3 {
       logWarning('⚠️  Warnings:');
       for (final warning in result.warnings) {
         logWarning('  • $warning');
+      }
+    }
+  }
+
+  void _logPackagePolicyResults(PackagePolicyResult result) {
+    if (!result.passed) {
+      logInfo('📦 Package Policy Results:');
+
+      if (result.missingInApp.isNotEmpty) {
+        logWarning(
+            '  • Keys in packages but missing in app: ${result.missingInApp.length}');
+        if (argResults!['verbose'] as bool) {
+          for (final key in result.missingInApp) {
+            logVerbose('    - $key');
+          }
+        }
+      }
+
+      if (result.collisions.isNotEmpty) {
+        logWarning('  • Key collisions detected: ${result.collisions.length}');
+        if (argResults!['verbose'] as bool) {
+          for (final collision in result.collisions) {
+            logVerbose(
+                '    - ${collision.key}: ${collision.sources.join(", ")}');
+          }
+        }
       }
     }
   }

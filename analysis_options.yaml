@@ -25,6 +25,7 @@ analyzer:
     cast_from_null_always_fails: ignore
   exclude:
     - example/**
+    - examples/**
     - test/golden_workspace/lib/**
     - test/golden_workspace/test/golden_workspace/**
     - test_legacy/**

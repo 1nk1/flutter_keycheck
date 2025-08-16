@@ -27,6 +27,20 @@ class DiffCommand extends BaseCommandV3 {
         help: 'Current source (scan, file path)',
         defaultsTo: 'scan',
       )
+      ..addOption(
+        'left',
+        help: 'Left file for comparison (alternative to baseline)',
+      )
+      ..addOption(
+        'right',
+        help: 'Right file for comparison (alternative to current)',
+      )
+      ..addOption(
+        'rule',
+        help: 'Diff rule to apply',
+        allowed: ['default', 'missing-in-app'],
+        defaultsTo: 'default',
+      )
       ..addFlag(
         'show-locations',
         help: 'Show file locations for keys',
@@ -46,32 +60,56 @@ class DiffCommand extends BaseCommandV3 {
 
       final config = await loadConfig();
 
-      // Load baseline
-      final baseline = await _loadSnapshot(
-        argResults!['baseline'] as String,
-        'baseline',
-        config,
-      );
+      // Check if using left/right pattern (for package comparison)
+      final leftPath = argResults!['left'] as String?;
+      final rightPath = argResults!['right'] as String?;
+      final rule = argResults!['rule'] as String;
 
-      if (baseline == null) {
-        logError('Failed to load baseline snapshot');
-        return ExitCode.ioError;
+      ScanResult? baseline;
+      ScanResult? current;
+
+      if (leftPath != null && rightPath != null) {
+        // Using left/right comparison pattern
+        baseline = await _loadFromFile(leftPath);
+        current = await _loadFromFile(rightPath);
+
+        if (baseline == null) {
+          logError('Failed to load left file: $leftPath');
+          return ExitCode.ioError;
+        }
+        if (current == null) {
+          logError('Failed to load right file: $rightPath');
+          return ExitCode.ioError;
+        }
+      } else {
+        // Using traditional baseline/current pattern
+        baseline = await _loadSnapshot(
+          argResults!['baseline'] as String,
+          'baseline',
+          config,
+        );
+
+        if (baseline == null) {
+          logError('Failed to load baseline snapshot');
+          return ExitCode.ioError;
+        }
+
+        current = await _loadSnapshot(
+          argResults!['current'] as String,
+          'current',
+          config,
+        );
+
+        if (current == null) {
+          logError('Failed to load current snapshot');
+          return ExitCode.ioError;
+        }
       }
 
-      // Load current
-      final current = await _loadSnapshot(
-        argResults!['current'] as String,
-        'current',
-        config,
-      );
-
-      if (current == null) {
-        logError('Failed to load current snapshot');
-        return ExitCode.ioError;
-      }
-
-      // Perform diff
-      final diff = _performDiff(baseline, current);
+      // Perform diff based on rule
+      final diff = rule == 'missing-in-app'
+          ? _performPackageDiff(baseline, current)
+          : _performDiff(baseline, current);
 
       // Display results
       _displayDiff(diff);
@@ -84,6 +122,19 @@ class DiffCommand extends BaseCommandV3 {
       }
     } catch (e) {
       return handleError(e);
+    }
+  }
+
+  Future<ScanResult?> _loadFromFile(String path) async {
+    final file = File(path);
+    if (!await file.exists()) {
+      return null;
+    }
+    try {
+      return ScanResult.fromJson(await file.readAsString());
+    } catch (e) {
+      logError('Failed to parse file: $path - $e');
+      return null;
     }
   }
 
@@ -113,6 +164,23 @@ class DiffCommand extends BaseCommandV3 {
       }
       return ScanResult.fromJson(await file.readAsString());
     }
+  }
+
+  DiffResult _performPackageDiff(ScanResult packageKeys, ScanResult appKeys) {
+    // For missing-in-app rule: find keys in packages but not in app
+    final packageKeySet = packageKeys.keyUsages.keys.toSet();
+    final appKeySet = appKeys.keyUsages.keys.toSet();
+
+    final missingInApp = packageKeySet.difference(appKeySet);
+
+    return DiffResult(
+      added: {}, // No additions in this context
+      removed: missingInApp, // Keys missing from app
+      renamed: {},
+      unchanged: appKeySet.intersection(packageKeySet),
+      baseline: packageKeys,
+      current: appKeys,
+    );
   }
 
   DiffResult _performDiff(ScanResult baseline, ScanResult current) {

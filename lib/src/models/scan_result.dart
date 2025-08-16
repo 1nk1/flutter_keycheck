@@ -167,8 +167,10 @@ class KeyUsage {
   final Set<String> tags = {};
   String status = 'active';
   String? notes;
+  String source = 'workspace'; // 'workspace' or 'package'
+  String? package; // 'name@version' for deps
 
-  KeyUsage({required this.id});
+  KeyUsage({required this.id, this.source = 'workspace', this.package});
 
   Map<String, dynamic> toMap() {
     return {
@@ -178,11 +180,17 @@ class KeyUsage {
       'tags': tags.toList(),
       'status': status,
       'notes': notes,
+      'source': source,
+      'package': package,
     };
   }
 
   factory KeyUsage.fromMap(Map<String, dynamic> map) {
-    final usage = KeyUsage(id: map['id']);
+    final usage = KeyUsage(
+      id: map['id'],
+      source: map['source'] ?? 'workspace',
+      package: map['package'],
+    );
     usage.locations.addAll(
       (map['locations'] ?? []).map<KeyLocation>((x) => KeyLocation.fromMap(x)),
     );

@@ -17,11 +17,11 @@ class ScanCommandV3 extends BaseCommandV3 {
 
   ScanCommandV3() {
     argParser
-      ..addMultiOption(
-        'packages',
-        help: 'Package scanning mode',
-        allowed: ['workspace', 'resolve'],
-        defaultsTo: ['workspace'],
+      ..addOption(
+        'scope',
+        help: 'Package scanning scope',
+        allowed: ['workspace-only', 'deps-only', 'all'],
+        defaultsTo: 'workspace-only',
       )
       ..addOption(
         'report',
@@ -68,7 +68,7 @@ class ScanCommandV3 extends BaseCommandV3 {
         includeTests: argResults!['include-tests'] as bool,
         includeGenerated: argResults!['include-generated'] as bool,
         gitDiffBase: argResults!['since'] as String?,
-        packageMode: (argResults!['packages'] as List<String>).first,
+        scope: argResults!['scope'] as String,
         packageFilter: argResults!['filter'] as String?,
         config: config,
       );

@@ -5,7 +5,7 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0-rc.1] - 2025-01-16
+## 3.0.0-rc.1 - 2025-08-16
 
 ### 🚀 BREAKING CHANGES - Major v3 Release
 
@@ -95,25 +95,6 @@ See [MIGRATION_v3.md](MIGRATION_v3.md) for detailed migration instructions.
 - [Pull Request #42](https://github.com/1nk1/flutter_keycheck/pull/42)
 - [GitLab MR #15](https://gitlab.com/flutter/flutter_keycheck/-/merge_requests/15)
 
-## [3.0.0-rc.1] - 2025-01-15
-
-### 🚀 BREAKING CHANGES
-
-- CLI migrated to subcommands (scan, validate, baseline, diff, report, sync)
-- Schema v1.0 with deterministic metrics
-- Exit codes: 0 (OK), 1 (Policy), 2 (Config), 3 (I/O), 4 (Internal)
-- parse_success_rate now reported as fraction [0,1] instead of percentage
-
-### ✨ New Features
-
-- **AST-based scanner**: True AST parsing with Dart analyzer
-- **Key↔Handler linking**: Track event handlers linked to keyed widgets
-- **Scan Coverage metrics**: Provable coverage with file/widget/handler metrics
-- **Multi-format reports**: JSON (schema v1.0), JUnit XML, Markdown
-- **Incremental scanning**: Git-diff based partial scans
-- **SHA256 caching**: Content-based cache with 24h TTL
-- **Primary command**: `validate` with `ci-validate` alias
-- **Blind spot detection**: Identify files/widgets without keys
 
 ## [2.3.3] - 2024-06-24
 

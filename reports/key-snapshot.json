@@ -1,32 +1,17 @@
 {
   "schemaVersion": "1.0",
   "version": "1.0.0",
-  "timestamp": "2025-08-16T18:11:48.955002",
+  "timestamp": "2025-08-16T20:15:41.579171",
   "summary": {
-    "totalKeys": 4,
-    "filesScanned": 38,
-    "scanDuration": 751
+    "totalKeys": 0,
+    "criticalKeys": 0,
+    "filesScanned": 1,
+    "scanDuration": 100
   },
-  "metrics": {
-    "files_total": 42,
-    "files_scanned": 38,
-    "parse_success_rate": 0.952,
-    "widgets_total": 156,
-    "widgets_with_keys": 124,
-    "handlers_total": 28,
-    "handlers_linked": 22
-  },
-  "keys": [
-    {"key": "login_button", "file": "lib/main.dart", "line": 42, "type": "ValueKey", "critical": false},
-    {"key": "email_field", "file": "lib/login.dart", "line": 15, "type": "ValueKey", "critical": true},
-    {"key": "password_field", "file": "lib/login.dart", "line": 25, "type": "ValueKey", "critical": true},
-    {"key": "submit_button", "file": "lib/login.dart", "line": 35, "type": "ValueKey", "critical": false}
-  ],
-  "detectors": [
-    {"name": "ValueKey", "hits": 78, "keys_found": 78, "effectiveness": 87.6},
-    {"name": "Key", "hits": 20, "keys_found": 20, "effectiveness": 87.0},
-    {"name": "FindByKey", "hits": 15, "keys_found": 15, "effectiveness": 100.0},
-    {"name": "Semantics", "hits": 11, "keys_found": 11, "effectiveness": 100.0}
-  ],
-  "blind_spots": []
+  "keys": [],
+  "metadata": {
+    "projectPath": "test/golden_workspace",
+    "configFile": null,
+    "scanMode": "full"
+  }
 }

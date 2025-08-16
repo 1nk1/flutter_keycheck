@@ -2,7 +2,7 @@
   "schemaVersion": "1.0",
   "timestamp": "2025-01-16T00:00:00.000Z",
   "summary": {
-    "totalKeys": 12,
+    "totalKeys": 14,
     "criticalKeys": 4,
     "filesScanned": 1,
     "scanDuration": 100

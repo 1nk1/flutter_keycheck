@@ -1,30 +1,80 @@
 {
   "schemaVersion": "1.0",
-  "timestamp": "2025-08-16T18:02:59.617699",
+  "timestamp": "2025-08-16T18:16:03.173948",
   "keys": [
+    {
+      "key": "app_root",
+      "file": "lib/main.dart",
+      "line": 11
+    },
+    {
+      "key": "home_scaffold",
+      "file": "lib/main.dart",
+      "line": 17
+    },
+    {
+      "key": "home_appbar",
+      "file": "lib/main.dart",
+      "line": 22
+    },
     {
       "key": "login_button",
       "file": "lib/main.dart",
-      "line": 42
+      "line": 26
+    },
+    {
+      "key": "settings_button",
+      "file": "lib/main.dart",
+      "line": 30
+    },
+    {
+      "key": "login_scaffold",
+      "file": "lib/main.dart",
+      "line": 38
     },
     {
       "key": "email_field",
-      "file": "lib/login.dart",
-      "line": 15
+      "file": "lib/main.dart",
+      "line": 43
     },
     {
       "key": "password_field",
-      "file": "lib/login.dart",
-      "line": 25
+      "file": "lib/main.dart",
+      "line": 47
     },
     {
       "key": "submit_button",
-      "file": "lib/login.dart",
-      "line": 35
+      "file": "lib/main.dart",
+      "line": 51
+    },
+    {
+      "key": "forgot_password_link",
+      "file": "lib/main.dart",
+      "line": 55
+    },
+    {
+      "key": "settings_scaffold",
+      "file": "lib/main.dart",
+      "line": 63
+    },
+    {
+      "key": "dark_mode_switch",
+      "file": "lib/main.dart",
+      "line": 67
+    },
+    {
+      "key": "profile_tile",
+      "file": "lib/main.dart",
+      "line": 71
+    },
+    {
+      "key": "logout_tile",
+      "file": "lib/main.dart",
+      "line": 75
     }
   ],
   "summary": {
-    "totalKeys": 4,
-    "filesScanned": 38
+    "totalKeys": 14,
+    "filesScanned": 1
   }
 }

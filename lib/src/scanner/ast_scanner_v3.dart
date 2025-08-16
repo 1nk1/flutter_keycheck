@@ -264,11 +264,7 @@ class AstScannerV3 {
           metrics.scannedFiles++;
           metrics.totalLines += _countLines(file);
 
-          // Update handler list in metrics
-          if (metrics.handlers == null) {
-            metrics.handlers = [];
-          }
-          (metrics.handlers as List).addAll(heuristics.handlers);
+          // Handler information is captured in heuristics but not stored in metrics
         }
       } catch (_) {
         // If even text scanning fails, record error

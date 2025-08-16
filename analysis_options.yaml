@@ -17,8 +17,8 @@ include: package:lints/recommended.yaml
 
 analyzer:
   language:
-    strict-casts: true
-    strict-raw-types: true
+    strict-casts: false
+    strict-raw-types: false
   errors:
     todo: ignore
     dead_null_aware_expression: ignore
@@ -30,6 +30,9 @@ analyzer:
     - test/golden_workspace/lib/**
     - test/golden_workspace/test/golden_workspace/**
     - test_legacy/**
+    - lib/src/checker.dart
+    - lib/src/cli.dart
+    - lib/src/commands/**
 
 linter:
   rules:

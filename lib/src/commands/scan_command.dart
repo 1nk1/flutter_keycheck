@@ -92,8 +92,8 @@ class ScanCommand extends BaseCommand {
         stdout.writeln(reporter.generateSummary(snapshot));
       }
 
-      stdout.writeln(
-          '✅ Scan complete. Found ${snapshot.keyUsages.length} keys');
+      stdout
+          .writeln('✅ Scan complete. Found ${snapshot.keyUsages.length} keys');
       stdout.writeln('📄 Reports saved to $outDir/');
 
       return BaseCommand.exitOk;

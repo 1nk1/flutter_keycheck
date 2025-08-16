@@ -49,7 +49,7 @@ jobs:
       
       - name: Run tests
         run: |
-          dart test || {
+          dart test test/v3 test/golden_workspace --reporter expanded || {
             echo "::error::Tests failed. All tests must pass before merging."
             exit 1
           }

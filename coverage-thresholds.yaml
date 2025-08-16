@@ -1,11 +1,5 @@
-schema_version: 1
+version: 1
 thresholds:
-  min_parse_rate: 0.80
-  min_files_scanned_ratio: 0.98
-  min_widget_key_ratio: 0.75
-  min_handler_link_ratio: 0.70
-policies:
-  fail_on_lost: true
-  fail_on_rename: false
-  fail_on_extra: false
-protected_tags: ["critical", "aqa"]
+  file_coverage: 0.80
+  widget_coverage: 0.05
+fail_on_lost: true

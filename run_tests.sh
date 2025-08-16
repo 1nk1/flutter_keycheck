@@ -18,7 +18,7 @@ fi
 echo "Running golden workspace tests..."
 if command -v dart &> /dev/null; then
   cd test/golden_workspace
-  dart test test/golden_test.dart || true
+  dart test test/golden_workspace/golden_test.dart || true
   cd ../..
 else
   echo "Dart not available, skipping golden tests"

@@ -1,0 +1,101 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [main, flutter_keycheck_v3]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  quick-check:
+    name: Quick PR Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: ${{ runner.os }}-dart-pr-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-dart-pr-
+            ${{ runner.os }}-dart-
+      
+      - name: Install dependencies
+        run: dart pub get
+      
+      - name: Check formatting
+        run: |
+          dart format --output=none --set-exit-if-changed . || {
+            echo "::error::Code is not properly formatted. Run 'dart format .' to fix."
+            exit 1
+          }
+      
+      - name: Analyze code
+        run: |
+          dart analyze --fatal-infos --fatal-warnings || {
+            echo "::error::Code analysis failed. Fix the issues reported above."
+            exit 1
+          }
+      
+      - name: Run tests
+        run: |
+          dart test || {
+            echo "::error::Tests failed. All tests must pass before merging."
+            exit 1
+          }
+      
+      - name: Verify executable builds
+        run: |
+          dart compile exe bin/flutter_keycheck.dart -o /tmp/flutter_keycheck || {
+            echo "::error::Failed to compile executable. The CLI must be compilable."
+            exit 1
+          }
+      
+      - name: Basic CLI validation
+        run: |
+          dart run bin/flutter_keycheck.dart --help > /dev/null || {
+            echo "::error::CLI help command failed. The CLI must be functional."
+            exit 1
+          }
+      
+      - name: Check version consistency
+        run: |
+          # Extract version from pubspec.yaml
+          PUBSPEC_VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
+          echo "pubspec.yaml version: $PUBSPEC_VERSION"
+          
+          # Check if CHANGELOG has an entry for this version
+          if ! grep -q "## $PUBSPEC_VERSION" CHANGELOG.md; then
+            echo "::warning::No CHANGELOG entry found for version $PUBSPEC_VERSION"
+          fi
+      
+      - name: License check
+        run: |
+          if [ ! -f LICENSE ]; then
+            echo "::error::LICENSE file is missing"
+            exit 1
+          fi
+      
+      - name: README validation
+        run: |
+          if [ ! -f README.md ]; then
+            echo "::error::README.md file is missing"
+            exit 1
+          fi
+          
+          # Check for basic sections
+          for section in "Installation" "Usage" "Features"; do
+            if ! grep -q "## $section" README.md; then
+              echo "::warning::README.md is missing section: $section"
+            fi
+          done

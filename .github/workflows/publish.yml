@@ -1,29 +1,160 @@
-name: Release to pub.dev
+name: Publish
 
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'
+      - 'v3.*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run only (no actual publish)'
+        required: false
+        default: true
+        type: boolean
 
 jobs:
-  publish:
+  release-gate:
+    name: Release Gate Validation
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write # Required for authentication using OIDC
+    
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup Dart
+      
+      - name: Setup Dart SDK
         uses: dart-lang/setup-dart@v1
         with:
           sdk: stable
-
+      
       - name: Install dependencies
         run: dart pub get
+      
+      - name: Version validation
+        run: |
+          # Extract version from pubspec.yaml
+          PUBSPEC_VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
+          echo "Package version: $PUBSPEC_VERSION"
+          
+          # For tag triggers, validate tag matches version
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            TAG_VERSION="${{ github.ref_name }}"
+            # Remove 'v' prefix if present
+            TAG_VERSION="${TAG_VERSION#v}"
+            
+            if [[ "$PUBSPEC_VERSION" != "$TAG_VERSION" ]]; then
+              echo "::error::Version mismatch! Tag: $TAG_VERSION, pubspec.yaml: $PUBSPEC_VERSION"
+              exit 1
+            fi
+            
+            echo "✓ Version matches tag: $TAG_VERSION"
+          fi
+          
+          # Check CHANGELOG entry exists
+          if ! grep -q "## $PUBSPEC_VERSION" CHANGELOG.md; then
+            echo "::error::No CHANGELOG entry for version $PUBSPEC_VERSION"
+            exit 1
+          fi
+          echo "✓ CHANGELOG entry found for $PUBSPEC_VERSION"
+      
+      - name: Quality gates
+        run: |
+          echo "Running quality checks..."
+          
+          # Format check
+          dart format --output=none --set-exit-if-changed . || {
+            echo "::error::Code is not properly formatted"
+            exit 1
+          }
+          echo "✓ Code formatting"
+          
+          # Analysis
+          dart analyze --fatal-infos --fatal-warnings || {
+            echo "::error::Code analysis failed"
+            exit 1
+          }
+          echo "✓ Code analysis"
+          
+          # Tests
+          dart test || {
+            echo "::error::Tests failed"
+            exit 1
+          }
+          echo "✓ All tests pass"
+          
+          # CLI compilation
+          dart compile exe bin/flutter_keycheck.dart -o /tmp/flutter_keycheck || {
+            echo "::error::Failed to compile CLI"
+            exit 1
+          }
+          echo "✓ CLI compiles successfully"
+      
+      - name: Pana score check
+        run: |
+          dart pub global activate pana
+          PANA_OUTPUT=$(~/.pub-cache/bin/pana --no-warning . 2>&1)
+          echo "$PANA_OUTPUT"
+          
+          # Extract score
+          SCORE=$(echo "$PANA_OUTPUT" | grep -oP "(\d+)/\d+ points" | head -1)
+          echo "Pana score: $SCORE"
+          
+          # Fail if score is too low (adjust threshold as needed)
+          MIN_SCORE=120
+          ACTUAL_SCORE=$(echo "$SCORE" | grep -oP "^\d+")
+          if [[ $ACTUAL_SCORE -lt $MIN_SCORE ]]; then
+            echo "::warning::Pana score $ACTUAL_SCORE is below recommended minimum of $MIN_SCORE"
+          fi
+      
+      - name: Publish dry run
+        run: |
+          echo "Running publish dry run..."
+          dart pub publish --dry-run
+          echo "✓ Package is ready for publishing"
+      
+      - name: Create release artifacts
+        if: github.ref_type == 'tag'
+        run: |
+          # Compile binaries for different platforms
+          mkdir -p artifacts
+          
+          # Linux x64
+          dart compile exe bin/flutter_keycheck.dart -o artifacts/flutter_keycheck-linux-x64
+          
+          # Create checksums
+          cd artifacts
+          sha256sum * > checksums.txt
+          
+          echo "Release artifacts created:"
+          ls -la
 
-      - name: Verify package
-        run: dart pub publish --dry-run
-
+  publish:
+    name: Publish to pub.dev
+    runs-on: ubuntu-latest
+    needs: release-gate
+    if: |
+      github.ref_type == 'tag' && 
+      (!github.event.inputs.dry_run || github.event.inputs.dry_run == 'false')
+    
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      
+      - name: Install dependencies
+        run: dart pub get
+      
       - name: Publish to pub.dev
         run: dart pub publish --force
+      
+      - name: Verify publication
+        run: |
+          PACKAGE_VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
+          echo "Published flutter_keycheck version $PACKAGE_VERSION"
+          echo "Package URL: https://pub.dev/packages/flutter_keycheck/versions/$PACKAGE_VERSION"

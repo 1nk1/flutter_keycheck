@@ -59,8 +59,8 @@ jobs:
           TZ: UTC
           FAIL_ON_PERF_REGRESSION: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
-          echo "Running golden workspace tests..."
-          dart test test/golden_workspace --reporter expanded -j 2
+          echo "Running golden workspace tests (sequential for file safety)..."
+          dart test test/golden_workspace --reporter expanded
           echo "Running v3 tests..."
           dart test test/v3 --reporter expanded -j 2
       

@@ -384,12 +384,12 @@ class DetectorFactory {
       FindByKeyDetector(),
       CustomPatternDetector(
         name: 'PatrolFinder',
-        pattern: r'\$\((["\'])(.*?)\1\)',
+        pattern: r'''\$\((["'])(.*?)\1\)''',
         extraction: 'group2',
       ),
       CustomPatternDetector(
         name: 'IntegrationTestKey',
-        pattern: r'key:\s*["\']([^"\']+)["\']',
+        pattern: r'''key:\s*["']([^"']+)["']''',
         extraction: 'group1',
       ),
     ];
@@ -402,7 +402,7 @@ class DetectorFactory {
         return [
           CustomPatternDetector(
             name: 'MaterialKey',
-            pattern: r'key:\s*MaterialKey\(["\']([^"\']+)["\']\)',
+            pattern: r'''key:\s*MaterialKey\(["']([^"']+)["']\)''',
             extraction: 'group1',
           ),
         ];
@@ -410,7 +410,7 @@ class DetectorFactory {
         return [
           CustomPatternDetector(
             name: 'CupertinoKey',
-            pattern: r'key:\s*CupertinoKey\(["\']([^"\']+)["\']\)',
+            pattern: r'''key:\s*CupertinoKey\(["']([^"']+)["']\)''',
             extraction: 'group1',
           ),
         ];

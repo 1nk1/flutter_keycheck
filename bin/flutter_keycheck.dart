@@ -521,8 +521,12 @@ String _getSampleJson() {
           final keyName = match.group(1);
           if (keyName != null) {
             // Determine if it's a critical key based on the config
-            final critical = ['email_field', 'password_field', 'submit_button']
-                .contains(keyName);
+            final critical = [
+              'login_button',
+              'email_field',
+              'password_field',
+              'submit_button'
+            ].contains(keyName);
 
             keys.add({
               "key": keyName,
@@ -553,7 +557,12 @@ String _getSampleJson() {
             "file": k['file'],
             "line": k['line'],
             "type": "ValueKey",
-            "critical": ['email_field', 'password_field'].contains(k['key'])
+            "critical": [
+              'login_button',
+              'email_field',
+              'password_field',
+              'submit_button'
+            ].contains(k['key'])
           });
         }
       } catch (e) {
@@ -564,7 +573,7 @@ String _getSampleJson() {
             "file": "lib/main.dart",
             "line": 26,
             "type": "ValueKey",
-            "critical": false
+            "critical": true
           },
           {
             "key": "email_field",
@@ -585,7 +594,7 @@ String _getSampleJson() {
             "file": "lib/main.dart",
             "line": 51,
             "type": "ValueKey",
-            "critical": false
+            "critical": true
           }
         ]);
       }

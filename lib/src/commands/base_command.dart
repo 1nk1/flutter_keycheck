@@ -95,7 +95,7 @@ abstract class BaseCommand extends Command<int> {
   static const int exitPolicyViolation = 1;
   static const int exitInvalidConfig = 2;
   static const int exitIoError = 3;
-  static const int exitInternalError = 4;
+  static const int exitInternalError = 254;
 
   /// Handle errors consistently
   int handleError(dynamic error) {

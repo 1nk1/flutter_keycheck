@@ -17,7 +17,38 @@ class ScanResult {
   });
 
   Map<String, dynamic> toMap() {
+    // Aggregate keys from all file analyses
+    final aggregatedKeys = <Map<String, dynamic>>[];
+    for (final entry in fileAnalyses.entries) {
+      final fa = entry.value;
+      for (final keyName in fa.keysFound) {
+        // Try to find location info from keyUsages
+        final usage = keyUsages[keyName];
+        KeyLocation? location;
+        if (usage != null && usage.locations.isNotEmpty) {
+          try {
+            location = usage.locations.firstWhere(
+              (loc) => loc.file == fa.relativePath,
+            );
+          } catch (_) {
+            // No matching location found
+          }
+        }
+
+        aggregatedKeys.add({
+          'key': keyName,
+          'file': fa.relativePath,
+          if (location != null && location.line > 0) 'line': location.line,
+          if (usage?.source != null) 'source': usage!.source,
+          if (usage?.package != null) 'package': usage!.package,
+        });
+      }
+    }
+
     return {
+      'schemaVersion': '1.0',
+      'timestamp': DateTime.now().toIso8601String(),
+      'keys': aggregatedKeys, // critical for tests
       'metrics': metrics.toMap(),
       'file_analyses': fileAnalyses.map((k, v) => MapEntry(k, v.toMap())),
       'key_usages': keyUsages.map((k, v) => MapEntry(k, v.toMap())),

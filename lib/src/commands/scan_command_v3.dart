@@ -39,6 +39,11 @@ class ScanCommandV3 extends BaseCommandV3 {
         help: 'Include generated files (.g.dart, .freezed.dart)',
         defaultsTo: false,
       )
+      ..addFlag(
+        'include-examples',
+        help: 'Scan example/* packages as part of workspace',
+        defaultsTo: true,
+      )
       ..addOption(
         'since',
         help: 'Incremental scan since git commit/branch',
@@ -46,6 +51,10 @@ class ScanCommandV3 extends BaseCommandV3 {
       ..addOption(
         'filter',
         help: 'Filter packages by pattern (for monorepo)',
+      )
+      ..addOption(
+        'project-root',
+        help: 'Override project root for workspace resolution',
       );
   }
 
@@ -67,8 +76,9 @@ class ScanCommandV3 extends BaseCommandV3 {
         projectPath: Directory.current.path,
         includeTests: argResults!['include-tests'] as bool,
         includeGenerated: argResults!['include-generated'] as bool,
+        includeExamples: argResults!['include-examples'] as bool,
         gitDiffBase: argResults!['since'] as String?,
-        scope: argResults!['scope'] as String,
+        scope: ScanScope.fromString(argResults!['scope'] as String),
         packageFilter: argResults!['filter'] as String?,
         config: config,
       );

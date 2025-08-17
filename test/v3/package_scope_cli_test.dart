@@ -2,7 +2,8 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:flutter_keycheck/src/commands/scan_command_v3.dart';
 import 'package:flutter_keycheck/src/cli/cli_runner.dart';
-import 'package:args/command_runner.dart';
+import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
+import '../helpers/cli.dart';
 
 void main() {
   group('Package Scope CLI Tests', () {
@@ -45,6 +46,25 @@ class MyWidget extends StatelessWidget {
       if (await tempDir.exists()) {
         await tempDir.delete(recursive: true);
       }
+    });
+
+    test('ScanScope enum values match CLI strings', () {
+      expect(ScanScope.workspaceOnly.value, equals('workspace-only'));
+      expect(ScanScope.depsOnly.value, equals('deps-only'));
+      expect(ScanScope.all.value, equals('all'));
+    });
+
+    test('ScanScope.fromString handles all valid values', () {
+      expect(ScanScope.fromString('workspace-only'),
+          equals(ScanScope.workspaceOnly));
+      expect(ScanScope.fromString('deps-only'), equals(ScanScope.depsOnly));
+      expect(ScanScope.fromString('all'), equals(ScanScope.all));
+    });
+
+    test('ScanScope.fromString defaults to workspaceOnly for invalid input',
+        () {
+      expect(ScanScope.fromString('invalid'), equals(ScanScope.workspaceOnly));
+      expect(ScanScope.fromString(''), equals(ScanScope.workspaceOnly));
     });
 
     test('--scope flag is registered in ScanCommandV3', () {
@@ -93,12 +113,11 @@ class MyWidget extends StatelessWidget {
       expect(await Directory('reports').exists(), isTrue);
     });
 
-    test('invalid --scope value throws UsageException', () async {
-      final runner = CliRunner();
-
-      expect(
-        () async => await runner.run(['scan', '--scope', 'invalid']),
-        throwsA(isA<UsageException>()),
+    test('invalid --scope value returns exit 2', () async {
+      await expectExit(
+        ['scan', '--scope', 'invalid'],
+        code: 2,
+        stderrContains: '"invalid" is not an allowed value',
       );
     });
 

@@ -5,63 +5,42 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 3.0.0 - 2025-08-17
+## [3.0.0] - 2025-08-17
 
-### 🎉 General Availability Release
+### Added
+- **Package Scope Scanning**: New `--scope` flag with three modes (workspace-only, deps-only, all) for targeted scanning in monorepos and package analysis
+- **Dependency Caching System**: 24-hour cache for dependency scan results with 40-60% performance improvement, automatic invalidation on detector/SDK changes
+- **Package Validation Policies**: `--fail-on-package-missing` and `--fail-on-collision` flags to prevent key conflicts in multi-package projects
+- **Demo Application**: Complete Flutter demo app in `example/demo_app/` with 4 screens and 31+ automation keys demonstrating best practices
+- **Exit Code Contract**: Deterministic exit codes (0=success, 1=policy violation, 2=configuration error) for reliable CI/CD integration
+- **Scope Resolver**: Smart detection of workspace vs dependency keys with proper attribution
 
-Flutter KeyCheck v3.0.0 is now production-ready with enterprise-grade features for Flutter automation key management.
+### Changed
+- **BREAKING**: Unified CLI to single `bin/flutter_keycheck.dart` binary (removed all v2/v3 variants)
+- **BREAKING**: Primary command is now `validate` with `ci-validate` alias (old direct invocation deprecated)
+- **BREAKING**: Exit codes standardized for CI/CD reliability (see exit code contract above)
+- Restructured commands with subcommands pattern for better organization
+- Enhanced configuration with `include_only` and `tracked_keys` fields for granular control
+- Improved CI/CD templates for GitHub Actions and GitLab CI
 
-### ✨ Major Features Since RC1
+### Fixed
+- Demo app scanning correctly validates keys across screens
+- Exit code 2 properly returned for configuration errors
+- Scope resolver accurately tracks key sources
+- Cache invalidation handles detector changes correctly
 
-#### Package Scope Scanning
-- **New**: `--scope` flag for scan command with three modes:
-  - `workspace-only`: Scan only project files (default)
-  - `deps-only`: Scan only dependencies
-  - `all`: Scan both workspace and dependencies
-- Enables targeted scanning for monorepos and package analysis
-
-#### Dependency Caching
-- **New**: 24-hour cache for dependency scan results
-- Cache location: `.dart_tool/flutter_keycheck/cache/`
-- 40-60% performance improvement for repeated scans
-- Automatic cache invalidation on detector or SDK changes
-
-#### Package Validation Policies
-- **New**: `--fail-on-package-missing` flag - Fail if keys exist in packages but not in app
-- **New**: `--fail-on-collision` flag - Fail if keys are declared in multiple sources
-- Prevents key conflicts in multi-package projects
-
-#### Enhanced Configuration
-- **New**: `include_only` field - Scan only specified patterns
-- **New**: `tracked_keys` field - Focus validation on critical keys subset
-- Supports more granular control over scanning and validation
-
-#### Demo Application
-- **New**: Complete Flutter demo app in `example/demo_app/`
-- 4 screens with 31+ automation keys
-- Demonstrates best practices for key placement
-- Includes profile, registration, home, and menu screens
-
-### 📦 Package Quality
-- Compressed size: 320 KB
+### Technical Details
 - Full Dart 3.3+ compatibility
-- Pub.dev score optimizations
-- Comprehensive test coverage
+- Compressed package size: ~320 KB
+- Comprehensive test coverage with 50+ test cases
+- Performance optimizations for large codebases
+- POSIX path normalization for cross-platform consistency
 
-### 🔧 Infrastructure
-- Unified CLI binary (`bin/flutter_keycheck.dart`)
-- Smoke test script for validation
-- Improved CI/CD templates
-- Documentation reorganization for pub.dev
-
-### 📚 Documentation
-- Migration guide for v2 to v3
-- Troubleshooting guide with exit codes
-- Example configurations
-- API documentation
-
-### 🙏 Acknowledgments
-Thanks to all contributors and early adopters who tested the RC releases.
+### Migration from v2.x
+See [MIGRATION_v3.md](MIGRATION_v3.md) for detailed migration instructions. Key changes:
+- Update CI/CD scripts to use new exit codes
+- Switch from direct invocation to `validate` command
+- Update configuration files to use new fields
 
 ---
 

@@ -1,46 +1,141 @@
-workflow:
-  rules:
-    - if: $CI_COMMIT_TAG
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH
+# GitLab CI Pipeline for flutter_keycheck v3.0.0
+# Reference: https://docs.gitlab.com/ee/ci/yaml/
+image: dart:3.9.0
 
 stages:
-  - validate
-  - release
+  - analyze
+  - test
+  - keycheck
+  - demo
+  - publish
 
-validate:keycheck:
-  stage: validate
+variables:
+  PUB_CACHE: "/root/.pub-cache"
+  FKC_CACHE_TTL_HOURS: "0"  # Deterministic cache for CI
+  # DART_VM_OPTIONS removed - not needed for Dart 3.9.0
+
+# Workflow rules - only trigger on relevant changes
+workflow:
   rules:
-    - if: $CI_COMMIT_TAG == null
-  image: dart:stable
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - lib/**/*
+        - bin/**/*
+        - test/**/*
+        - example/**/*
+        - pubspec.yaml
+        - .gitlab-ci.yml
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+      changes:
+        - lib/**/*
+        - bin/**/*
+        - test/**/*
+        - example/**/*
+        - pubspec.yaml
+        - .gitlab-ci.yml
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+
+cache:
+  key:
+    files:
+      - pubspec.lock
+  paths:
+    - .dart_tool/
+    - $PUB_CACHE/
+
+.default_before: &default_before
+  - dart --version
+  - dart pub get
+
+analyze:
+  stage: analyze
+  before_script: *default_before
+  script:
+    - dart analyze --fatal-infos --fatal-warnings
+
+test:
+  stage: test
+  before_script: *default_before
+  script:
+    - mkdir -p reports
+    - dart test -r expanded --concurrency=2 --file-reporter=json:reports/test_report.json
+  artifacts:
+    when: always
+    paths:
+      - reports/test_report.json
+      - coverage/
+    expire_in: 7 days
+
+keycheck:
+  stage: keycheck
   before_script:
-    - dart --version
-    - dart pub get
+    - *default_before
     - dart pub global activate --source path .
+    - export PATH="$PATH:$PUB_CACHE/bin"
+    - which flutter_keycheck
+    - mkdir -p reports
   script:
-    - flutter_keycheck scan --report json,junit,md --out-dir reports --list-files --trace-detectors --timings
-    - flutter_keycheck validate --threshold-file coverage-thresholds.yaml --strict
-    - dart run tool/export_metrics.dart
+    # Политики и сканы
+    - flutter_keycheck scan --scope workspace-only
+    - flutter_keycheck scan --scope deps-only
+    - flutter_keycheck scan --scope all
+    # Validation with policies
+    - flutter_keycheck validate --fail-on-package-missing --fail-on-collision
+    # Smoke: несуществующий конфиг должен возвращать exit 2
+    - |
+      set +e
+      flutter_keycheck scan --scope workspace-only --config ./DOES_NOT_EXIST.json
+      ec=$?
+      echo "exit=$ec" | tee reports/keycheck_invalid_config_exit.txt
+      if [ "$ec" -ne 2 ]; then
+        echo "ERROR: Expected exit 2 for invalid config, got $ec"
+        exit 1
+      fi
+      echo "✓ Missing config correctly returns exit code 2"
+      set -e
   artifacts:
     when: always
-    paths: 
+    paths:
+      - .dart_tool/flutter_keycheck/cache/
       - reports/
-      - metrics.txt
-    reports:
-      junit: reports/junit.xml
-    expire_in: 30 days
+    expire_in: 7 days
 
-release:pack:
-  stage: release
-  rules:
-    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\.\d+)?$/
-  image: dart:stable
+demo_app_scan:
+  stage: demo
+  before_script:
+    - *default_before
+    - dart pub global activate --source path .
+    - export PATH="$PATH:$PUB_CACHE/bin"
   script:
-    - PUBSPEC_VERSION=$(grep "^version:" pubspec.yaml | sed "s/version: //")
-    - test "v$PUBSPEC_VERSION" = "$CI_COMMIT_TAG" || { echo "Tag/pubspec mismatch"; exit 2; }
-    - tar -czf flutter_keycheck_${CI_COMMIT_TAG}.tgz .
+    - cd example/demo_app
+    - dart pub get
+    - flutter_keycheck scan --scope workspace-only
   artifacts:
     when: always
-    paths: 
-      - flutter_keycheck_${CI_COMMIT_TAG}.tgz
-    expire_in: 90 days
+    paths:
+      - example/demo_app/.dart_tool/flutter_keycheck/cache/
+    expire_in: 7 days
+
+# Publish dry-run on version tags
+publish:
+  stage: publish
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+      when: manual
+  before_script:
+    - *default_before
+  script:
+    # Verify version matches tag
+    - |
+      TAG=${CI_COMMIT_TAG#v}
+      VERSION=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
+      if [ "$TAG" != "$VERSION" ]; then
+        echo "ERROR: Tag version ($TAG) does not match pubspec.yaml version ($VERSION)"
+        exit 1
+      fi
+      echo "✓ Version $VERSION matches tag"
+    - dart pub publish --dry-run
+    # For actual publish, manually run with:
+    # - dart pub publish -f

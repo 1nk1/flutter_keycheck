@@ -10,6 +10,23 @@ import 'package:flutter_keycheck/src/scanner/key_detectors_v3.dart';
 import 'package:flutter_keycheck/src/cache/dependency_cache.dart';
 import 'package:path/path.dart' as path;
 
+/// Package scanning scope
+enum ScanScope {
+  workspaceOnly('workspace-only'),
+  depsOnly('deps-only'),
+  all('all');
+
+  final String value;
+  const ScanScope(this.value);
+
+  static ScanScope fromString(String value) {
+    return ScanScope.values.firstWhere(
+      (s) => s.value == value,
+      orElse: () => ScanScope.workspaceOnly,
+    );
+  }
+}
+
 /// Text-based heuristics for widget and handler detection
 class _Heuristics {
   final int widgetHits;
@@ -36,8 +53,9 @@ class AstScannerV3 {
   final String projectPath;
   final bool includeTests;
   final bool includeGenerated;
+  final bool includeExamples;
   final String? gitDiffBase;
-  final String scope; // 'workspace-only', 'deps-only', 'all'
+  final ScanScope scope;
   final String? packageFilter;
   final ConfigV3 config;
 
@@ -53,8 +71,9 @@ class AstScannerV3 {
     required this.projectPath,
     this.includeTests = false,
     this.includeGenerated = false,
+    this.includeExamples = true,
     this.gitDiffBase,
-    this.scope = 'workspace-only',
+    this.scope = ScanScope.workspaceOnly,
     this.packageFilter,
     required this.config,
   }) {
@@ -149,14 +168,13 @@ class AstScannerV3 {
 
     // Full scan based on scope
     switch (scope) {
-      case 'deps-only':
+      case ScanScope.depsOnly:
         return await _getDependencyFilesWithInfo();
-      case 'all':
+      case ScanScope.all:
         final workspace = _getWorkspaceFilesWithInfo();
         final deps = await _getDependencyFilesWithInfo();
         return [...workspace, ...deps];
-      case 'workspace-only':
-      default:
+      case ScanScope.workspaceOnly:
         return _getWorkspaceFilesWithInfo();
     }
   }
@@ -164,29 +182,111 @@ class AstScannerV3 {
   /// Get workspace files with info
   List<FileInfo> _getWorkspaceFilesWithInfo() {
     final files = <FileInfo>[];
-    final dir = Directory(projectPath);
 
-    for (final entity in dir.listSync(recursive: true)) {
-      if (entity is File && entity.path.endsWith('.dart')) {
-        final relativePath = path.relative(entity.path, from: projectPath);
+    // Check if this is a package root (has pubspec.yaml)
+    final pubspec = File(path.join(projectPath, 'pubspec.yaml'));
 
-        // Apply filters
-        if (!_shouldIncludeFile(relativePath)) continue;
+    // Determine which directories to scan
+    final dirsToScan = <Directory>[];
 
-        // Apply package filter if set
-        if (packageFilter != null) {
-          final pattern = RegExp(packageFilter!);
-          if (!pattern.hasMatch(relativePath)) continue;
+    if (!pubspec.existsSync()) {
+      // Not a package root - check if has local lib/
+      final localLib = Directory(path.join(projectPath, 'lib'));
+      if (localLib.existsSync()) {
+        dirsToScan.add(localLib);
+      }
+    } else {
+      // Standard package - scan lib/ and bin/
+      final libDir = Directory(path.join(projectPath, 'lib'));
+      if (libDir.existsSync()) {
+        dirsToScan.add(libDir);
+      }
+
+      final binDir = Directory(path.join(projectPath, 'bin'));
+      if (binDir.existsSync()) {
+        dirsToScan.add(binDir);
+      }
+
+      // If includeTests is true, also scan test/
+      if (includeTests) {
+        final testDir = Directory(path.join(projectPath, 'test'));
+        if (testDir.existsSync()) {
+          dirsToScan.add(testDir);
+        }
+      }
+
+      // Include example/ and examples/ directories if enabled
+      if (includeExamples) {
+        final exampleDir = Directory(path.join(projectPath, 'example'));
+        if (exampleDir.existsSync()) {
+          // Scan Flutter apps in example/
+          for (final entity in exampleDir.listSync()) {
+            if (entity is Directory) {
+              final exampleLibDir = Directory(path.join(entity.path, 'lib'));
+              if (exampleLibDir.existsSync()) {
+                dirsToScan.add(exampleLibDir);
+              }
+              final exampleBinDir = Directory(path.join(entity.path, 'bin'));
+              if (exampleBinDir.existsSync()) {
+                dirsToScan.add(exampleBinDir);
+              }
+            }
+          }
         }
 
-        files.add(FileInfo(
-          path: entity.path,
-          source: 'workspace',
-        ));
+        // Also check examples/ (plural)
+        final examplesDir = Directory(path.join(projectPath, 'examples'));
+        if (examplesDir.existsSync()) {
+          for (final entity in examplesDir.listSync()) {
+            if (entity is Directory) {
+              final exampleLibDir = Directory(path.join(entity.path, 'lib'));
+              if (exampleLibDir.existsSync()) {
+                dirsToScan.add(exampleLibDir);
+              }
+              final exampleBinDir = Directory(path.join(entity.path, 'bin'));
+              if (exampleBinDir.existsSync()) {
+                dirsToScan.add(exampleBinDir);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Scan the determined directories
+    for (final dir in dirsToScan) {
+      for (final entity in dir.listSync(recursive: true)) {
+        if (entity is File && entity.path.endsWith('.dart')) {
+          final relativePath = path.relative(entity.path, from: projectPath);
+
+          // Skip excluded directories
+          if (_isExcludedPath(entity.path)) continue;
+
+          // Apply filters
+          if (!_shouldIncludeFile(relativePath)) continue;
+
+          // Apply package filter if set
+          if (packageFilter != null) {
+            final pattern = RegExp(packageFilter!);
+            if (!pattern.hasMatch(relativePath)) continue;
+          }
+
+          files.add(FileInfo(
+            path: entity.path,
+            source: 'workspace',
+          ));
+        }
       }
     }
 
     return files;
+  }
+
+  /// Check if path should be excluded
+  bool _isExcludedPath(String filePath) {
+    // Exclude common directories that should never be scanned
+    final excludePatterns = RegExp(r'/(\.dart_tool|build|\.git)/');
+    return excludePatterns.hasMatch(filePath);
   }
 
   /// Get dependency files with info
@@ -269,23 +369,43 @@ class AstScannerV3 {
     return null;
   }
 
-  /// Run pub deps to get dependency information
+  /// Run pub deps to get dependency information (with caching)
   Future<void> _pubDepsJson() async {
+    // Check if deps cache exists and is fresh (24h TTL)
+    final cacheKey =
+        'deps_json_${DateTime.now().toIso8601String().substring(0, 10)}';
+    final cachedResult = await DependencyCache.loadCache(projectPath, cacheKey);
+
+    if (cachedResult != null) {
+      // Cache hit - deps already fetched within 24h
+      return;
+    }
+
     try {
       // Try flutter pub deps first, fallback to dart pub deps
+      ProcessResult result;
       try {
-        await Process.run(
+        result = await Process.run(
           'flutter',
           ['pub', 'get'],
           workingDirectory: projectPath,
         );
       } on ProcessException {
         // Flutter not available, try dart
-        await Process.run(
+        result = await Process.run(
           'dart',
           ['pub', 'get'],
           workingDirectory: projectPath,
         );
+      }
+
+      // Cache the result if successful
+      if (result.exitCode == 0) {
+        await DependencyCache.saveCache(projectPath, cacheKey, {
+          'timestamp': DateTime.now().toIso8601String(),
+          'command': 'pub_get',
+          'exitCode': result.exitCode,
+        });
       }
     } catch (e) {
       // Ignore errors - we'll work with what we have

@@ -41,7 +41,7 @@ class MyWidget extends StatelessWidget {
 
       final scanner = AstScannerV3(
         projectPath: tempDir.path,
-        scope: 'workspace-only',
+        scope: ScanScope.workspaceOnly,
         config: config,
       );
 
@@ -69,7 +69,7 @@ class MyWidget extends StatelessWidget {
 
       final scanner = AstScannerV3(
         projectPath: tempDir.path,
-        scope: 'deps-only',
+        scope: ScanScope.depsOnly,
         config: config,
       );
 
@@ -110,7 +110,7 @@ class MyWidget extends StatelessWidget {
 
       final scanner = AstScannerV3(
         projectPath: tempDir.path,
-        scope: 'all',
+        scope: ScanScope.all,
         config: config,
       );
 

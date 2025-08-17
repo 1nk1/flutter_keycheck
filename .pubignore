@@ -1,147 +1,99 @@
-# Flutter KeyCheck .pubignore
+# flutter_keycheck .pubignore
+# This file controls what gets excluded from the pub.dev package
 
-Excludes development files from published package on pub.dev
+# CI/CD and development files
+.github/
+.gitlab-ci.yml
+gitlab-ci-template.yml
+verify_*.sh
+test_*.sh
+run_tests.sh
+sanity_check.sh
+smoke*.sh
+tool/
 
-============================================================================
+# Test files that shouldn't be in the package
+test/
+test_legacy/
+test_cli.sh
+test_exit_codes.sh
 
-EXAMPLE AND DEVELOPMENT FOLDERS
+# Documentation that's too verbose for pub.dev
+docs/
+doc/docs/
+V3_*.md
+*_REPORT*.md
+*_EVIDENCE*.md
+*_STATUS.md
+CLAUDE.md
+CONTRIBUTING.md
+PUBLISHING*.md
+CI_STATUS.md
+GA_RELEASE_SUMMARY.md
+RELEASE_*.md
 
-============================================================================
+# Build artifacts and reports
+reports/
+coverage/
+build/
+*.log
 
-Example folder (included in repo for pub.dev standards, excluded from package)
+# Generated flutter test executable
+flutter_keycheck_test
 
-Include main example files for pub.dev scoring
+# Development scripts
+scripts/
+migrate_*.sh
 
-example/example.dart - INCLUDED
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+*.swp
+*.tmp
+*.bak
+*.orig
 
-example/README.md - INCLUDED
+# Generated files
+*.g.dart
+*.freezed.dart
 
-example/expected_keys.yaml - INCLUDED
+# Git files
+.git/
+.gitignore
 
-Exclude example subfolders and development files
+# Package manager files (keep example's pubspec.yaml but not lock)
+pubspec.lock
+example/pubspec.lock
+example/demo_app/pubspec.lock
 
+# Example subfolders (keep main example files for pub.dev)
+example/demo_app/
 example/sample_flutter_app/
 example/.flutter_keycheck.yaml
 example/run_example.sh
 example/AQA_E2E_USAGE.md
 
-Test files and directories
-
-test/
-
-Development tools and configuration
-
-.github/
-.dart_tool/
-.vscode/
-.idea/
-\*.iml
-
-============================================================================
-
-DEVELOPMENT DOCUMENTATION
-
-============================================================================
-
-Development and publishing documentation
-
-PUBLISHING.md
-PUBLISHING_GUIDE.md
-
-============================================================================
-
-DEVELOPMENT KEYS AND CONFIGURATION
-
-============================================================================
-
-Test keys used for development (not needed in published package)
-
+# Development keys (keep expected_keys.yaml as it's referenced in example)
 keys/ci_keys.yaml
 keys/cli_test_keys.yaml
 keys/testing_keys.yaml
 
-============================================================================
+# Coverage thresholds
+coverage-thresholds.yaml
 
-VERSION CONTROL AND IDE FILES
-
-============================================================================
-
-Git files
-
-.gitignore
-.git/
-
-Editor configuration
-
-.editorconfig
-
-============================================================================
-
-BUILD AND CACHE FILES
-
-============================================================================
-
-Build artifacts
-
-build/
-.packages
-pubspec.lock
-
-Cache and temporary files
-
-.dart*tool/
-*.log
-\_.tmp
-
-============================================================================
-
-PLATFORM-SPECIFIC FILES
-
-============================================================================
-
-macOS
-
-.DS_Store
-
-Windows
-
-Thumbs.db
-desktop.ini
-
-Linux
-
-\*~
-
-============================================================================
-
-NOTES
-
-============================================================================
-
-What gets published
-
-- lib/ (source code)
-
-- bin/ (executable)
-
-- pubspec.yaml (package configuration)
-
-- README.md (documentation)
-
-- CHANGELOG.md (version history)
-
-- LICENSE (license file)
-
-- analysis_options.yaml (linting rules)
-
-What gets excluded
-
-- example/ (development examples)
-
-- test/ (unit tests)
-
-- .github/ (CI/CD configuration)
-
-- Development keys and configuration
-
-- IDE and version control files
+# Keep these files (they'll be included):
+# README.md
+# CHANGELOG.md
+# LICENSE
+# MIGRATION_v3.md
+# pubspec.yaml
+# analysis_options.yaml
+# lib/
+# bin/
+# example/example.dart
+# example/README.md
+# example/expected_keys.yaml
+# keys/expected_keys.yaml
+# schemas/

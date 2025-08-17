@@ -1,0 +1,115 @@
+Resolving dependencies...
+Downloading packages...
+Got dependencies!
+Publishing flutter_keycheck 3.0.0 to https://pub.dev:
+├── CHANGELOG.md (18 KB)
+├── LICENSE (1 KB)
+├── MIGRATION_v3.md (2 KB)
+├── README.md (25 KB)
+├── analysis_options.yaml (2 KB)
+├── bin
+│   ├── flutter_keycheck.dart (<1 KB)
+│   └── prepublish.dart (7 KB)
+├── doc
+│   └── api
+├── example
+│   ├── README.md (<1 KB)
+│   ├── example.dart (<1 KB)
+│   └── expected_keys.yaml (<1 KB)
+├── keys
+│   └── expected_keys.yaml (<1 KB)
+├── lib
+│   ├── flutter_keycheck.dart (<1 KB)
+│   └── src
+│       ├── cache
+│       │   ├── dependency_cache.dart (2 KB)
+│       │   └── scan_cache.dart (6 KB)
+│       ├── checker.dart (38 KB)
+│       ├── ci
+│       │   └── ci_integration.dart (17 KB)
+│       ├── cli
+│       │   └── cli_runner.dart (2 KB)
+│       ├── cli.dart (8 KB)
+│       ├── commands
+│       │   ├── base_command.dart (3 KB)
+│       │   ├── base_command_v3.dart (4 KB)
+│       │   ├── baseline_command.dart (6 KB)
+│       │   ├── diff_command.dart (8 KB)
+│       │   ├── report_command.dart (4 KB)
+│       │   ├── scan_command.dart (3 KB)
+│       │   ├── scan_command_v3.dart (4 KB)
+│       │   ├── scan_command_v3_proper.dart (7 KB)
+│       │   ├── sync_command.dart (8 KB)
+│       │   ├── validate_command.dart (4 KB)
+│       │   └── validate_command_v3.dart (9 KB)
+│       ├── config
+│       │   ├── config.dart (1 KB)
+│       │   └── config_v3.dart (5 KB)
+│       ├── config.dart (5 KB)
+│       ├── core
+│       │   └── scope_resolver.dart (2 KB)
+│       ├── models
+│       │   ├── diff_result.dart (1 KB)
+│       │   ├── key_registry.dart (6 KB)
+│       │   ├── key_snapshot.dart (<1 KB)
+│       │   ├── scan_metrics.dart (<1 KB)
+│       │   ├── scan_result.dart (10 KB)
+│       │   └── validation_result.dart (4 KB)
+│       ├── policy
+│       │   ├── policy_engine.dart (6 KB)
+│       │   └── policy_engine_v3.dart (2 KB)
+│       ├── registry
+│       │   ├── git_registry.dart (<1 KB)
+│       │   ├── key_registry_v3.dart (3 KB)
+│       │   ├── package_registry.dart (<1 KB)
+│       │   ├── registry.dart (<1 KB)
+│       │   └── storage_registry.dart (<1 KB)
+│       ├── reporter
+│       │   ├── coverage_reporter.dart (28 KB)
+│       │   ├── reporter.dart (<1 KB)
+│       │   └── reporter_v3.dart (13 KB)
+│       ├── scanner
+│       │   ├── ast_scanner.dart (15 KB)
+│       │   ├── ast_scanner_v3.dart (36 KB)
+│       │   ├── key_detectors.dart (10 KB)
+│       │   ├── key_detectors_v3.dart (9 KB)
+│       │   ├── scan_cache.dart (9 KB)
+│       │   └── workspace_scanner.dart (<1 KB)
+│       ├── util
+│       │   └── casts.dart (1 KB)
+│       └── validator
+│           └── policy_validator.dart (<1 KB)
+├── publish_dry_run.txt (<1 KB)
+├── pubspec.yaml (1 KB)
+├── schemas
+│   └── scan-coverage.v1.json (2 KB)
+└── verify_output.txt (1 MB)
+
+Total compressed archive size: 135 KB.
+Validating package...
+Package validation found the following potential issue:
+* 11 checked-in files are modified in git.
+  
+  Usually you want to publish from a clean git state.
+  
+  Consider committing these files or reverting the changes.
+  
+  Modified files:
+  
+  CHANGELOG.md
+  MIGRATION_v3.md
+  README.md
+  lib/src/commands/base_command.dart
+  lib/src/commands/base_command_v3.dart
+  lib/src/commands/scan_command_v3.dart
+  lib/src/core/scope_resolver.dart
+  lib/src/models/scan_result.dart
+  lib/src/scanner/ast_scanner_v3.dart
+  pubspec.yaml
+  ...
+  
+  Run `git status` for more information.
+  
+The server may enforce additional checks.
+
+Package has 1 warning.

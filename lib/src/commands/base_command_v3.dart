@@ -35,6 +35,25 @@ abstract class BaseCommandV3 extends Command<int> {
     final configPath = argResults!['config'] as String;
     final verbose = argResults!['verbose'] as bool;
 
+    // Check if config file exists
+    final configFile = File(configPath);
+    final configExists = await configFile.exists();
+
+    // Only fail if user explicitly provided --config flag with non-existent file
+    if (!configExists) {
+      // Check if the user explicitly provided --config flag
+      // Default value is '.flutter_keycheck.yaml'
+      if (argResults!.wasParsed('config')) {
+        stderr.writeln('[flutter_keycheck] Config file not found: $configPath');
+        // Return exit code 2 for missing config when explicitly specified
+        exit(2);
+      }
+      // If using default config path and it doesn't exist, return default config
+      final config = ConfigV3.defaults();
+      config.verbose = verbose;
+      return config;
+    }
+
     try {
       final config = await ConfigV3.load(configPath);
       config.verbose = verbose;

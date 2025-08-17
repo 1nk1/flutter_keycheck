@@ -57,7 +57,7 @@ void main() {
 
         // Validate structure
         expect(json, contains('timestamp'));
-        expect(json, contains('summary'));
+        expect(json, contains('metrics'));
         expect(json, contains('keys'));
       });
 

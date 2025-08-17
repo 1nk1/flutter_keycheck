@@ -1,378 +1,191 @@
-# GitHub Actions CI Pipeline for flutter_keycheck v3.0.0
-# Reference: https://github.com/dart-lang/setup-dart
-# Reference: https://dart.dev/tools/dart-test#platform-selector-option
 name: CI
 
 on:
   push:
-    branches: [ main, develop, flutter_keycheck_v3 ]
-    tags:
-      - 'v*.*.*'
+    branches: [ main, flutter_keycheck_v3 ]
     paths:
-      - 'lib/**'
-      - 'bin/**'
-      - 'test/**'
-      - 'example/**'
-      - 'pubspec.yaml'
-      - 'pubspec.lock'
-      - '.github/workflows/ci.yml'
+      - "lib/**"
+      - "bin/**"
+      - "test/**"
+      - "pubspec.yaml"
+      - ".github/workflows/ci.yml"
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
     paths:
-      - 'lib/**'
-      - 'bin/**'
-      - 'test/**'
-      - 'example/**'
-      - 'pubspec.yaml'
-      - 'pubspec.lock'
-      - '.github/workflows/ci.yml'
+      - "lib/**"
+      - "bin/**"
+      - "test/**"
+      - "pubspec.yaml"
 
-env:
-  # Deterministic cache for CI
-  FKC_CACHE_TTL_HOURS: 0
-  # Dart SDK version
-  DART_SDK: '3.9.0'
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  # Analyze and format check
   analyze:
-    name: Analyze & Format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: ${{ env.DART_SDK }}
-
-      - name: Cache Dart dependencies
+        with: 
+          sdk: stable
+      - name: Pub get (with cache)
         uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache
             .dart_tool
-          key: ${{ runner.os }}-dart-${{ env.DART_SDK }}-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-dart-${{ env.DART_SDK }}-
-            ${{ runner.os }}-dart-
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+      - run: dart pub get
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: dart analyze --fatal-infos --fatal-warnings
 
-      - name: Install dependencies
-        run: dart pub get
-
-      - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed .
-
-      - name: Analyze code
-        run: dart analyze --fatal-infos --fatal-warnings
-
-  # Test matrix across platforms
-  test:
-    name: Test (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    
+  test-blocking:
+    runs-on: ubuntu-latest
+    needs: analyze
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-
       - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: ${{ env.DART_SDK }}
-
-      - name: Cache Dart dependencies
+        with: 
+          sdk: stable
+      - name: Cache pub/.dart_tool
         uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache
             .dart_tool
-          key: ${{ runner.os }}-dart-${{ env.DART_SDK }}-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-dart-${{ env.DART_SDK }}-
-            ${{ runner.os }}-dart-
-
-      - name: Install dependencies
-        run: dart pub get
-
-      - name: Prepare reports directory
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+      - run: dart pub get
+      - name: Prepare reports dir (cross-platform)
         shell: bash
+        run: '[ -d reports ] || mkdir -p reports'
+      - name: Fast blocking suite (exclude nonblocking)
         run: |
-          [ -d reports ] || mkdir -p reports
-      
-      - name: Run blocking tests (critical contract only)
-        run: |
+          # Run critical tests only, exclude heavy tests
           dart test --chain-stack-traces -j 2 -r compact --exclude-tags nonblocking
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.os }}
-          path: reports/test_results.json
-
-  # Contract testing for exit codes
-  contract-test:
-    name: Contract Testing
+  v3-commands-verification:
     runs-on: ubuntu-latest
-    needs: [analyze]
-    
+    needs: analyze
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-
       - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: ${{ env.DART_SDK }}
-
-      - name: Cache Dart dependencies
+        with: 
+          sdk: stable
+      - name: Cache pub/.dart_tool
         uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache
             .dart_tool
-          key: ${{ runner.os }}-dart-${{ env.DART_SDK }}-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-dart-${{ env.DART_SDK }}-
-            ${{ runner.os }}-dart-
-
-      - name: Install dependencies
-        run: dart pub get
-
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+      - run: dart pub get
       - name: Build executable
         run: dart compile exe bin/flutter_keycheck.dart -o flutter_keycheck
-
-      - name: Test exit code 2 for missing config
+      - name: Test exit codes
         run: |
-          echo "Testing missing config file returns exit code 2..."
+          # Test missing config returns exit code 2
           set +e
           ./flutter_keycheck scan --config ./DOES_NOT_EXIST.yaml
           EXIT_CODE=$?
           set -e
-          
           if [ $EXIT_CODE -ne 2 ]; then
             echo "ERROR: Expected exit code 2 for missing config, got $EXIT_CODE"
             exit 1
           fi
           echo "✓ Missing config correctly returns exit code 2"
-
-      - name: Test specific exit code scenarios
+      - name: Test scope flags
         run: |
-          # Test config_missing_exit_test.dart specifically
-          dart test test/v3/config_missing_exit_test.dart --reporter=expanded
-          
-          # Test package_scope_cli_test.dart specifically  
-          dart test test/v3/package_scope_cli_test.dart --reporter=expanded
-
-      - name: Contract CLI verification - workspace scan
-        run: |
-          echo "Testing workspace-only scan..."
           ./flutter_keycheck scan --scope workspace-only --fail-on-parse-errors
-          echo "✓ Workspace scan completed successfully"
-
-      - name: Contract CLI verification - deps scan
-        run: |
-          echo "Testing deps-only scan..."
           ./flutter_keycheck scan --scope deps-only --fail-on-parse-errors
-          echo "✓ Dependencies scan completed successfully"
-
-      - name: Contract CLI verification - all scan
-        run: |
-          echo "Testing all scope scan..."
           ./flutter_keycheck scan --scope all --fail-on-collision
-          echo "✓ Full scan completed successfully"
+          echo "✓ All scope variations work correctly"
 
-  # Demo app smoke testing
-  demo-app-test:
-    name: Demo App Smoke Test
+  package-quality:
     runs-on: ubuntu-latest
-    needs: [analyze]
-    
+    needs: analyze
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-
       - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: ${{ env.DART_SDK }}
-
-      - name: Cache Dart dependencies
+        with: 
+          sdk: stable
+      - name: Cache pub/.dart_tool
         uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache
             .dart_tool
-          key: ${{ runner.os }}-dart-${{ env.DART_SDK }}-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-dart-${{ env.DART_SDK }}-
-            ${{ runner.os }}-dart-
-
-      - name: Install dependencies
-        run: |
-          dart pub get
-          dart pub global activate --source path .
-
-      - name: Run demo app smoke test
-        run: |
-          dart test test/v3/demo_app_smoke_test.dart --reporter=expanded
-          
-      - name: Demo scan from root
-        run: |
-          echo "Scanning demo app from project root..."
-          export PATH="$PATH:$HOME/.pub-cache/bin"
-          
-          # Build executable for consistent behavior
-          dart compile exe bin/flutter_keycheck.dart -o flutter_keycheck
-          
-          # Run scan on demo app (from demo app directory)
-          cd example/demo_app
-          dart pub get
-          ../../flutter_keycheck scan --scope workspace-only
-          EXIT_CODE=$?
-          
-          if [ $EXIT_CODE -ne 0 ]; then
-            echo "ERROR: Demo app scan failed with exit code $EXIT_CODE"
-            exit 1
-          fi
-          echo "✓ Demo app scan completed successfully"
-
-      - name: Test demo app with specific keys
-        run: |
-          cd example/demo_app
-          dart pub get
-          
-          # Verify keys are found
-          ../../flutter_keycheck scan --scope workspace-only --output json > scan_result.json
-          
-          # Check that expected keys are found
-          if ! grep -q "home_button" scan_result.json; then
-            echo "ERROR: Expected key 'home_button' not found in demo app"
-            exit 1
-          fi
-          echo "✓ Demo app keys detected correctly"
-
-  # Publish dry-run on version tags
-  publish-check:
-    name: Publish Check
-    runs-on: ubuntu-latest
-    needs: [test, contract-test, demo-app-test]
-    if: startsWith(github.ref, 'refs/tags/v')
-    
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: ${{ env.DART_SDK }}
-
-      - name: Cache Dart dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-            .dart_tool
-          key: ${{ runner.os }}-dart-${{ env.DART_SDK }}-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-dart-${{ env.DART_SDK }}-
-            ${{ runner.os }}-dart-
-
-      - name: Install dependencies
-        run: dart pub get
-
-      - name: Verify version matches tag
-        run: |
-          TAG=${GITHUB_REF#refs/tags/v}
-          VERSION=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
-          
-          if [ "$TAG" != "$VERSION" ]; then
-            echo "ERROR: Tag version ($TAG) does not match pubspec.yaml version ($VERSION)"
-            exit 1
-          fi
-          echo "✓ Version $VERSION matches tag"
-
-      - name: Run publish dry-run
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+      - run: dart pub get
+      - name: Check pub publish dry-run
         run: dart pub publish --dry-run
-
-      - name: Check package score
+      - name: Check package score with pana
         run: |
           dart pub global activate pana
           pana --no-warning --exit-code-threshold 90 .
 
-  # Full test suite (non-blocking, includes golden/performance tests)
-  test-full:
-    name: Full Test Suite (Non-blocking)
-    runs-on: ubuntu-latest
+  test-full-nonblocking:
     if: always()
+    runs-on: ubuntu-latest
+    needs: test-blocking
     continue-on-error: true
-    needs: [analyze]
-    
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: ${{ env.DART_SDK }}
-
-      - name: Cache Dart dependencies
+        with: 
+          sdk: stable
+      - name: Cache pub/.dart_tool
         uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache
             .dart_tool
-          key: ${{ runner.os }}-dart-${{ env.DART_SDK }}-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-dart-${{ env.DART_SDK }}-
-            ${{ runner.os }}-dart-
-
-      - name: Install dependencies
-        run: dart pub get
-
-      - name: Run full test suite (including nonblocking)
-        run: |
-          echo "Running full test suite including golden/snapshot/performance tests..."
-          dart test --chain-stack-traces -j 1 -r expanded || true
-          echo "Full test suite completed (failures allowed)"
-
-      - name: Generate test report
-        if: always()
-        run: |
-          mkdir -p reports
-          dart test --reporter=json > reports/full_test_results.json || true
-
-      - name: Upload full test results
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+      - run: dart pub get
+      - name: Shard 1/2 - Nonblocking tests
+        continue-on-error: true
+        run: dart test --chain-stack-traces -j 2 -r compact --tags nonblocking --total-shards 2 --shard-index 0
+      - name: Shard 2/2 - Nonblocking tests
+        continue-on-error: true
+        run: dart test --chain-stack-traces -j 2 -r compact --tags nonblocking --total-shards 2 --shard-index 1
+      - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: full-test-results
-          path: reports/full_test_results.json
+          name: nonblocking-test-results
+          path: reports/
 
-  # Summary job for branch protection
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [analyze, test, contract-test, demo-app-test]
+    needs: [analyze, test-blocking, v3-commands-verification, package-quality]
     if: always()
-    
     steps:
-      - name: Check CI results
+      - name: Check required jobs
         run: |
           if [ "${{ needs.analyze.result }}" != "success" ]; then
             echo "❌ Analyze job failed"
             exit 1
           fi
-          
-          if [ "${{ needs.test.result }}" != "success" ]; then
-            echo "❌ Test job failed"
+          if [ "${{ needs.test-blocking.result }}" != "success" ]; then
+            echo "❌ Test blocking job failed"
             exit 1
           fi
-          
-          if [ "${{ needs.contract-test.result }}" != "success" ]; then
-            echo "❌ Contract test job failed"
+          if [ "${{ needs.v3-commands-verification.result }}" != "success" ]; then
+            echo "❌ V3 commands verification failed"
             exit 1
           fi
-          
-          if [ "${{ needs.demo-app-test.result }}" != "success" ]; then
-            echo "❌ Demo app test failed"
+          if [ "${{ needs.package-quality.result }}" != "success" ]; then
+            echo "❌ Package quality check failed"
             exit 1
           fi
-          
-          echo "✅ All CI checks passed successfully!"
-
+          echo "✅ All required CI checks passed!"

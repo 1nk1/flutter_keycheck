@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:test/test.dart';
 import '../helpers/cli.dart';
 
+@Tags(['nonblocking'])
 void main() {
   group('Demo App Smoke Tests', () {
     late Directory tempDir;

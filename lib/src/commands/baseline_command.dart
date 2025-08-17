@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:flutter_keycheck/src/cli/cli_runner.dart';
 import 'package:flutter_keycheck/src/commands/base_command_v3.dart';
 import 'package:flutter_keycheck/src/config/config_v3.dart';
@@ -16,9 +17,8 @@ class BaselineCommand extends BaseCommandV3 {
   final description = 'Create or update key baseline';
 
   BaselineCommand() {
-    argParser
-      ..addCommand('create')
-      ..addCommand('update')
+    // Add subcommands with their own options
+    final createCommand = ArgParser()
       ..addOption(
         'scan',
         help: 'Path to scan snapshot file',
@@ -28,6 +28,21 @@ class BaselineCommand extends BaseCommandV3 {
         help: 'Automatically assign tags based on patterns',
         defaultsTo: false,
       );
+
+    final updateCommand = ArgParser()
+      ..addOption(
+        'scan',
+        help: 'Path to scan snapshot file',
+      )
+      ..addFlag(
+        'auto-tags',
+        help: 'Automatically assign tags based on patterns',
+        defaultsTo: false,
+      );
+
+    argParser
+      ..addCommand('create', createCommand)
+      ..addCommand('update', updateCommand);
   }
 
   @override

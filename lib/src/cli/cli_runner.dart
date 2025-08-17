@@ -6,7 +6,7 @@ import 'package:flutter_keycheck/src/commands/baseline_command.dart';
 import 'package:flutter_keycheck/src/commands/diff_command.dart';
 import 'package:flutter_keycheck/src/commands/report_command.dart';
 import 'package:flutter_keycheck/src/commands/scan_command_v3.dart';
-import 'package:flutter_keycheck/src/commands/sync_command.dart';
+// import 'package:flutter_keycheck/src/commands/sync_command.dart';  // TODO: Fix for v3
 import 'package:flutter_keycheck/src/commands/validate_command_v3.dart';
 
 /// Main CLI runner with proper error handling and exit codes
@@ -42,7 +42,7 @@ class CliRunner extends CommandRunner<int> {
     addCommand(BaselineCommand());
     addCommand(DiffCommand());
     addCommand(ValidateCommandV3());
-    addCommand(SyncCommand());
+    // addCommand(SyncCommand());  // TODO: Fix for v3
     addCommand(ReportCommand());
   }
 

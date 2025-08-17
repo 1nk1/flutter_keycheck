@@ -1,0 +1,5 @@
+version: 1
+thresholds:
+  file_coverage: 0.80
+  widget_coverage: 0.05
+fail_on_lost: true

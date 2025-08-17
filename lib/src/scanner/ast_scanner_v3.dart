@@ -7,6 +7,7 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:flutter_keycheck/src/config/config_v3.dart';
 import 'package:flutter_keycheck/src/models/scan_result.dart';
 import 'package:flutter_keycheck/src/scanner/key_detectors_v3.dart';
+import 'package:flutter_keycheck/src/cache/dependency_cache.dart';
 import 'package:path/path.dart' as path;
 
 /// Text-based heuristics for widget and handler detection
@@ -74,6 +75,13 @@ class AstScannerV3 {
   /// Perform full AST scan with metrics
   Future<ScanResult> scan() async {
     final startTime = DateTime.now();
+
+    // Ensure cache directory exists
+    final cacheDir =
+        Directory(path.join(projectPath, DependencyCache.cacheDir));
+    if (!await cacheDir.exists()) {
+      await cacheDir.create(recursive: true);
+    }
 
     // Get files to scan
     final filesWithInfo = await _getFilesToScanWithInfo();
@@ -313,6 +321,14 @@ class AstScannerV3 {
   /// Scan single file with AST
   Future<void> _scanFile(String filePath, AnalysisContextCollection collection,
       {String source = 'workspace', String? packageInfo}) async {
+    // Try to use cache for package dependencies
+    if (source == 'package' && packageInfo != null) {
+      final cached = await _tryLoadFromCache(filePath, packageInfo);
+      if (cached) {
+        return; // Successfully loaded from cache
+      }
+    }
+
     try {
       final context = collection.contextFor(filePath);
       final result = await context.currentSession.getResolvedUnit(filePath);
@@ -347,6 +363,19 @@ class AstScannerV3 {
           metrics.detectorHits[detector.name] =
               (metrics.detectorHits[detector.name] ?? 0) +
                   (analysis.detectorHits[detector.name] ?? 0);
+        }
+
+        // Save to cache if it's a package dependency
+        if (source == 'package' && packageInfo != null) {
+          // Extract only the keys from this file
+          final fileKeys = <String, KeyUsage>{};
+          for (final entry in visitor.keyUsages.entries) {
+            // Check if this key has locations in this file
+            if (entry.value.locations.any((loc) => loc.file == filePath)) {
+              fileKeys[entry.key] = entry.value;
+            }
+          }
+          await _saveToCache(filePath, packageInfo, analysis, fileKeys);
         }
       }
     } catch (e) {
@@ -505,6 +534,152 @@ class AstScannerV3 {
     }
 
     return _Heuristics(widgetHits: widgetHits, handlers: handlers);
+  }
+
+  /// Try to load scan results from cache
+  Future<bool> _tryLoadFromCache(String filePath, String packageInfo) async {
+    try {
+      final parts = packageInfo.split('@');
+      if (parts.length != 2) return false;
+
+      final packageName = parts[0];
+      final packageVersion = parts[1];
+
+      final cacheKey = DependencyCache.getCacheKey(
+        packageName: packageName,
+        packageVersion: packageVersion,
+        detectorHash: DependencyCache.getDetectorHash(),
+        sdkVersion: DependencyCache.getSdkVersion(),
+      );
+
+      final cached = await DependencyCache.loadCache(projectPath, cacheKey);
+      if (cached == null) return false;
+
+      // Check if this file is in the cache
+      final fileKey = path.relative(filePath, from: projectPath);
+      final fileData = cached[fileKey] as Map<String, dynamic>?;
+      if (fileData == null) return false;
+
+      // Restore analysis
+      final analysis = FileAnalysis(
+        path: filePath,
+        relativePath: path.relative(filePath, from: projectPath),
+      );
+
+      // Restore metrics from cache
+      analysis.widgetCount = fileData['widgetCount'] ?? 0;
+      analysis.widgetsWithKeys = fileData['widgetsWithKeys'] ?? 0;
+      analysis.nodesAnalyzed = fileData['nodesAnalyzed'] ?? 0;
+
+      // Restore keys found
+      final keysFound = fileData['keysFound'] as List?;
+      if (keysFound != null) {
+        for (final key in keysFound) {
+          analysis.keysFound.add(key as String);
+        }
+      }
+
+      // Store analysis
+      fileAnalyses[filePath] = analysis;
+      metrics.scannedFiles++;
+      metrics.totalLines += (fileData['totalLines'] ?? 0) as int;
+      metrics.analyzedNodes += analysis.nodesAnalyzed;
+
+      // Restore key usages
+      final usages = fileData['keyUsages'] as Map<String, dynamic>?;
+      if (usages != null) {
+        for (final entry in usages.entries) {
+          final usageData = entry.value as Map<String, dynamic>;
+          final usage = keyUsages.putIfAbsent(
+            entry.key,
+            () => KeyUsage(
+              id: entry.key,
+              source: usageData['source'] ?? 'package',
+              package: packageInfo,
+            ),
+          );
+
+          // Restore locations
+          final locations = usageData['locations'] as List?;
+          if (locations != null) {
+            for (final locData in locations) {
+              usage.locations
+                  .add(KeyLocation.fromMap(locData as Map<String, dynamic>));
+            }
+          }
+
+          // Restore handlers
+          final handlers = usageData['handlers'] as List?;
+          if (handlers != null) {
+            for (final handlerData in handlers) {
+              usage.handlers.add(
+                  HandlerInfo.fromMap(handlerData as Map<String, dynamic>));
+            }
+          }
+
+          // Restore tags
+          final tags = usageData['tags'] as List?;
+          if (tags != null) {
+            usage.tags.addAll(tags.cast<String>());
+          }
+        }
+      }
+
+      return true;
+    } catch (e) {
+      // Cache load failed, continue with normal scan
+      return false;
+    }
+  }
+
+  /// Save scan results to cache
+  Future<void> _saveToCache(
+    String filePath,
+    String packageInfo,
+    FileAnalysis analysis,
+    Map<String, KeyUsage> fileKeyUsages,
+  ) async {
+    try {
+      final parts = packageInfo.split('@');
+      if (parts.length != 2) return;
+
+      final packageName = parts[0];
+      final packageVersion = parts[1];
+
+      final cacheKey = DependencyCache.getCacheKey(
+        packageName: packageName,
+        packageVersion: packageVersion,
+        detectorHash: DependencyCache.getDetectorHash(),
+        sdkVersion: DependencyCache.getSdkVersion(),
+      );
+
+      // Load existing cache or create new
+      final existing =
+          await DependencyCache.loadCache(projectPath, cacheKey) ?? {};
+
+      // Add this file's data
+      final fileKey = path.relative(filePath, from: projectPath);
+      existing[fileKey] = {
+        'widgetCount': analysis.widgetCount,
+        'widgetsWithKeys': analysis.widgetsWithKeys,
+        'nodesAnalyzed': analysis.nodesAnalyzed,
+        'keysFound': analysis.keysFound.toList(),
+        'totalLines': _countLines(File(filePath)),
+        'keyUsages': fileKeyUsages.map((key, usage) => MapEntry(key, {
+              'locations': usage.locations.map((loc) => loc.toMap()).toList(),
+              'handlers': usage.handlers.map((h) => h.toMap()).toList(),
+              'tags': usage.tags.toList(),
+              'source': usage.source,
+              'status': usage.status,
+              'notes': usage.notes,
+            })),
+      };
+
+      // Save cache
+      await DependencyCache.saveCache(projectPath, cacheKey, existing);
+    } catch (e) {
+      // Cache save failed, ignore silently
+    }
   }
 }
 

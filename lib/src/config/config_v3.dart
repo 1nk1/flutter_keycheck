@@ -125,12 +125,16 @@ class ScanConfig {
   bool includeTests;
   bool includeGenerated;
   List<String> excludePatterns;
+  List<String>? includeOnly;
+  List<String>? trackedKeys;
 
   ScanConfig({
     required this.packages,
     required this.includeTests,
     required this.includeGenerated,
     required this.excludePatterns,
+    this.includeOnly,
+    this.trackedKeys,
   });
 
   factory ScanConfig.fromYaml(Map yaml) {
@@ -139,6 +143,12 @@ class ScanConfig {
       includeTests: yaml['include_tests'] ?? false,
       includeGenerated: yaml['include_generated'] ?? false,
       excludePatterns: List<String>.from(yaml['exclude_patterns'] ?? []),
+      includeOnly: yaml['include_only'] != null
+          ? List<String>.from(yaml['include_only'])
+          : null,
+      trackedKeys: yaml['tracked_keys'] != null
+          ? List<String>.from(yaml['tracked_keys'])
+          : null,
     );
   }
 
@@ -160,6 +170,8 @@ class ScanConfig {
       'include_tests': includeTests,
       'include_generated': includeGenerated,
       'exclude_patterns': excludePatterns,
+      if (includeOnly != null) 'include_only': includeOnly,
+      if (trackedKeys != null) 'tracked_keys': trackedKeys,
     };
   }
 }

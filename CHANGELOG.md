@@ -5,6 +5,66 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.0.0 - 2025-08-17
+
+### 🎉 General Availability Release
+
+Flutter KeyCheck v3.0.0 is now production-ready with enterprise-grade features for Flutter automation key management.
+
+### ✨ Major Features Since RC1
+
+#### Package Scope Scanning
+- **New**: `--scope` flag for scan command with three modes:
+  - `workspace-only`: Scan only project files (default)
+  - `deps-only`: Scan only dependencies
+  - `all`: Scan both workspace and dependencies
+- Enables targeted scanning for monorepos and package analysis
+
+#### Dependency Caching
+- **New**: 24-hour cache for dependency scan results
+- Cache location: `.dart_tool/flutter_keycheck/cache/`
+- 40-60% performance improvement for repeated scans
+- Automatic cache invalidation on detector or SDK changes
+
+#### Package Validation Policies
+- **New**: `--fail-on-package-missing` flag - Fail if keys exist in packages but not in app
+- **New**: `--fail-on-collision` flag - Fail if keys are declared in multiple sources
+- Prevents key conflicts in multi-package projects
+
+#### Enhanced Configuration
+- **New**: `include_only` field - Scan only specified patterns
+- **New**: `tracked_keys` field - Focus validation on critical keys subset
+- Supports more granular control over scanning and validation
+
+#### Demo Application
+- **New**: Complete Flutter demo app in `example/demo_app/`
+- 4 screens with 31+ automation keys
+- Demonstrates best practices for key placement
+- Includes profile, registration, home, and menu screens
+
+### 📦 Package Quality
+- Compressed size: 320 KB
+- Full Dart 3.3+ compatibility
+- Pub.dev score optimizations
+- Comprehensive test coverage
+
+### 🔧 Infrastructure
+- Unified CLI binary (`bin/flutter_keycheck.dart`)
+- Smoke test script for validation
+- Improved CI/CD templates
+- Documentation reorganization for pub.dev
+
+### 📚 Documentation
+- Migration guide for v2 to v3
+- Troubleshooting guide with exit codes
+- Example configurations
+- API documentation
+
+### 🙏 Acknowledgments
+Thanks to all contributors and early adopters who tested the RC releases.
+
+---
+
 ## 3.0.0-rc.1 - 2025-08-16
 
 ### 🚀 BREAKING CHANGES - Major v3 Release

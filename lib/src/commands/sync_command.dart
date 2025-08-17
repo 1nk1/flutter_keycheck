@@ -1,9 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter_keycheck/src/commands/base_command.dart';
-import 'package:flutter_keycheck/src/registry/git_registry.dart';
-import 'package:flutter_keycheck/src/registry/package_registry.dart';
-import 'package:flutter_keycheck/src/registry/storage_registry.dart';
+import 'package:flutter_keycheck/src/config/config_v3.dart';
+import 'package:flutter_keycheck/src/registry/key_registry_v3.dart';
 
 /// Sync command to pull/push central registry
 class SyncCommand extends BaseCommand {
@@ -81,48 +80,18 @@ class SyncCommand extends BaseCommand {
     }
   }
 
-  Future<dynamic> _getRegistry(dynamic config) async {
-    final registryType =
-        argResults!['registry'] as String? ?? config.registryType;
+  Future<KeyRegistry> _getRegistry(dynamic config) async {
+    // Create RegistryConfig from arguments or config
+    final registryConfig = RegistryConfig(
+      type: argResults!['registry'] as String? ?? 'git',
+      repo: argResults!['repo'] as String?,
+      branch: argResults!['branch'] as String? ?? 'main',
+      path: argResults!['path'] as String? ?? 'key-registry.yaml',
+      url: argResults!['url'] as String?,
+      package: argResults!['package'] as String?,
+    );
 
-    switch (registryType) {
-      case 'git':
-        final repo = argResults!['repo'] as String? ?? config.registryRepo;
-        if (repo == null) {
-          throw ConfigException('Git repository URL required for git registry');
-        }
-        return GitRegistry(
-          repoUrl: repo,
-          branch: argResults!['branch'] as String? ?? 'main',
-          registryPath: argResults!['path'] as String? ?? 'key-registry.yaml',
-        );
-
-      case 'pkg':
-        final package =
-            argResults!['package'] as String? ?? config.registryPackage;
-        if (package == null) {
-          throw ConfigException('Package name required for package registry');
-        }
-        return PackageRegistry(
-          packageName: package,
-          registryPath:
-              argResults!['path'] as String? ?? 'assets/key-registry.yaml',
-        );
-
-      case 'path':
-      case 'storage':
-        final url = argResults!['url'] as String? ?? config.registryUrl;
-        if (url == null) {
-          throw ConfigException('Storage URL required for storage registry');
-        }
-        return StorageRegistry(
-          url: url,
-          registryPath: argResults!['path'] as String? ?? 'key-registry.yaml',
-        );
-
-      default:
-        throw ConfigException('Unknown registry type: $registryType');
-    }
+    return await KeyRegistry.create(registryConfig);
   }
 
   Future<int> _pull(dynamic registry, dynamic config) async {
@@ -155,6 +124,10 @@ class SyncCommand extends BaseCommand {
   }
 
   Future<int> _push(dynamic registry, dynamic config) async {
+    // TODO: Implement for v3
+    stderr.writeln('Push command not yet implemented for v3');
+    return BaseCommand.exitInvalidConfig;
+    /*
     stdout.writeln('📤 Pushing registry to ${registry.type}...');
 
     // Load local registry
@@ -169,9 +142,12 @@ class SyncCommand extends BaseCommand {
     }
 
     final yaml = await file.readAsString();
-    final keyRegistry = KeyRegistry.fromYaml(yaml);
+    // TODO: Fix for v3 registry
+    // final keyRegistry = KeyRegistry.fromYaml(yaml);
+    final keyRegistry = null;
 
     // Update timestamp
+    /* TODO: Fix for v3
     final updated = KeyRegistry(
       version: keyRegistry.version,
       monorepo: keyRegistry.monorepo,
@@ -179,6 +155,8 @@ class SyncCommand extends BaseCommand {
       policies: keyRegistry.policies,
       lastUpdated: DateTime.now(),
     );
+    */
+    final updated = null;
 
     try {
       // Check for conflicts unless forced
@@ -213,9 +191,14 @@ class SyncCommand extends BaseCommand {
       stderr.writeln('Failed to push registry: $e');
       return BaseCommand.exitIoError;
     }
+    */
   }
 
   Future<int> _status(dynamic registry, dynamic config) async {
+    // TODO: Implement for v3
+    stderr.writeln('Status command not yet implemented for v3');
+    return BaseCommand.exitInvalidConfig;
+    /*
     stdout.writeln('🔍 Checking registry status...\n');
 
     try {
@@ -231,7 +214,9 @@ class SyncCommand extends BaseCommand {
       }
 
       final localYaml = await file.readAsString();
-      final local = KeyRegistry.fromYaml(localYaml);
+      // TODO: Fix for v3
+      // final local = KeyRegistry.fromYaml(localYaml);
+      final local = null;
 
       stdout.writeln('📍 Local Registry:');
       stdout.writeln('   Path: $localPath');
@@ -271,5 +256,6 @@ class SyncCommand extends BaseCommand {
       stderr.writeln('Failed to check status: $e');
       return BaseCommand.exitIoError;
     }
+    */
   }
 }

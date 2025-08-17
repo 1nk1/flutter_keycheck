@@ -112,7 +112,7 @@ void main() {
 
     test('validate command accepts package policy flags', () async {
       // Clean up any existing baseline first
-      final baselineDir = p.join(testWorkspace, '.flutter_keycheck');
+      final baselineDir = path.join(testWorkspace, '.flutter_keycheck');
       if (Directory(baselineDir).existsSync()) {
         try {
           Directory(baselineDir).deleteSync(recursive: true);

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
+import '../helpers/cli.dart';
 
 void main() {
   // Use the golden workspace for tests to avoid scanning the entire project
@@ -8,9 +9,7 @@ void main() {
 
   group('CLI Scope Flag Tests', () {
     test('scan command includes --scope flag in help', () async {
-      final result = await Process.run('dart', [
-        'run',
-        'bin/flutter_keycheck.dart',
+      final result = await runCli([
         'scan',
         '--help',
       ]).timeout(const Duration(seconds: 10));
@@ -29,15 +28,11 @@ void main() {
     }, timeout: const Timeout(Duration(seconds: 10)));
 
     test('scan command accepts --scope flag', () async {
-      final result = await Process.run('dart', [
-        'run',
-        'bin/flutter_keycheck.dart',
+      final result = await runCli([
         'scan',
         '--scope',
         'workspace-only',
-        '--project-root',
-        testWorkspace,
-      ]).timeout(const Duration(seconds: 10));
+      ], projectRoot: testWorkspace).timeout(const Duration(seconds: 10));
 
       // Should not fail with "Could not find an option named --scope"
       expect(result.stderr, isNot(contains('Could not find an option named')),
@@ -50,15 +45,11 @@ void main() {
     }, timeout: const Timeout(Duration(seconds: 10)));
 
     test('scan command rejects invalid scope values', () async {
-      final result = await Process.run('dart', [
-        'run',
-        'bin/flutter_keycheck.dart',
+      final result = await runCli([
         'scan',
         '--scope',
         'invalid-value',
-        '--project-root',
-        testWorkspace,
-      ]).timeout(const Duration(seconds: 10));
+      ], projectRoot: testWorkspace).timeout(const Duration(seconds: 10));
 
       expect(result.exitCode, isNot(equals(0)),
           reason: 'Should fail with invalid scope value');
@@ -68,15 +59,11 @@ void main() {
     }, timeout: const Timeout(Duration(seconds: 10)));
 
     test('scan command defaults to workspace-only scope', () async {
-      final result = await Process.run('dart', [
-        'run',
-        'bin/flutter_keycheck.dart',
+      final result = await runCli([
         'scan',
         '--report',
         'json',
-        '--project-root',
-        testWorkspace,
-      ]).timeout(const Duration(seconds: 10));
+      ], projectRoot: testWorkspace).timeout(const Duration(seconds: 10));
 
       if (result.exitCode == 0) {
         // If scan succeeds, output should be JSON
@@ -93,9 +80,7 @@ void main() {
 
   group('CLI Package Policy Flags Tests', () {
     test('validate command includes package policy flags in help', () async {
-      final result = await Process.run('dart', [
-        'run',
-        'bin/flutter_keycheck.dart',
+      final result = await runCli([
         'validate',
         '--help',
       ]).timeout(const Duration(seconds: 10));
@@ -122,29 +107,21 @@ void main() {
       }
 
       // First create a baseline in the test workspace
-      final baselineResult = await Process.run('dart', [
-        'run',
-        'bin/flutter_keycheck.dart',
+      final baselineResult = await runCli([
         'baseline',
         'create',
-        '--project-root',
-        testWorkspace,
-      ]).timeout(const Duration(seconds: 10));
+      ], projectRoot: testWorkspace).timeout(const Duration(seconds: 10));
 
       // Check baseline was created successfully
       if (baselineResult.exitCode != 0) {
         print('Baseline creation failed: ${baselineResult.stderr}');
       }
 
-      final result = await Process.run('dart', [
-        'run',
-        'bin/flutter_keycheck.dart',
+      final result = await runCli([
         'validate',
         '--fail-on-package-missing',
         '--fail-on-collision',
-        '--project-root',
-        testWorkspace,
-      ]).timeout(const Duration(seconds: 10));
+      ], projectRoot: testWorkspace).timeout(const Duration(seconds: 10));
 
       // Should not fail with "Could not find an option named" error
       expect(result.stderr, isNot(contains('Could not find an option named')),

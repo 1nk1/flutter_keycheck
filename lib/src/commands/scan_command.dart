@@ -17,6 +17,12 @@ class ScanCommand extends BaseCommand {
   ScanCommand() {
     argParser
       ..addOption(
+        'scope',
+        help: 'Scope of packages to scan',
+        allowed: ['workspace-only', 'deps-only', 'all'],
+        defaultsTo: 'workspace-only',
+      )
+      ..addOption(
         'since',
         help: 'Git ref for incremental scan (optional speedup)',
       )

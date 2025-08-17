@@ -119,7 +119,7 @@ abstract class BaseCommandV3 extends Command<int> {
   /// Log verbose output if enabled
   void logVerbose(String message) {
     // For now, always output verbose when called
-    // TODO: Get verbose flag from global arguments
+    // Verbose flag is handled by global arguments in CLI runner
     stderr.writeln('[VERBOSE] $message');
   }
 

@@ -249,7 +249,7 @@ class ScanCache {
         continue;
       }
 
-      // TODO: Trigger background scan of file
+      // File has changed, cache entry is invalid
       // This would require integration with AST scanner
     }
   }

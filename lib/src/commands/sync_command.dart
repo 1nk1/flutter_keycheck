@@ -1,16 +1,16 @@
 import 'dart:io';
 
-import 'package:flutter_keycheck/src/commands/base_command.dart';
+import 'package:flutter_keycheck/src/commands/base_command_v3.dart';
 import 'package:flutter_keycheck/src/config/config_v3.dart';
 import 'package:flutter_keycheck/src/registry/key_registry_v3.dart';
 
 /// Sync command to pull/push central registry
-class SyncCommand extends BaseCommand {
+class SyncCommand extends BaseCommandV3 {
   @override
   final String name = 'sync';
 
   @override
-  final String description = 'Pull/push central key registry';
+  final String description = 'Synchronize with team registry';
 
   SyncCommand() {
     argParser
@@ -73,7 +73,7 @@ class SyncCommand extends BaseCommand {
           return await _status(registry, config);
         default:
           stderr.writeln('Unknown action: $action');
-          return BaseCommand.exitInvalidConfig;
+          return 2; // Invalid config exit code
       }
     } catch (e) {
       return handleError(e);
@@ -116,17 +116,17 @@ class SyncCommand extends BaseCommand {
           .writeln('   Last updated: ${keyRegistry.lastUpdated ?? 'unknown'}');
       stdout.writeln('   Saved to: $localPath');
 
-      return BaseCommand.exitOk;
+      return 0; // Success
     } catch (e) {
       stderr.writeln('Failed to pull registry: $e');
-      return BaseCommand.exitIoError;
+      return 3; // IO error
     }
   }
 
   Future<int> _push(dynamic registry, dynamic config) async {
     // TODO: Implement for v3
     stderr.writeln('Push command not yet implemented for v3');
-    return BaseCommand.exitInvalidConfig;
+    return 2; // Invalid config exit code
     /*
     stdout.writeln('📤 Pushing registry to ${registry.type}...');
 
@@ -138,7 +138,7 @@ class SyncCommand extends BaseCommand {
     if (!await file.exists()) {
       stderr.writeln('Local registry not found: $localPath');
       stderr.writeln('Run "flutter_keycheck baseline create" first');
-      return BaseCommand.exitIoError;
+      return 3;
     }
 
     final yaml = await file.readAsString();
@@ -169,7 +169,7 @@ class SyncCommand extends BaseCommand {
           stderr.writeln('   Remote: ${remote.lastUpdated}');
           stderr.writeln('   Local: ${keyRegistry.lastUpdated}');
           stderr.writeln('   Use --force to override or pull first');
-          return BaseCommand.exitPolicyViolation;
+          return 1;
         }
       }
 
@@ -186,10 +186,10 @@ class SyncCommand extends BaseCommand {
       stdout.writeln('   Message: $message');
       stdout.writeln('   Updated: ${updated.lastUpdated}');
 
-      return BaseCommand.exitOk;
+      return 0;
     } catch (e) {
       stderr.writeln('Failed to push registry: $e');
-      return BaseCommand.exitIoError;
+      return 3;
     }
     */
   }
@@ -197,7 +197,7 @@ class SyncCommand extends BaseCommand {
   Future<int> _status(dynamic registry, dynamic config) async {
     // TODO: Implement for v3
     stderr.writeln('Status command not yet implemented for v3');
-    return BaseCommand.exitInvalidConfig;
+    return 2;
     /*
     stdout.writeln('🔍 Checking registry status...\n');
 
@@ -210,7 +210,7 @@ class SyncCommand extends BaseCommand {
       if (!await file.exists()) {
         stdout.writeln('❌ No local registry found at $localPath');
         stdout.writeln('   Run "flutter_keycheck sync --action pull" to fetch');
-        return BaseCommand.exitOk;
+        return 0;
       }
 
       final localYaml = await file.readAsString();
@@ -251,10 +251,10 @@ class SyncCommand extends BaseCommand {
         stdout.writeln('   ❌ Unable to reach remote: $e');
       }
 
-      return BaseCommand.exitOk;
+      return 0;
     } catch (e) {
       stderr.writeln('Failed to check status: $e');
-      return BaseCommand.exitIoError;
+      return 3;
     }
     */
   }

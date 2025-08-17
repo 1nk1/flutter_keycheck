@@ -6,15 +6,12 @@ import '../helpers/cli.dart';
 void main() {
   group('Demo App Smoke Tests', () {
     late Directory tempDir;
-    late String originalDir;
 
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp('keycheck_demo_test_');
-      originalDir = Directory.current.path;
-      Directory.current = tempDir;
 
       // Create main project
-      await File('pubspec.yaml').writeAsString('''
+      await File('${tempDir.path}/pubspec.yaml').writeAsString('''
 name: test_package
 version: 1.0.0
 environment:
@@ -24,8 +21,8 @@ dependencies:
     sdk: flutter
 ''');
 
-      await Directory('lib').create();
-      await File('lib/main.dart').writeAsString('''
+      await Directory('${tempDir.path}/lib').create();
+      await File('${tempDir.path}/lib/main.dart').writeAsString('''
 import 'package:flutter/material.dart';
 
 class MyWidget extends StatelessWidget {
@@ -39,8 +36,8 @@ class MyWidget extends StatelessWidget {
 ''');
 
       // Create example app with keys
-      await Directory('example/demo_app/lib').create(recursive: true);
-      await File('example/demo_app/pubspec.yaml').writeAsString('''
+      await Directory('${tempDir.path}/example/demo_app/lib').create(recursive: true);
+      await File('${tempDir.path}/example/demo_app/pubspec.yaml').writeAsString('''
 name: demo_app
 version: 1.0.0
 environment:
@@ -52,7 +49,7 @@ dependencies:
     path: ../..
 ''');
 
-      await File('example/demo_app/lib/main.dart').writeAsString('''
+      await File('${tempDir.path}/example/demo_app/lib/main.dart').writeAsString('''
 import 'package:flutter/material.dart';
 
 void main() {
@@ -81,18 +78,17 @@ class MyApp extends StatelessWidget {
     });
 
     tearDown(() async {
-      Directory.current = Directory(originalDir);
       if (await tempDir.exists()) {
         await tempDir.delete(recursive: true);
       }
     });
 
     test('scan finds keys in example/demo_app by default', () async {
-      final result = await runCli(['scan', '--report', 'json']);
+      final result = await runCli(['scan', '--report', 'json'], projectRoot: tempDir.path);
 
-      expect(result.code, equals(0));
+      expect(result.exitCode, equals(0));
 
-      final json = jsonDecode(result.out) as Map<String, dynamic>;
+      final json = jsonDecode(result.stdout.toString()) as Map<String, dynamic>;
       final keyUsages = (json['keys'] ?? []) as List;
       final keys = keyUsages.map((u) => u['key']).toSet();
 
@@ -105,11 +101,11 @@ class MyApp extends StatelessWidget {
 
     test('scan --no-include-examples excludes demo app', () async {
       final result =
-          await runCli(['scan', '--report', 'json', '--no-include-examples']);
+          await runCli(['scan', '--report', 'json', '--no-include-examples'], projectRoot: tempDir.path);
 
-      expect(result.code, equals(0));
+      expect(result.exitCode, equals(0));
 
-      final json = jsonDecode(result.out) as Map<String, dynamic>;
+      final json = jsonDecode(result.stdout.toString()) as Map<String, dynamic>;
       final keyUsages = (json['keys'] ?? []) as List;
       final keys = keyUsages.map((u) => u['key']).toSet();
 
@@ -122,8 +118,8 @@ class MyApp extends StatelessWidget {
 
     test('scan detects multiple example apps', () async {
       // Create another example app
-      await Directory('example/another_demo/lib').create(recursive: true);
-      await File('example/another_demo/lib/main.dart').writeAsString('''
+      await Directory('${tempDir.path}/example/another_demo/lib').create(recursive: true);
+      await File('${tempDir.path}/example/another_demo/lib/main.dart').writeAsString('''
 import 'package:flutter/material.dart';
 
 class AnotherApp extends StatelessWidget {
@@ -134,11 +130,11 @@ class AnotherApp extends StatelessWidget {
 }
 ''');
 
-      final result = await runCli(['scan', '--report', 'json']);
+      final result = await runCli(['scan', '--report', 'json'], projectRoot: tempDir.path);
 
-      expect(result.code, equals(0));
+      expect(result.exitCode, equals(0));
 
-      final json = jsonDecode(result.out) as Map<String, dynamic>;
+      final json = jsonDecode(result.stdout.toString()) as Map<String, dynamic>;
       final keyUsages = (json['keys'] ?? []) as List;
       final keys = keyUsages.map((u) => u['key']).toSet();
 
@@ -149,8 +145,8 @@ class AnotherApp extends StatelessWidget {
 
     test('scan handles examples folder variant', () async {
       // Create examples folder (plural)
-      await Directory('examples/sample_app/lib').create(recursive: true);
-      await File('examples/sample_app/lib/main.dart').writeAsString('''
+      await Directory('${tempDir.path}/examples/sample_app/lib').create(recursive: true);
+      await File('${tempDir.path}/examples/sample_app/lib/main.dart').writeAsString('''
 import 'package:flutter/material.dart';
 
 class SampleApp extends StatelessWidget {
@@ -161,11 +157,11 @@ class SampleApp extends StatelessWidget {
 }
 ''');
 
-      final result = await runCli(['scan', '--report', 'json']);
+      final result = await runCli(['scan', '--report', 'json'], projectRoot: tempDir.path);
 
-      expect(result.code, equals(0));
+      expect(result.exitCode, equals(0));
 
-      final json = jsonDecode(result.out) as Map<String, dynamic>;
+      final json = jsonDecode(result.stdout.toString()) as Map<String, dynamic>;
       final keyUsages = (json['keys'] ?? []) as List;
       final keys = keyUsages.map((u) => u['key']).toSet();
 

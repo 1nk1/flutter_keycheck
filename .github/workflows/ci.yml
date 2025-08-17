@@ -95,9 +95,13 @@ jobs:
       - name: Install dependencies
         run: dart pub get
 
+      - name: Prepare reports directory
+        shell: bash
+        run: |
+          [ -d reports ] || mkdir -p reports
+      
       - name: Run tests with JSON reporter
         run: |
-          mkdir -p reports
           dart test --reporter=json > reports/test_results.json || true
           dart test --reporter=expanded
 

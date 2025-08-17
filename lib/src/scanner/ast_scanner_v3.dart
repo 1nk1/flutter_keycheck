@@ -88,6 +88,7 @@ class AstScannerV3 {
       CupertinoKeyDetector(),
       IntegrationTestKeyDetector(),
       PatrolFinderDetector(),
+      StringLiteralKeyDetector(),
     ];
   }
 
@@ -518,6 +519,9 @@ class AstScannerV3 {
             analysis.widgetsWithKeys = 1; // Conservative estimate
           }
 
+          // ENHANCED: Add regex-based key detection as fallback
+          _extractKeysFromText(content, analysis);
+
           // Store basic metrics
           fileAnalyses[filePath] = analysis;
           metrics.scannedFiles++;
@@ -619,6 +623,49 @@ class AstScannerV3 {
       return file.readAsLinesSync().length;
     } catch (_) {
       return 0;
+    }
+  }
+
+  /// Extract keys from text using regex patterns (fallback when AST parsing fails)
+  void _extractKeysFromText(String content, FileAnalysis analysis) {
+    // Regex patterns for various key formats
+    final patterns = [
+      RegExp(r"const\s+ValueKey\s*\(\s*'([^']+)'"), // const ValueKey('key')
+      RegExp(r"key:\s*const\s+ValueKey\s*\(\s*'([^']+)'"), // key: const ValueKey('key')
+      RegExp(r"=\s*const\s+ValueKey\s*\(\s*'([^']+)'"), // = const ValueKey('key')
+      RegExp(r"ValueKey\s*\(\s*'([^']+)'"), // ValueKey('key')
+      RegExp(r"Key\s*\(\s*'([^']+)'"), // Key('key')
+    ];
+
+    for (final pattern in patterns) {
+      final matches = pattern.allMatches(content);
+      for (final match in matches) {
+        final keyValue = match.group(1);
+        if (keyValue != null && keyValue.isNotEmpty) {
+          analysis.keysFound.add(keyValue);
+          analysis.detectorHits['StringLiteral'] = 
+              (analysis.detectorHits['StringLiteral'] ?? 0) + 1;
+          
+          // Create a key usage for tracking
+          final usage = keyUsages.putIfAbsent(
+            keyValue,
+            () => KeyUsage(
+              id: keyValue,
+              source: 'workspace',
+            ),
+          );
+          
+          // Add location info (approximate)
+          final lineNumber = content.substring(0, match.start).split('\n').length;
+          usage.locations.add(KeyLocation(
+            file: analysis.path,
+            line: lineNumber,
+            column: match.start - content.lastIndexOf('\n', match.start),
+            detector: 'StringLiteral',
+            context: 'regex-fallback',
+          ));
+        }
+      }
     }
   }
 
@@ -958,8 +1005,73 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
       _checkSemanticsWidget(node);
     }
 
+    // Also check for ValueKey/Key creation independently of widget context
+    if (typeName == 'ValueKey' || typeName == 'Key') {
+      for (final detector in detectors) {
+        final result = detector.detectExpression(node);
+        if (result != null) {
+          _recordKey(result.key, node, detector, result);
+          break;
+        }
+      }
+    }
+
     // Call super to continue visiting children
     super.visitInstanceCreationExpression(node);
+  }
+
+  @override
+  void visitVariableDeclaration(VariableDeclaration node) {
+    analysis.nodesAnalyzed++;
+
+    // Check if variable is initialized with a widget that has keys
+    final initializer = node.initializer;
+    if (initializer is InstanceCreationExpression) {
+      final typeName = initializer.constructorName.type.toString();
+      
+      if (_isWidget(typeName)) {
+        analysis.widgetCount++;
+        analysis.widgetTypes.add(typeName);
+
+        // Check for key parameter
+        final keyArgs = initializer.argumentList.arguments
+            .whereType<NamedExpression>()
+            .where((arg) => arg.name.label.name == 'key')
+            .toList();
+        final keyArg = keyArgs.isNotEmpty ? keyArgs.first : null;
+
+        if (keyArg != null) {
+          analysis.widgetsWithKeys++;
+
+          // Extract key value using detectors
+          for (final detector in detectors) {
+            final result = detector.detectExpression(keyArg.expression);
+            if (result != null) {
+              _recordKey(result.key, initializer, detector, result);
+              break;
+            }
+          }
+        } else {
+          analysis.uncoveredWidgetTypes.add(typeName);
+        }
+      }
+      // ENHANCED: Check for direct Key/ValueKey assignments like "final Key? key = const ValueKey('...')"
+      else if (typeName == 'ValueKey' || typeName == 'Key') {
+        // Check if this variable is named 'key' 
+        if (node.name.lexeme == 'key') {
+          // Extract key value using detectors
+          for (final detector in detectors) {
+            final result = detector.detectExpression(initializer);
+            if (result != null) {
+              _recordKey(result.key, initializer, detector, result);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    super.visitVariableDeclaration(node);
   }
 
   void _recordKey(

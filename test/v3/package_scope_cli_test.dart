@@ -8,15 +8,12 @@ import '../helpers/cli.dart';
 void main() {
   group('Package Scope CLI Tests', () {
     late Directory tempDir;
-    late String originalDir;
 
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp('keycheck_test_');
-      originalDir = Directory.current.path;
-      Directory.current = tempDir;
 
       // Create a minimal Flutter project structure
-      await File('pubspec.yaml').writeAsString('''
+      await File('${tempDir.path}/pubspec.yaml').writeAsString('''
 name: test_project
 version: 1.0.0
 environment:
@@ -26,8 +23,8 @@ dependencies:
     sdk: flutter
 ''');
 
-      await Directory('lib').create();
-      await File('lib/main.dart').writeAsString('''
+      await Directory('${tempDir.path}/lib').create();
+      await File('${tempDir.path}/lib/main.dart').writeAsString('''
 import 'package:flutter/material.dart';
 
 class MyWidget extends StatelessWidget {
@@ -42,7 +39,6 @@ class MyWidget extends StatelessWidget {
     });
 
     tearDown(() async {
-      Directory.current = Directory(originalDir);
       if (await tempDir.exists()) {
         await tempDir.delete(recursive: true);
       }
@@ -81,36 +77,36 @@ class MyWidget extends StatelessWidget {
 
     test('--scope workspace-only scans only workspace files', () async {
       final runner = CliRunner();
-      final result = await runner.run(['scan', '--scope', 'workspace-only']);
+      final result = await runner.run(['scan', '--scope', 'workspace-only', '--project-root', tempDir.path]);
 
       // Should complete without errors
       expect(result, equals(ExitCode.ok));
 
       // Check that output directory was created
-      expect(await Directory('reports').exists(), isTrue);
-      expect(await File('reports/key-snapshot.json').exists(), isTrue);
+      expect(await Directory('${tempDir.path}/reports').exists(), isTrue);
+      expect(await File('${tempDir.path}/reports/key-snapshot.json').exists(), isTrue);
     });
 
     test('--scope deps-only scans only dependency files', () async {
       final runner = CliRunner();
-      final result = await runner.run(['scan', '--scope', 'deps-only']);
+      final result = await runner.run(['scan', '--scope', 'deps-only', '--project-root', tempDir.path]);
 
       // Should complete without errors
       expect(result, equals(ExitCode.ok));
 
       // Check that output directory was created
-      expect(await Directory('reports').exists(), isTrue);
+      expect(await Directory('${tempDir.path}/reports').exists(), isTrue);
     });
 
     test('--scope all scans both workspace and dependencies', () async {
       final runner = CliRunner();
-      final result = await runner.run(['scan', '--scope', 'all']);
+      final result = await runner.run(['scan', '--scope', 'all', '--project-root', tempDir.path]);
 
       // Should complete without errors
       expect(result, equals(ExitCode.ok));
 
       // Check that output directory was created
-      expect(await Directory('reports').exists(), isTrue);
+      expect(await Directory('${tempDir.path}/reports').exists(), isTrue);
     });
 
     test('invalid --scope value returns exit 2', () async {
@@ -118,6 +114,7 @@ class MyWidget extends StatelessWidget {
         ['scan', '--scope', 'invalid'],
         code: 2,
         stderrContains: '"invalid" is not an allowed value',
+        projectRoot: tempDir.path,
       );
     });
 
@@ -130,6 +127,8 @@ class MyWidget extends StatelessWidget {
         '--include-tests',
         '--report',
         'json',
+        '--project-root',
+        tempDir.path,
       ]);
 
       expect(result, equals(ExitCode.ok));

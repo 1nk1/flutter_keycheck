@@ -6,8 +6,17 @@ import 'package:flutter_keycheck/src/commands/baseline_command.dart';
 import 'package:flutter_keycheck/src/commands/diff_command.dart';
 import 'package:flutter_keycheck/src/commands/report_command.dart';
 import 'package:flutter_keycheck/src/commands/scan_command_v3.dart';
-// import 'package:flutter_keycheck/src/commands/sync_command.dart';  // TODO: Fix for v3
+import 'package:flutter_keycheck/src/commands/sync_command.dart';
 import 'package:flutter_keycheck/src/commands/validate_command_v3.dart';
+
+/// Exception for configuration errors
+class ConfigException implements Exception {
+  final String message;
+  ConfigException(this.message);
+  
+  @override
+  String toString() => message;
+}
 
 /// Main CLI runner with proper error handling and exit codes
 class CliRunner extends CommandRunner<int> {
@@ -42,7 +51,7 @@ class CliRunner extends CommandRunner<int> {
     addCommand(BaselineCommand());
     addCommand(DiffCommand());
     addCommand(ValidateCommandV3());
-    // addCommand(SyncCommand());  // TODO: Fix for v3
+    addCommand(SyncCommand());
     addCommand(ReportCommand());
   }
 
@@ -60,6 +69,9 @@ class CliRunner extends CommandRunner<int> {
       stderr.writeln(e.message);
       stderr.writeln();
       stderr.writeln(e.usage);
+      return ExitCode.invalidConfig;
+    } on ConfigException catch (e) {
+      stderr.writeln('Configuration error: $e');
       return ExitCode.invalidConfig;
     } catch (e) {
       stderr.writeln('Error: $e');

@@ -90,8 +90,9 @@ class BaselineCommand extends BaseCommandV3 {
     } else {
       // Perform new scan
       logInfo('Performing project scan...');
+      final projectRoot = argResults!['project-root'] as String? ?? Directory.current.path;
       final scanner = AstScannerV3(
-        projectPath: Directory.current.path,
+        projectPath: projectRoot,
         config: config,
       );
       scanResult = await scanner.scan();
@@ -130,8 +131,9 @@ class BaselineCommand extends BaseCommandV3 {
 
     // Perform new scan
     logInfo('Scanning for changes...');
+    final projectRoot = argResults!['project-root'] as String? ?? Directory.current.path;
     final scanner = AstScannerV3(
-      projectPath: Directory.current.path,
+      projectPath: projectRoot,
       config: config,
     );
     final newScan = await scanner.scan();

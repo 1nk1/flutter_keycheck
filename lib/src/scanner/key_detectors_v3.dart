@@ -341,3 +341,34 @@ class PatrolFinderDetector extends KeyDetector {
     return null;
   }
 }
+
+/// Enhanced detector for string literal keys in assignments
+class StringLiteralKeyDetector extends KeyDetector {
+  @override
+  String get name => 'StringLiteral';
+
+  @override
+  DetectionResult? detect(MethodInvocation node) {
+    return null;
+  }
+
+  @override
+  DetectionResult? detectExpression(Expression expression) {
+    if (expression is InstanceCreationExpression) {
+      final typeName = expression.constructorName.type.toString();
+      if (typeName == 'ValueKey' || typeName == 'Key') {
+        final arg = expression.argumentList.arguments.isNotEmpty
+            ? expression.argumentList.arguments.first
+            : null;
+        if (arg is StringLiteral) {
+          return DetectionResult(
+            key: arg.stringValue ?? '',
+            detector: name,
+            tags: expression.isConst ? ['const'] : null,
+          );
+        }
+      }
+    }
+    return null;
+  }
+}

@@ -51,10 +51,6 @@ class ScanCommandV3 extends BaseCommandV3 {
       ..addOption(
         'filter',
         help: 'Filter packages by pattern (for monorepo)',
-      )
-      ..addOption(
-        'project-root',
-        help: 'Override project root for workspace resolution',
       );
   }
 
@@ -72,8 +68,9 @@ class ScanCommandV3 extends BaseCommandV3 {
       final outDir = await ensureOutputDir();
 
       // Configure scanner
+      final projectRoot = argResults!['project-root'] as String? ?? Directory.current.path;
       final scanner = AstScannerV3(
-        projectPath: Directory.current.path,
+        projectPath: projectRoot,
         includeTests: argResults!['include-tests'] as bool,
         includeGenerated: argResults!['include-generated'] as bool,
         includeExamples: argResults!['include-examples'] as bool,
@@ -84,12 +81,23 @@ class ScanCommandV3 extends BaseCommandV3 {
       );
 
       // Perform scan
+      logVerbose('Starting scan with scope: ${argResults!['scope']}');
+      logVerbose('Project root: $projectRoot');
       final result = await scanner.scan();
 
       // For JSON output, write directly to stdout
       if (isJsonOutput) {
+        logVerbose('Scan completed with ${result.keyUsages.length} keys found');
         final out = <String, dynamic>{
           'schemaVersion': '1.0',
+          'summary': {
+            'total_files': result.metrics.totalFiles,
+            'scanned_files': result.metrics.scannedFiles,
+            'total_keys': result.keyUsages.length,
+            'file_coverage': result.metrics.fileCoverage,
+            'widget_coverage': result.metrics.widgetCoverage,
+            'handler_coverage': result.metrics.handlerCoverage,
+          },
           ...result.toMap(),
         };
         stdout.writeln(jsonEncode(out));
@@ -127,7 +135,7 @@ class ScanCommandV3 extends BaseCommandV3 {
 
       // Save snapshot for baseline/diff commands
       final snapshotFile = File(path.join(outDir.path, 'key-snapshot.json'));
-      await _saveSnapshot(result, snapshotFile);
+      await _saveSnapshot(result, snapshotFile, projectRoot);
 
       if (!isJsonOutput) {
         logVerbose('Snapshot saved to: ${snapshotFile.path}');
@@ -139,10 +147,10 @@ class ScanCommandV3 extends BaseCommandV3 {
     }
   }
 
-  Future<void> _saveSnapshot(ScanResult result, File file) async {
+  Future<void> _saveSnapshot(ScanResult result, File file, String projectPath) async {
     final snapshot = ScanSnapshot(
       timestamp: DateTime.now(),
-      projectPath: Directory.current.path,
+      projectPath: projectPath,
       scanResult: result,
     );
 

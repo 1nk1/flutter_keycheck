@@ -45,6 +45,10 @@ abstract class BaseCommand extends Command<int> {
         abbr: 'v',
         help: 'Show detailed output',
         defaultsTo: false,
+      )
+      ..addOption(
+        'project-root',
+        help: 'Override project root for workspace resolution',
       );
   }
 

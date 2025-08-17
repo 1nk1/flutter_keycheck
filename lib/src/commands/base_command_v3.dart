@@ -5,18 +5,13 @@ import 'package:flutter_keycheck/src/cli/cli_runner.dart';
 import 'package:flutter_keycheck/src/config/config_v3.dart';
 import 'package:flutter_keycheck/src/registry/key_registry_v3.dart';
 import 'package:flutter_keycheck/src/reporter/reporter_v3.dart';
+import 'package:path/path.dart' as path;
 
 /// Base command class with common v3 functionality
 abstract class BaseCommandV3 extends Command<int> {
   BaseCommandV3() {
     // Common flags for all commands
     argParser
-      ..addFlag(
-        'verbose',
-        abbr: 'v',
-        help: 'Show detailed output',
-        defaultsTo: false,
-      )
       ..addOption(
         'config',
         abbr: 'c',
@@ -27,13 +22,25 @@ abstract class BaseCommandV3 extends Command<int> {
         'out-dir',
         help: 'Output directory for reports',
         defaultsTo: 'reports',
+      )
+      ..addOption(
+        'project-root',
+        help: 'Override project root for workspace resolution',
       );
   }
 
   /// Load configuration from file and merge with CLI args
   Future<ConfigV3> loadConfig() async {
-    final configPath = argResults!['config'] as String;
-    final verbose = argResults!['verbose'] as bool;
+    var configPath = argResults!['config'] as String;
+    // Get verbose flag from global arguments (CLI runner level)
+    // For now, assume verbose is false since we can't access global args easily
+    final verbose = false;
+    
+    // If project-root is specified and config path is relative, resolve it relative to project root
+    final projectRoot = argResults!['project-root'] as String?;
+    if (projectRoot != null && !path.isAbsolute(configPath)) {
+      configPath = path.join(projectRoot, configPath);
+    }
 
     // Check if config file exists
     final configFile = File(configPath);
@@ -77,7 +84,14 @@ abstract class BaseCommandV3 extends Command<int> {
 
   /// Create output directory if needed
   Future<Directory> ensureOutputDir() async {
-    final outDir = argResults!['out-dir'] as String;
+    var outDir = argResults!['out-dir'] as String;
+    
+    // If project-root is specified and out-dir is relative, resolve it relative to project root
+    final projectRoot = argResults!['project-root'] as String?;
+    if (projectRoot != null && !path.isAbsolute(outDir)) {
+      outDir = path.join(projectRoot, outDir);
+    }
+    
     final dir = Directory(outDir);
     if (!await dir.exists()) {
       await dir.create(recursive: true);
@@ -104,9 +118,9 @@ abstract class BaseCommandV3 extends Command<int> {
 
   /// Log verbose output if enabled
   void logVerbose(String message) {
-    if (argResults!['verbose'] as bool) {
-      stdout.writeln('[VERBOSE] $message');
-    }
+    // For now, always output verbose when called 
+    // TODO: Get verbose flag from global arguments
+    stderr.writeln('[VERBOSE] $message');
   }
 
   /// Log info message

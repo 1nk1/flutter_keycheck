@@ -5,16 +5,16 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp {
-  const MyApp({this.key});
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
-  final Key? key = const ValueKey('app_root');
+  static final Key appRootKey = const ValueKey('app_root');
 }
 
-class HomeScreen {
-  const HomeScreen({this.key});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
 
-  final Key? key = const ValueKey('home_scaffold');
+  static final Key scaffoldKey = const ValueKey('home_scaffold');
 
   void build() {
     // Mock widgets with keys
@@ -32,10 +32,10 @@ class HomeScreen {
   }
 }
 
-class LoginScreen {
-  const LoginScreen({this.key});
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({Key? key}) : super(key: key);
 
-  final Key? key = const ValueKey('login_scaffold');
+  static final Key scaffoldKey = const ValueKey('login_scaffold');
 
   void build() {
     // Mock form fields with keys
@@ -57,10 +57,10 @@ class LoginScreen {
   }
 }
 
-class SettingsScreen {
-  const SettingsScreen({this.key});
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
 
-  final Key? key = const ValueKey('settings_scaffold');
+  static final Key scaffoldKey = const ValueKey('settings_scaffold');
 
   void build() {
     final darkModeSwitch = SwitchListTile(

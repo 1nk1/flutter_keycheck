@@ -5,15 +5,12 @@ import '../helpers/cli.dart';
 void main() {
   group('Config Missing Exit Tests', () {
     late Directory tempDir;
-    late String originalDir;
 
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp('keycheck_config_test_');
-      originalDir = Directory.current.path;
-      Directory.current = tempDir;
 
       // Create minimal project
-      await File('pubspec.yaml').writeAsString('''
+      await File('${tempDir.path}/pubspec.yaml').writeAsString('''
 name: test_project
 version: 1.0.0
 environment:
@@ -23,8 +20,8 @@ dependencies:
     sdk: flutter
 ''');
 
-      await Directory('lib').create();
-      await File('lib/main.dart').writeAsString('''
+      await Directory('${tempDir.path}/lib').create();
+      await File('${tempDir.path}/lib/main.dart').writeAsString('''
 import 'package:flutter/material.dart';
 
 class MyWidget extends StatelessWidget {
@@ -39,7 +36,6 @@ class MyWidget extends StatelessWidget {
     });
 
     tearDown(() async {
-      Directory.current = Directory(originalDir);
       if (await tempDir.exists()) {
         await tempDir.delete(recursive: true);
       }
@@ -49,13 +45,14 @@ class MyWidget extends StatelessWidget {
       await expectExit(
         ['scan', '--config', 'missing_config.yaml'],
         code: 2,
-        stderrContains: 'Config file not found: missing_config.yaml',
+        stderrContains: 'Config file not found:',
+        projectRoot: tempDir.path,
       );
     });
 
     test('--config with existing file works normally', () async {
       // Create a valid config file
-      await File('.flutter_keycheck.yaml').writeAsString('''
+      await File('${tempDir.path}/.flutter_keycheck.yaml').writeAsString('''
 tracked_keys:
   - test_key
 ''');
@@ -63,6 +60,7 @@ tracked_keys:
       await expectExit(
         ['scan', '--config', '.flutter_keycheck.yaml'],
         code: 0,
+        projectRoot: tempDir.path,
       );
     });
 
@@ -70,7 +68,8 @@ tracked_keys:
       await expectExit(
         ['validate', '--config', 'does_not_exist.yaml'],
         code: 2,
-        stderrContains: 'Config file not found: does_not_exist.yaml',
+        stderrContains: 'Config file not found:',
+        projectRoot: tempDir.path,
       );
     });
 
@@ -78,7 +77,8 @@ tracked_keys:
       await expectExit(
         ['baseline', 'create', '--config', 'no_such_file.yaml'],
         code: 2,
-        stderrContains: 'Config file not found: no_such_file.yaml',
+        stderrContains: 'Config file not found:',
+        projectRoot: tempDir.path,
       );
     });
 
@@ -86,7 +86,8 @@ tracked_keys:
       await expectExit(
         ['diff', '--config', 'absent.yaml'],
         code: 2,
-        stderrContains: 'Config file not found: absent.yaml',
+        stderrContains: 'Config file not found:',
+        projectRoot: tempDir.path,
       );
     });
   });

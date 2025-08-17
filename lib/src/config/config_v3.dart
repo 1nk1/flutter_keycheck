@@ -36,7 +36,21 @@ class ConfigV3 {
     }
 
     final content = await file.readAsString();
-    final yaml = loadYaml(content) as Map;
+    
+    // Parse YAML with error handling
+    Map yaml;
+    try {
+      final parsedYaml = loadYaml(content);
+      if (parsedYaml == null) {
+        throw FormatException('Empty YAML file');
+      }
+      if (parsedYaml is! Map) {
+        throw FormatException('YAML root must be a map');
+      }
+      yaml = parsedYaml;
+    } catch (e) {
+      throw FormatException('Invalid YAML configuration: $e');
+    }
 
     return ConfigV3(
       registry: RegistryConfig.fromYaml(yaml['registry'] ?? {}),

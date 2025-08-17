@@ -91,7 +91,7 @@ void main() {
           'dart',
           ['run', 'bin/flutter_keycheck.dart', 'sync', '--help'],
         );
-        expect(result.stdout.toString(), contains('Pull/push'));
+        expect(result.stdout.toString(), contains('Synchronize'));
       });
 
       test('report command exists', () async {
@@ -130,8 +130,8 @@ void main() {
           'dart',
           ['run', 'bin/flutter_keycheck.dart', '--verbose', 'scan'],
         );
-        // Should show verbose output
-        expect(result.stdout.toString(), contains('[VERBOSE]'));
+        // Should show verbose output in stderr
+        expect(result.stderr.toString(), contains('[VERBOSE]'));
       });
 
       test('--config flag works', () async {

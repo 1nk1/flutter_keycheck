@@ -1,53 +1,63 @@
 import 'dart:io';
 import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
 
-class CliResult {
-  final int code;
-  final String out;
-  final String err;
-  CliResult(this.code, this.out, this.err);
-}
-
-Future<CliResult> runCli(List<String> args, {String? cwd}) async {
-  // Find the project root (where bin/flutter_keycheck.dart is)
-  final projectRoot = _findProjectRoot();
-  final scriptPath = path.join(projectRoot, 'bin', 'flutter_keycheck.dart');
-
-  final p = await Process.run(
-    'dart',
-    ['run', scriptPath, ...args],
-    workingDirectory: cwd,
-    runInShell: true,
-  );
-  return CliResult(p.exitCode, '${p.stdout}', '${p.stderr}');
-}
-
-String _findProjectRoot() {
-  // Start from the test file location and walk up
-  var dir = Directory.current.path;
-  while (dir != '/' && dir != '') {
-    if (File(path.join(dir, 'bin', 'flutter_keycheck.dart')).existsSync()) {
-      return dir;
+/// Find repo root by looking for bin/flutter_keycheck.dart
+String _findRepoRoot() {
+  var dir = Directory.current.absolute;
+  while (true) {
+    final bin = File('${dir.path}/bin/flutter_keycheck.dart');
+    final pub = File('${dir.path}/pubspec.yaml');
+    if (bin.existsSync() && pub.existsSync()) {
+      return dir.path;
     }
-    dir = path.dirname(dir);
+    final parent = dir.parent;
+    if (parent.path == dir.path) break;
+    dir = parent;
   }
-  // Fallback to environment variable or known path
-  return Platform.environment['PROJECT_ROOT'] ??
-      '/home/adj/projects/flutter_keycheck';
+  // fallback to current directory
+  return Directory.current.absolute.path;
 }
 
-Future<void> expectExit(List<String> args,
-    {required int code,
-    String? stderrContains,
-    String? stdoutContains,
-    String? cwd}) async {
-  final r = await runCli(args, cwd: cwd);
-  expect(r.code, code, reason: 'stdout:\n${r.out}\nstderr:\n${r.err}');
+Future<ProcessResult> runCli(
+  List<String> args, {
+  String? workingDirectory,
+  Map<String, String>? environment,
+  String? projectRoot,
+}) async {
+  final repoRoot = _findRepoRoot();
+  final binPath = '$repoRoot/bin/flutter_keycheck.dart';
+
+  // Add --project-root if provided
+  final fullArgs = [...args];
+  if (projectRoot != null) {
+    fullArgs.addAll(['--project-root', projectRoot]);
+  }
+
+  return Process.run(
+    'dart',
+    ['run', binPath, ...fullArgs],
+    workingDirectory: repoRoot, // Always run from repo root
+    environment: environment,
+  );
+}
+
+/// Helper function to test exit codes
+Future<void> expectExit(
+  List<String> args, {
+  required int code,
+  String? stderrContains,
+  String? stdoutContains,
+  String? projectRoot,
+}) async {
+  final result = await runCli(args, projectRoot: projectRoot);
+  expect(result.exitCode, equals(code),
+      reason: 'stdout:\n${result.stdout}\nstderr:\n${result.stderr}');
   if (stderrContains != null) {
-    expect(r.err, contains(stderrContains), reason: 'stderr:\n${r.err}');
+    expect(result.stderr.toString(), contains(stderrContains),
+        reason: 'stderr:\n${result.stderr}');
   }
   if (stdoutContains != null) {
-    expect(r.out, contains(stdoutContains), reason: 'stdout:\n${r.out}');
+    expect(result.stdout.toString(), contains(stdoutContains),
+        reason: 'stdout:\n${result.stdout}');
   }
 }

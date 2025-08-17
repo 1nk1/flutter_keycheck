@@ -7,6 +7,7 @@ import 'package:flutter_keycheck/src/commands/scan_command_v3.dart';
 import 'package:flutter_keycheck/src/cli/cli_runner.dart';
 import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 import '../helpers/cli.dart';
+
 void main() {
   group('Package Scope CLI Tests', () {
     late Directory tempDir;

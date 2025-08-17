@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:test/test.dart';
 import '../helpers/cli.dart';
+
 void main() {
   group('Demo App Smoke Tests', () {
     late Directory tempDir;

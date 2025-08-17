@@ -5,7 +5,7 @@ import 'package:path/path.dart' as path;
 void main() {
   // Use the golden workspace for tests to avoid scanning the entire project
   final testWorkspace = path.join('test', 'golden_workspace');
-  
+
   group('CLI Scope Flag Tests', () {
     test('scan command includes --scope flag in help', () async {
       final result = await Process.run('dart', [
@@ -130,7 +130,7 @@ void main() {
         '--project-root',
         testWorkspace,
       ]).timeout(const Duration(seconds: 10));
-      
+
       // Check baseline was created successfully
       if (baselineResult.exitCode != 0) {
         print('Baseline creation failed: ${baselineResult.stderr}');

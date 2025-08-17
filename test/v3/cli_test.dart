@@ -52,12 +52,14 @@ void main() {
 
       test('validate command exists', () async {
         final result = await runCli(['validate', '--help']);
-        expect(result.stdout.toString(), contains('CI gate enforcement'));
+        expect(result.stdout.toString(),
+            contains('Validate keys against policies'));
       });
 
       test('ci-validate alias works', () async {
         final result = await runCli(['ci-validate', '--help']);
-        expect(result.stdout.toString(), contains('CI gate enforcement'));
+        expect(result.stdout.toString(),
+            contains('Validate keys against policies'));
       });
 
       test('sync command exists', () async {

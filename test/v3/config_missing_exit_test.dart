@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 import '../helpers/cli.dart';
 
@@ -9,8 +10,9 @@ void main() {
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp('keycheck_config_test_');
 
-      // Create minimal project
-      await File('${tempDir.path}/pubspec.yaml').writeAsString('''
+      // Create minimal project using path.join for cross-platform compatibility
+      final pubspecPath = path.join(tempDir.path, 'pubspec.yaml');
+      await File(pubspecPath).writeAsString('''
 name: test_project
 version: 1.0.0
 environment:
@@ -20,8 +22,11 @@ dependencies:
     sdk: flutter
 ''');
 
-      await Directory('${tempDir.path}/lib').create();
-      await File('${tempDir.path}/lib/main.dart').writeAsString('''
+      final libDir = path.join(tempDir.path, 'lib');
+      await Directory(libDir).create();
+      
+      final mainPath = path.join(libDir, 'main.dart');
+      await File(mainPath).writeAsString('''
 import 'package:flutter/material.dart';
 
 class MyWidget extends StatelessWidget {
@@ -52,7 +57,8 @@ class MyWidget extends StatelessWidget {
 
     test('--config with existing file works normally', () async {
       // Create a valid config file
-      await File('${tempDir.path}/.flutter_keycheck.yaml').writeAsString('''
+      final configPath = path.join(tempDir.path, '.flutter_keycheck.yaml');
+      await File(configPath).writeAsString('''
 tracked_keys:
   - test_key
 ''');

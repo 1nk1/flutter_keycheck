@@ -30,23 +30,24 @@ Future<ProcessResult> runCli(
 
   // Build full arguments list
   final fullArgs = <String>[];
-  
+
   // Add memory limit for Windows to prevent crashes
   if (Platform.isWindows) {
     fullArgs.addAll(['--old_gen_heap_size=512']);
   }
-  
+
   fullArgs.add('run');
   fullArgs.add(binPath);
-  
+
   // Add --project-root if provided
   if (projectRoot != null) {
     // Ensure project root is absolute and normalized for Windows
-    final absoluteProjectRoot = path.normalize(
-        path.isAbsolute(projectRoot) ? projectRoot : path.absolute(projectRoot));
+    final absoluteProjectRoot = path.normalize(path.isAbsolute(projectRoot)
+        ? projectRoot
+        : path.absolute(projectRoot));
     fullArgs.addAll(['--project-root', absoluteProjectRoot]);
   }
-  
+
   // Add remaining args
   fullArgs.addAll(args);
 

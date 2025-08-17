@@ -24,7 +24,7 @@ dependencies:
 
       final libDir = path.join(tempDir.path, 'lib');
       await Directory(libDir).create();
-      
+
       final mainPath = path.join(libDir, 'main.dart');
       await File(mainPath).writeAsString('''
 import 'package:flutter/material.dart';

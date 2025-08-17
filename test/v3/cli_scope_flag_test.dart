@@ -17,7 +17,7 @@ void main() {
       // On Windows, help might return 0 or 255 due to memory issues
       expect(result.exitCode, anyOf([0, 255]),
           reason: 'Help command should complete');
-      
+
       final output = '${result.stdout}${result.stderr}';
 
       // Check that help includes scope flag information
@@ -58,7 +58,7 @@ void main() {
       expect(result.exitCode, isNot(equals(0)),
           reason: 'Should fail with invalid scope value');
       final errorOutput = result.stderr.toString();
-      
+
       // On Windows, might get memory error instead of proper error message
       if (!errorOutput.contains('Out of memory')) {
         expect(errorOutput, contains('"invalid-value" is not an allowed value'),

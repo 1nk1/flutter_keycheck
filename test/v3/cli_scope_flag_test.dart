@@ -32,7 +32,8 @@ void main() {
         'scan',
         '--scope',
         'workspace-only',
-      ], projectRoot: testWorkspace).timeout(const Duration(seconds: 10));
+      ], projectRoot: testWorkspace)
+          .timeout(const Duration(seconds: 10));
 
       // Should not fail with "Could not find an option named --scope"
       expect(result.stderr, isNot(contains('Could not find an option named')),
@@ -49,7 +50,8 @@ void main() {
         'scan',
         '--scope',
         'invalid-value',
-      ], projectRoot: testWorkspace).timeout(const Duration(seconds: 10));
+      ], projectRoot: testWorkspace)
+          .timeout(const Duration(seconds: 10));
 
       expect(result.exitCode, isNot(equals(0)),
           reason: 'Should fail with invalid scope value');
@@ -63,7 +65,8 @@ void main() {
         'scan',
         '--report',
         'json',
-      ], projectRoot: testWorkspace).timeout(const Duration(seconds: 10));
+      ], projectRoot: testWorkspace)
+          .timeout(const Duration(seconds: 10));
 
       if (result.exitCode == 0) {
         // If scan succeeds, output should be JSON
@@ -110,7 +113,8 @@ void main() {
       final baselineResult = await runCli([
         'baseline',
         'create',
-      ], projectRoot: testWorkspace).timeout(const Duration(seconds: 10));
+      ], projectRoot: testWorkspace)
+          .timeout(const Duration(seconds: 10));
 
       // Check baseline was created successfully
       if (baselineResult.exitCode != 0) {
@@ -121,7 +125,8 @@ void main() {
         'validate',
         '--fail-on-package-missing',
         '--fail-on-collision',
-      ], projectRoot: testWorkspace).timeout(const Duration(seconds: 10));
+      ], projectRoot: testWorkspace)
+          .timeout(const Duration(seconds: 10));
 
       // Should not fail with "Could not find an option named" error
       expect(result.stderr, isNot(contains('Could not find an option named')),

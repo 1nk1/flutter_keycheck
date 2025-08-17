@@ -18,11 +18,7 @@ void main() {
 
       test('returns 2 on invalid config', () async {
         // Test that invalid config returns exit code 2
-        final _ = await runCli([
-          '--config',
-          'nonexistent.yaml',
-          'scan'
-        ]);
+        final _ = await runCli(['--config', 'nonexistent.yaml', 'scan']);
         // Since config doesn't exist but we use defaults, it might still work
         // In a real test, we'd create an invalid config file
       });
@@ -109,11 +105,7 @@ registry:
 ''');
 
         try {
-          final result = await runCli([
-            '--config',
-            'test_config.yaml',
-            'scan'
-          ]);
+          final result = await runCli(['--config', 'test_config.yaml', 'scan']);
           expect(
               result.exitCode, anyOf(equals(0), equals(3))); // OK or IO error
         } finally {

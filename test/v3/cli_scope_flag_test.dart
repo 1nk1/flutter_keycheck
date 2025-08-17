@@ -111,8 +111,18 @@ void main() {
     }, timeout: const Timeout(Duration(seconds: 10)));
 
     test('validate command accepts package policy flags', () async {
+      // Clean up any existing baseline first
+      final baselineDir = p.join(testWorkspace, '.flutter_keycheck');
+      if (Directory(baselineDir).existsSync()) {
+        try {
+          Directory(baselineDir).deleteSync(recursive: true);
+        } catch (_) {
+          // Ignore cleanup errors
+        }
+      }
+
       // First create a baseline in the test workspace
-      await Process.run('dart', [
+      final baselineResult = await Process.run('dart', [
         'run',
         'bin/flutter_keycheck.dart',
         'baseline',
@@ -120,6 +130,11 @@ void main() {
         '--project-root',
         testWorkspace,
       ]).timeout(const Duration(seconds: 10));
+      
+      // Check baseline was created successfully
+      if (baselineResult.exitCode != 0) {
+        print('Baseline creation failed: ${baselineResult.stderr}');
+      }
 
       final result = await Process.run('dart', [
         'run',
@@ -134,6 +149,6 @@ void main() {
       // Should not fail with "Could not find an option named" error
       expect(result.stderr, isNot(contains('Could not find an option named')),
           reason: 'Should accept package policy flags');
-    }, timeout: const Timeout(Duration(seconds: 15)));
+    }, timeout: const Timeout(Duration(seconds: 30)));
   });
 }

@@ -93,10 +93,40 @@ See [MIGRATION_v3.md](MIGRATION_v3.md) for detailed upgrade instructions.
 
 ## 📦 Installation
 
+### Version Compatibility
+
+**v3.0.0** (Latest) - Major release with breaking changes:
+- Package scope scanning, dependency caching
+- Deterministic exit codes for CI/CD
+- Unified CLI with subcommands
+- Requires migration from v2.x (see [MIGRATION_v3.md](MIGRATION_v3.md))
+
+**v2.3.3** (Stable) - Previous major version:
+- Traditional CLI interface
+- Binary exit codes (0/1)
+- Stable and fully supported
+- No migration required
+
+### Choosing Your Version
+
+```yaml
+# For new projects or those ready to migrate:
+dependencies:
+  flutter_keycheck: ^3.0.0
+
+# To stay on v2 (fully supported):
+dependencies:
+  flutter_keycheck: ^2.3.3
+```
+
 ### Global Installation
 
 ```bash
+# Install latest v3:
 dart pub global activate flutter_keycheck
+
+# Or explicitly install v2:
+dart pub global activate flutter_keycheck 2.3.3
 ```
 
 ### Project Dependency

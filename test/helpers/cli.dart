@@ -39,24 +39,26 @@ Future<ProcessResult> runCli(
   fullArgs.add('run');
   fullArgs.add(binPath);
 
-  // Add --project-root if provided
-  if (projectRoot != null) {
-    // Ensure project root is absolute and normalized for Windows
-    final absoluteProjectRoot = path.normalize(path.isAbsolute(projectRoot)
-        ? projectRoot
-        : path.absolute(projectRoot));
-    fullArgs.addAll(['--project-root', absoluteProjectRoot]);
-  }
-
   // Add remaining args
   fullArgs.addAll(args);
+
+  // Determine the working directory
+  // If projectRoot is provided, use it as the working directory
+  // Otherwise, use the repo root
+  String effectiveWorkingDir = repoRoot;
+  if (projectRoot != null) {
+    // Ensure project root is absolute and normalized for Windows
+    effectiveWorkingDir = path.normalize(path.isAbsolute(projectRoot)
+        ? projectRoot
+        : path.absolute(projectRoot));
+  }
 
   // Use Process.run with timeout to prevent hanging
   try {
     return await Process.run(
       'dart',
       fullArgs,
-      workingDirectory: repoRoot, // Always run from repo root
+      workingDirectory: effectiveWorkingDir,
       environment: environment,
     ).timeout(
       const Duration(seconds: 30),

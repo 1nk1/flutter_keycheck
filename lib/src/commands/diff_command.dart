@@ -149,7 +149,8 @@ class DiffCommand extends BaseCommandV3 {
       return await registry.getBaseline();
     } else if (source == 'scan') {
       logVerbose('Performing scan for $type...');
-      final projectRoot = argResults!['project-root'] as String? ?? Directory.current.path;
+      final projectRoot =
+          argResults!['project-root'] as String? ?? Directory.current.path;
       final scanner = AstScannerV3(
         projectPath: projectRoot,
         config: config,

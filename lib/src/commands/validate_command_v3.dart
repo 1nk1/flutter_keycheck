@@ -94,7 +94,8 @@ class ValidateCommandV3 extends BaseCommandV3 {
 
       // Perform current scan
       logVerbose('Scanning current project state...');
-      final projectRoot = argResults!['project-root'] as String? ?? Directory.current.path;
+      final projectRoot =
+          argResults!['project-root'] as String? ?? Directory.current.path;
       final scanner = AstScannerV3(
         projectPath: projectRoot,
         config: config,

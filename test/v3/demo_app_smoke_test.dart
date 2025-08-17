@@ -36,8 +36,10 @@ class MyWidget extends StatelessWidget {
 ''');
 
       // Create example app with keys
-      await Directory('${tempDir.path}/example/demo_app/lib').create(recursive: true);
-      await File('${tempDir.path}/example/demo_app/pubspec.yaml').writeAsString('''
+      await Directory('${tempDir.path}/example/demo_app/lib')
+          .create(recursive: true);
+      await File('${tempDir.path}/example/demo_app/pubspec.yaml')
+          .writeAsString('''
 name: demo_app
 version: 1.0.0
 environment:
@@ -49,7 +51,8 @@ dependencies:
     path: ../..
 ''');
 
-      await File('${tempDir.path}/example/demo_app/lib/main.dart').writeAsString('''
+      await File('${tempDir.path}/example/demo_app/lib/main.dart')
+          .writeAsString('''
 import 'package:flutter/material.dart';
 
 void main() {
@@ -84,7 +87,8 @@ class MyApp extends StatelessWidget {
     });
 
     test('scan finds keys in example/demo_app by default', () async {
-      final result = await runCli(['scan', '--report', 'json'], projectRoot: tempDir.path);
+      final result =
+          await runCli(['scan', '--report', 'json'], projectRoot: tempDir.path);
 
       expect(result.exitCode, equals(0));
 
@@ -100,8 +104,9 @@ class MyApp extends StatelessWidget {
     });
 
     test('scan --no-include-examples excludes demo app', () async {
-      final result =
-          await runCli(['scan', '--report', 'json', '--no-include-examples'], projectRoot: tempDir.path);
+      final result = await runCli(
+          ['scan', '--report', 'json', '--no-include-examples'],
+          projectRoot: tempDir.path);
 
       expect(result.exitCode, equals(0));
 
@@ -118,8 +123,10 @@ class MyApp extends StatelessWidget {
 
     test('scan detects multiple example apps', () async {
       // Create another example app
-      await Directory('${tempDir.path}/example/another_demo/lib').create(recursive: true);
-      await File('${tempDir.path}/example/another_demo/lib/main.dart').writeAsString('''
+      await Directory('${tempDir.path}/example/another_demo/lib')
+          .create(recursive: true);
+      await File('${tempDir.path}/example/another_demo/lib/main.dart')
+          .writeAsString('''
 import 'package:flutter/material.dart';
 
 class AnotherApp extends StatelessWidget {
@@ -130,7 +137,8 @@ class AnotherApp extends StatelessWidget {
 }
 ''');
 
-      final result = await runCli(['scan', '--report', 'json'], projectRoot: tempDir.path);
+      final result =
+          await runCli(['scan', '--report', 'json'], projectRoot: tempDir.path);
 
       expect(result.exitCode, equals(0));
 
@@ -145,8 +153,10 @@ class AnotherApp extends StatelessWidget {
 
     test('scan handles examples folder variant', () async {
       // Create examples folder (plural)
-      await Directory('${tempDir.path}/examples/sample_app/lib').create(recursive: true);
-      await File('${tempDir.path}/examples/sample_app/lib/main.dart').writeAsString('''
+      await Directory('${tempDir.path}/examples/sample_app/lib')
+          .create(recursive: true);
+      await File('${tempDir.path}/examples/sample_app/lib/main.dart')
+          .writeAsString('''
 import 'package:flutter/material.dart';
 
 class SampleApp extends StatelessWidget {
@@ -157,7 +167,8 @@ class SampleApp extends StatelessWidget {
 }
 ''');
 
-      final result = await runCli(['scan', '--report', 'json'], projectRoot: tempDir.path);
+      final result =
+          await runCli(['scan', '--report', 'json'], projectRoot: tempDir.path);
 
       expect(result.exitCode, equals(0));
 

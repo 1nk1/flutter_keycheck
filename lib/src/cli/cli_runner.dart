@@ -13,7 +13,7 @@ import 'package:flutter_keycheck/src/commands/validate_command_v3.dart';
 class ConfigException implements Exception {
   final String message;
   ConfigException(this.message);
-  
+
   @override
   String toString() => message;
 }

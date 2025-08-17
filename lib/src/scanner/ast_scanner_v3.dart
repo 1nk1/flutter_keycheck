@@ -631,8 +631,10 @@ class AstScannerV3 {
     // Regex patterns for various key formats
     final patterns = [
       RegExp(r"const\s+ValueKey\s*\(\s*'([^']+)'"), // const ValueKey('key')
-      RegExp(r"key:\s*const\s+ValueKey\s*\(\s*'([^']+)'"), // key: const ValueKey('key')
-      RegExp(r"=\s*const\s+ValueKey\s*\(\s*'([^']+)'"), // = const ValueKey('key')
+      RegExp(
+          r"key:\s*const\s+ValueKey\s*\(\s*'([^']+)'"), // key: const ValueKey('key')
+      RegExp(
+          r"=\s*const\s+ValueKey\s*\(\s*'([^']+)'"), // = const ValueKey('key')
       RegExp(r"ValueKey\s*\(\s*'([^']+)'"), // ValueKey('key')
       RegExp(r"Key\s*\(\s*'([^']+)'"), // Key('key')
     ];
@@ -643,9 +645,9 @@ class AstScannerV3 {
         final keyValue = match.group(1);
         if (keyValue != null && keyValue.isNotEmpty) {
           analysis.keysFound.add(keyValue);
-          analysis.detectorHits['StringLiteral'] = 
+          analysis.detectorHits['StringLiteral'] =
               (analysis.detectorHits['StringLiteral'] ?? 0) + 1;
-          
+
           // Create a key usage for tracking
           final usage = keyUsages.putIfAbsent(
             keyValue,
@@ -654,9 +656,10 @@ class AstScannerV3 {
               source: 'workspace',
             ),
           );
-          
+
           // Add location info (approximate)
-          final lineNumber = content.substring(0, match.start).split('\n').length;
+          final lineNumber =
+              content.substring(0, match.start).split('\n').length;
           usage.locations.add(KeyLocation(
             file: analysis.path,
             line: lineNumber,
@@ -1028,7 +1031,7 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
     final initializer = node.initializer;
     if (initializer is InstanceCreationExpression) {
       final typeName = initializer.constructorName.type.toString();
-      
+
       if (_isWidget(typeName)) {
         analysis.widgetCount++;
         analysis.widgetTypes.add(typeName);
@@ -1057,7 +1060,7 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
       }
       // ENHANCED: Check for direct Key/ValueKey assignments like "final Key? key = const ValueKey('...')"
       else if (typeName == 'ValueKey' || typeName == 'Key') {
-        // Check if this variable is named 'key' 
+        // Check if this variable is named 'key'
         if (node.name.lexeme == 'key') {
           // Extract key value using detectors
           for (final detector in detectors) {

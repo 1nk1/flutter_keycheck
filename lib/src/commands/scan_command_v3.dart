@@ -68,7 +68,8 @@ class ScanCommandV3 extends BaseCommandV3 {
       final outDir = await ensureOutputDir();
 
       // Configure scanner
-      final projectRoot = argResults!['project-root'] as String? ?? Directory.current.path;
+      final projectRoot =
+          argResults!['project-root'] as String? ?? Directory.current.path;
       final scanner = AstScannerV3(
         projectPath: projectRoot,
         includeTests: argResults!['include-tests'] as bool,
@@ -147,7 +148,8 @@ class ScanCommandV3 extends BaseCommandV3 {
     }
   }
 
-  Future<void> _saveSnapshot(ScanResult result, File file, String projectPath) async {
+  Future<void> _saveSnapshot(
+      ScanResult result, File file, String projectPath) async {
     final snapshot = ScanSnapshot(
       timestamp: DateTime.now(),
       projectPath: projectPath,

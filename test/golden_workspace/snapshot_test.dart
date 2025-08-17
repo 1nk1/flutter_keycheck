@@ -187,9 +187,12 @@ void main() {
 
       // Verify summary structure (use safe access)
       final summary = actualJson['summary'] ?? actualJson['metrics'] ?? {};
-      final totalKeysField = summary.containsKey('totalKeys') ? 'totalKeys' : 'total_keys';
-      final filesScannedField = summary.containsKey('filesScanned') ? 'filesScanned' : 'scanned_files';
-      
+      final totalKeysField =
+          summary.containsKey('totalKeys') ? 'totalKeys' : 'total_keys';
+      final filesScannedField = summary.containsKey('filesScanned')
+          ? 'filesScanned'
+          : 'scanned_files';
+
       expect(summary, contains(totalKeysField),
           reason: 'Summary must contain totalKeys or total_keys');
       expect(summary, contains(filesScannedField),
@@ -205,12 +208,12 @@ int _safeGetTotalKeys(Map<String, dynamic> json) {
     if (summary.containsKey('totalKeys')) return asInt(summary['totalKeys']);
     if (summary.containsKey('total_keys')) return asInt(summary['total_keys']);
   }
-  
+
   final metrics = json['metrics'] as Map<String, dynamic>?;
   if (metrics != null) {
     if (metrics.containsKey('total_keys')) return asInt(metrics['total_keys']);
   }
-  
+
   // Fallback to keys array length
   final keys = json['keys'] as List?;
   return keys?.length ?? 0;
@@ -220,15 +223,18 @@ int _safeGetTotalKeys(Map<String, dynamic> json) {
 int _safeGetFilesScanned(Map<String, dynamic> json) {
   final summary = json['summary'] as Map<String, dynamic>?;
   if (summary != null) {
-    if (summary.containsKey('filesScanned')) return asInt(summary['filesScanned']);
-    if (summary.containsKey('scanned_files')) return asInt(summary['scanned_files']);
+    if (summary.containsKey('filesScanned'))
+      return asInt(summary['filesScanned']);
+    if (summary.containsKey('scanned_files'))
+      return asInt(summary['scanned_files']);
   }
-  
+
   final metrics = json['metrics'] as Map<String, dynamic>?;
   if (metrics != null) {
-    if (metrics.containsKey('scanned_files')) return asInt(metrics['scanned_files']);
+    if (metrics.containsKey('scanned_files'))
+      return asInt(metrics['scanned_files']);
   }
-  
+
   // Fallback to file_analyses count
   final fileAnalyses = json['file_analyses'] as Map<String, dynamic>?;
   return fileAnalyses?.length ?? 0;
@@ -251,11 +257,11 @@ void _compareSnapshots(
 
   expect(actualTotalKeys, equals(expectedTotalKeys),
       reason: 'Total keys count must match');
-  
+
   // Safe access for files scanned
   final expectedFilesScanned = _safeGetFilesScanned(expected);
   final actualFilesScanned = _safeGetFilesScanned(actual);
-  
+
   expect(actualFilesScanned, equals(expectedFilesScanned),
       reason: 'Files scanned count must match');
 

@@ -57,7 +57,8 @@ class ReportCommand extends BaseCommandV3 {
       if (source == 'scan') {
         // Perform scan
         logInfo('Scanning project...');
-        final projectRoot = argResults!['project-root'] as String? ?? Directory.current.path;
+        final projectRoot =
+            argResults!['project-root'] as String? ?? Directory.current.path;
         final scanner = AstScannerV3(
           projectPath: projectRoot,
           config: config,

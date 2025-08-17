@@ -36,7 +36,7 @@ class ConfigV3 {
     }
 
     final content = await file.readAsString();
-    
+
     // Parse YAML with error handling
     Map yaml;
     try {

@@ -35,7 +35,7 @@ abstract class BaseCommandV3 extends Command<int> {
     // Get verbose flag from global arguments (CLI runner level)
     // For now, assume verbose is false since we can't access global args easily
     final verbose = false;
-    
+
     // If project-root is specified and config path is relative, resolve it relative to project root
     final projectRoot = argResults!['project-root'] as String?;
     if (projectRoot != null && !path.isAbsolute(configPath)) {
@@ -85,13 +85,13 @@ abstract class BaseCommandV3 extends Command<int> {
   /// Create output directory if needed
   Future<Directory> ensureOutputDir() async {
     var outDir = argResults!['out-dir'] as String;
-    
+
     // If project-root is specified and out-dir is relative, resolve it relative to project root
     final projectRoot = argResults!['project-root'] as String?;
     if (projectRoot != null && !path.isAbsolute(outDir)) {
       outDir = path.join(projectRoot, outDir);
     }
-    
+
     final dir = Directory(outDir);
     if (!await dir.exists()) {
       await dir.create(recursive: true);
@@ -118,7 +118,7 @@ abstract class BaseCommandV3 extends Command<int> {
 
   /// Log verbose output if enabled
   void logVerbose(String message) {
-    // For now, always output verbose when called 
+    // For now, always output verbose when called
     // TODO: Get verbose flag from global arguments
     stderr.writeln('[VERBOSE] $message');
   }

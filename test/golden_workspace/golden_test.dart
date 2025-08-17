@@ -51,7 +51,6 @@ void main() {
     });
 
     group('Scan Command', () {
-      @Timeout(Duration(minutes: 2))
       test('scans workspace with correct exit code and schema', () async {
         final result = await Process.run(
           'dart',
@@ -106,13 +105,14 @@ void main() {
 
         // The report has the scan result wrapped
         final scanResult = report['scan_result'] ?? report;
-        
+
         // Schema validation
         expect(scanResult['schemaVersion'], equals('1.0'));
 
         // Extract key names from the keys array
-        final keys =
-            (scanResult['keys'] as List).map((k) => k['key'] as String).toList();
+        final keys = (scanResult['keys'] as List)
+            .map((k) => k['key'] as String)
+            .toList();
 
         // Assert all critical keys are present
         expect(
@@ -207,7 +207,6 @@ void main() {
         // The tool should reference thresholds in its output when using them
       });
 
-      @Timeout(Duration(minutes: 2))
       test('detects lost critical keys with exit code 1', () async {
         // Create baseline
         await Process.run(
@@ -312,7 +311,6 @@ fail_on_lost: true
     });
 
     group('Report Command', () {
-      @Timeout(Duration(minutes: 2))
       test('generates valid JSON report with schema', () async {
         final reportDir = p.join(workspaceDir, 'test_reports');
 

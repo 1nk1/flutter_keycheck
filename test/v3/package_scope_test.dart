@@ -1,10 +1,11 @@
+@Tags(['nonblocking'])
+library;
+
 import 'dart:io';
 import 'package:test/test.dart';
 import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 import 'package:flutter_keycheck/src/config/config_v3.dart';
 import 'package:flutter_keycheck/src/models/scan_result.dart';
-
-@Tags(['nonblocking'])
 void main() {
   group('Package Scope Scanning', () {
     late Directory tempDir;

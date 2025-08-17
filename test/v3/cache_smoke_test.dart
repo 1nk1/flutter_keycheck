@@ -1,10 +1,11 @@
+@Tags(['nonblocking'])
+library;
+
 import 'dart:io';
 import 'dart:convert';
 import 'package:test/test.dart';
 import 'package:flutter_keycheck/src/cache/dependency_cache.dart';
 import 'package:path/path.dart' as path;
-
-@Tags(['nonblocking'])
 void main() {
   group('Dependency Cache Smoke Tests', () {
     late Directory tempDir;

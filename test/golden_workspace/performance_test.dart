@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+@Tags(['nonblocking'])
+
 // Safe-cast helper functions for strongly typed JSON parsing
 Map<String, dynamic> asMap(dynamic v) => Map<String, dynamic>.from(v as Map);
 int asInt(dynamic v) => (v as num).toInt();

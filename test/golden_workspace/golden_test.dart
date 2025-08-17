@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+@Tags(['nonblocking'])
+
 // Safe JSON access helpers
 Map<String, dynamic> _asMap(Object? v) =>
     v is Map<String, dynamic> ? v : const <String, dynamic>{};

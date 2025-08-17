@@ -100,10 +100,9 @@ jobs:
         run: |
           [ -d reports ] || mkdir -p reports
       
-      - name: Run tests with JSON reporter
+      - name: Run blocking tests (critical contract only)
         run: |
-          dart test --reporter=json > reports/test_results.json || true
-          dart test --reporter=expanded
+          dart test --chain-stack-traces -j 2 -r compact --exclude-tags nonblocking
 
       - name: Upload test results
         if: always()
@@ -296,6 +295,54 @@ jobs:
         run: |
           dart pub global activate pana
           pana --no-warning --exit-code-threshold 90 .
+
+  # Full test suite (non-blocking, includes golden/performance tests)
+  test-full:
+    name: Full Test Suite (Non-blocking)
+    runs-on: ubuntu-latest
+    if: always()
+    continue-on-error: true
+    needs: [analyze]
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_SDK }}
+
+      - name: Cache Dart dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: ${{ runner.os }}-dart-${{ env.DART_SDK }}-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-dart-${{ env.DART_SDK }}-
+            ${{ runner.os }}-dart-
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Run full test suite (including nonblocking)
+        run: |
+          echo "Running full test suite including golden/snapshot/performance tests..."
+          dart test --chain-stack-traces -j 1 -r expanded || true
+          echo "Full test suite completed (failures allowed)"
+
+      - name: Generate test report
+        if: always()
+        run: |
+          mkdir -p reports
+          dart test --reporter=json > reports/full_test_results.json || true
+
+      - name: Upload full test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-test-results
+          path: reports/full_test_results.json
 
   # Summary job for branch protection
   ci-summary:

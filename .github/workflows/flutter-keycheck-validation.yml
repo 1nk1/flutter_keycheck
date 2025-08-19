@@ -1,6 +1,17 @@
 name: Flutter KeyCheck Validation
 
 on:
+  push:
+    branches: [main, develop, flutter_keycheck_v3]
+    tags: ['v*']
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - '**.dart'
+      - '.flutter_keycheck.yaml'
+      - 'baseline.json'
+      - 'pubspec.yaml'
+      - '.github/workflows/flutter-keycheck-validation.yml'
   pull_request:
     branches: [main, develop, flutter_keycheck_v3]
     paths:

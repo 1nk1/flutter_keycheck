@@ -3,14 +3,13 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:args/args.dart';
-import 'package:flutter_keycheck/src/cli/cli_runner.dart';
-import 'package:flutter_keycheck/src/commands/base_command_v3.dart';
-import 'package:flutter_keycheck/src/config/config_v3.dart';
-import 'package:flutter_keycheck/src/scanner/performance_benchmark.dart';
+import 'package:args/command_runner.dart';
+import '../config.dart';
+import '../scanner/performance_benchmark.dart';
 import 'package:path/path.dart' as path;
 
 /// Benchmark command for comprehensive performance testing
-class BenchmarkCommand extends BaseCommandV3 {
+class BenchmarkCommand extends Command<int> {
   @override
   final name = 'benchmark';
 

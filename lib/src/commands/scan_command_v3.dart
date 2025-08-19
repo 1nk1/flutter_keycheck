@@ -25,8 +25,8 @@ class ScanCommandV3 extends BaseCommandV3 {
       )
       ..addOption(
         'report',
-        help: 'Report format (json, junit, md, html, text)',
-        allowed: ['json', 'junit', 'md', 'html', 'text'],
+        help: 'Report format (json, junit, md, html, text, ci, gitlab)',
+        allowed: ['json', 'junit', 'md', 'html', 'text', 'ci', 'gitlab'],
         defaultsTo: 'json',
       )
       ..addFlag(

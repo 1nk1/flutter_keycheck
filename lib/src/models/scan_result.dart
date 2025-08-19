@@ -126,7 +126,7 @@ class ScanMetrics {
       'cache_hits': cacheHits,
       'cache_misses': cacheMisses,
       'cache_hit_rate': cacheHits + cacheMisses > 0 
-          ? (cacheHits / (cacheHits + cacheMisses) * 100).toStringAsFixed(1) + '%'
+          ? '${(cacheHits / (cacheHits + cacheMisses) * 100).toStringAsFixed(1)}%'
           : '0%',
       'large_files_processed': largeFilesProcessed,
       'avg_file_size_kb': avgFileSizeKB.toStringAsFixed(1),

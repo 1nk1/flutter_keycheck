@@ -10,7 +10,7 @@
 
 **v3.0.0**: 🚀 60% faster • 📦 Scoped scanning • 🎯 CI/CD exit codes • ⚡ 84KB package • [Migration Guide](./MIGRATION_v3.md)
 
-A comprehensive Flutter widget key coverage analyzer with AST parsing, key↔handler linking, and enterprise CI/CD integration. Perfect for QA automation teams, Flutter development teams, and DevOps engineers.
+A comprehensive Flutter widget key coverage analyzer with AST parsing, premium glassmorphism reports, and enterprise CI/CD integration. Features beautiful terminal output, premium HTML dashboards, and GitLab CI/CD quality gates. Perfect for QA automation teams, Flutter development teams, and DevOps engineers.
 
 ## 👥 Who is it for?
 
@@ -50,7 +50,16 @@ See [MIGRATION_v3.md](MIGRATION_v3.md) for detailed upgrade instructions.
 
 ## ✨ Features
 
-### 🚀 AST-Based Analysis (NEW in v3.0)
+### 🎨 Premium Enterprise Reports (NEW)
+
+- **Glassmorphism HTML Reports** - Beautiful enterprise-grade reports with modern glass effects and interactive elements
+- **Advanced Statistics Dashboard** - Performance charts, quality scoring, and distribution analysis with Canvas visualizations
+- **Interactive Key Analysis** - Searchable tables, duplicate detection, and comprehensive issue analysis
+- **Multi-Format Export** - Export reports in HTML, CI, JSON, Markdown, and Text formats with one click
+- **Terminal CI/CD Output** - Beautiful colored terminal output with quality gates and GitLab integration
+- **Quality Gates Analysis** - Automated coverage, performance, and blind spot validation with actionable insights
+
+### 🚀 AST-Based Analysis (v3.0)
 
 - **Modern key patterns** - Detects `Key(KeyConstants.*)` and `ValueKey(KeyConstants.*)` usage
 - **Dynamic key methods** - Supports `KeyConstants.*Key()` method patterns
@@ -58,11 +67,13 @@ See [MIGRATION_v3.md](MIGRATION_v3.md) for detailed upgrade instructions.
 - **Usage analysis** - Comprehensive reports on traditional vs modern key patterns
 - **Migration recommendations** - Suggests improvements for key management
 
-### 🎯 Tracked Keys Validation (NEW in v2.1.0)
+### 🎯 CI/CD Integration
 
-- **Focus on critical UI elements** - Define a subset of keys to validate for QA automation
-- **Flexible validation scope** - Choose which keys matter most for your testing workflow
-- **Smart filtering** - Combine tracked keys with include/exclude patterns
+- **GitLab CI/CD Ready** - Pre-configured pipeline templates with quality gates
+- **GitHub Actions Support** - Seamless integration with GitHub workflows
+- **Terminal Excellence** - Beautiful ANSI-colored output with progress indicators
+- **Quality Gates** - Coverage thresholds, blind spot limits, performance gates
+- **Exit Code Standards** - Deterministic codes for reliable CI/CD automation
 
 ### 🔍 Advanced Key Filtering & Tagging
 
@@ -83,7 +94,8 @@ See [MIGRATION_v3.md](MIGRATION_v3.md) for detailed upgrade instructions.
 
 - **YAML configuration files** - Store settings in `.flutter_keycheck.yaml`
 - **CLI argument override** - Command-line arguments take priority over config files
-- **Multiple output formats** - Human-readable or JSON output for automation
+- **Premium report formats** - CI, HTML, Markdown, JSON, JUnit XML output
+- **Theme support** - Light/dark themes for HTML reports
 
 ### 🧪 Integration Test Validation
 
@@ -225,6 +237,144 @@ flutter_keycheck validate --strict --fail-on-lost
 # GitHub Actions example
 flutter_keycheck ci-validate --protected-tags critical,aqa
 if [ $? -eq 1 ]; then echo "Policy violation!"; exit 1; fi
+```
+
+## 📊 Report Formats & Premium Features
+
+Flutter KeyCheck v3 provides enterprise-grade reporting with beautiful visualizations and comprehensive CI/CD integration.
+
+### 🎨 Premium HTML Reports
+
+Generate stunning enterprise-grade reports with advanced analytics and modern UI design:
+
+```bash
+# Premium HTML report with glassmorphism effects and advanced features
+flutter_keycheck scan --report html --out-dir reports
+
+# Interactive dashboard with full analytics suite
+flutter_keycheck scan --report html --scope workspace-only --out-dir reports
+```
+
+**Enterprise Features:**
+- ✨ **Glassmorphism Design** - Modern glass effects with backdrop blur and premium animations
+- 📊 **Advanced Statistics** - Performance charts, quality scoring (0-100), and distribution analysis
+- 🔍 **Duplicate Key Analysis** - Interactive tables with impact assessment and consolidation recommendations
+- 🚨 **Issues Detection** - Blind spots, orphan keys, and duplicate references with severity classification
+- 🎯 **Interactive Elements** - Searchable tables, modal dialogs, and hover effects with responsive design
+- 📈 **Performance Metrics** - Canvas-based charts showing scan performance and optimization insights
+- 🎨 **Quality Scoring** - Comprehensive quality assessment with breakdown analysis and improvement suggestions
+- 📊 **Distribution Charts** - Pie charts showing key category distribution and usage patterns
+- 💡 **Actionable Insights** - AI-powered recommendations for improving key management and test coverage
+- 📱 **Mobile Responsive** - Optimized for desktop, tablet, and mobile with touch-friendly interfaces
+- 🌙 **Dark/Light Themes** - User preference with localStorage persistence and smooth transitions
+- 📤 **Multi-Format Export** - One-click export to HTML, CI, JSON, Markdown, and Text formats
+- ⚡ **Performance Optimized** - Efficient animations, reduced motion support, and fast rendering
+
+### 🖥️ Terminal CI/CD Output
+
+Beautiful terminal output designed for CI/CD pipelines:
+
+```bash
+# Beautiful terminal output with quality gates
+flutter_keycheck scan --report ci
+
+# GitLab CI-optimized output
+flutter_keycheck scan --report gitlab --scope workspace-only
+
+# GitHub Actions output (no colors)
+flutter_keycheck scan --report ci --no-color
+```
+
+**Features:**
+- 🎨 **ANSI Colors** - Beautiful colored terminal output with status indicators
+- 📊 **Quality Gates** - Coverage gates, blind spot limits, performance thresholds
+- 🏗️ **GitLab Integration** - Collapsible sections, CI environment detection
+- ⚡ **Performance Metrics** - Scan duration, file coverage, key distribution
+- 📋 **Status Tables** - Clean tabular output with proper alignment
+
+### 📁 Multiple Format Support
+
+Export reports in various formats for different use cases:
+
+```bash
+# Multiple formats at once
+flutter_keycheck scan --report json,html,md,junit --out-dir reports
+
+# Specific format examples
+flutter_keycheck scan --report json      # Machine-readable JSON
+flutter_keycheck scan --report md        # Markdown documentation
+flutter_keycheck scan --report junit     # JUnit XML for CI integration
+flutter_keycheck scan --report text      # Simple text output
+```
+
+**Available Formats:**
+- **`html`** - Premium glassmorphism HTML reports with interactive features
+- **`ci`/`gitlab`** - Beautiful terminal output optimized for CI/CD
+- **`json`** - Structured data for API integration and automation
+- **`md`/`markdown`** - Documentation-friendly Markdown with tables
+- **`junit`** - JUnit XML format for CI/CD test reporting
+- **`text`** - Simple human-readable text format
+
+### 🔍 Report Content Examples
+
+#### Premium HTML Report Features
+- **Executive Dashboard** - Key metrics with visual cards, glassmorphism effects, and comprehensive statistics
+- **Interactive Tables** - Sortable, filterable key listings with advanced search and real-time filtering
+- **Advanced Statistics** - Performance charts, quality scoring (0-100), distribution analysis, and trend visualization
+- **Duplicate Key Analysis** - Interactive tables with impact assessment, consolidation recommendations, and severity classification
+- **Issues Detection** - Blind spots, orphan keys, duplicate references with actionable remediation steps
+- **Quality Gates Visualization** - Pass/fail status with detailed recommendations and improvement pathways
+- **Performance Metrics** - Canvas-based charts showing scan performance, optimization insights, and trend analysis
+- **Multi-Format Export** - One-click export functionality supporting HTML, CI, JSON, Markdown, and Text formats
+- **Responsive Design** - Mobile-optimized interface with touch-friendly controls and adaptive layouts
+
+#### Terminal CI Output Features
+- **Status Headers** - Beautiful branded headers with ASCII art borders
+- **Quality Gate Results** - ✅ PASS / ❌ FAIL / ⚠️ WARNING indicators  
+- **Metrics Tables** - Aligned columns with colored values
+- **Action Items** - Clear next steps and recommendations
+- **GitLab Sections** - Collapsible details for pipeline logs
+
+### 🚀 CI/CD Integration Examples
+
+#### GitLab CI Configuration
+```yaml
+# .gitlab-ci.yml
+flutter_keycheck:
+  stage: analyze
+  script:
+    - flutter_keycheck scan --report ci --scope workspace-only
+    - flutter_keycheck validate --strict --fail-on-lost
+  artifacts:
+    reports:
+      junit: reports/*.xml
+    paths:
+      - reports/
+```
+
+#### GitHub Actions Configuration  
+```yaml
+# .github/workflows/keycheck.yml
+- name: Run Flutter KeyCheck
+  run: |
+    flutter_keycheck scan --report ci --no-color
+    flutter_keycheck validate --threshold-file .keycheck-thresholds.yaml
+```
+
+#### Quality Gates Configuration
+```yaml
+# .keycheck-quality-gates.yaml
+coverage_gate:
+  min_file_coverage: 80.0
+  description: "Minimum 80% file coverage required"
+
+blind_spot_check:
+  max_blind_spots: 5
+  description: "Maximum 5 blind spots allowed"
+
+performance_gate:
+  max_scan_duration_seconds: 30
+  description: "Scan must complete under 30 seconds"
 ```
 
 ## 🏷️ AQA/E2E Tagging Strategy
@@ -607,20 +757,57 @@ void main() {
 
 ### CLI Reference
 
-#### Command-Line Options
+#### v3.0 Enhanced Commands
+
+Flutter KeyCheck v3 introduces a powerful subcommand system with comprehensive reporting options:
+
+```bash
+# Core scanning with premium HTML reports
+flutter_keycheck scan --report html --out-dir reports
+flutter_keycheck scan --scope workspace-only --report html,ci,json --out-dir reports
+
+# Advanced validation with quality gates
+flutter_keycheck validate --strict --baseline test_baseline.yaml
+flutter_keycheck validate --report json --out-dir reports
+
+# Interactive baseline management
+flutter_keycheck baseline create --out test_baseline.yaml
+flutter_keycheck baseline update --baseline test_baseline.yaml
+```
+
+#### Premium Report Generation Options
+
+| Command           | Description                               | Premium Features                  |
+| ----------------- | ----------------------------------------- | --------------------------------- |
+| `--report html`   | Generate premium HTML reports            | Glassmorphism, advanced analytics, interactive tables |
+| `--report ci`     | Beautiful terminal output for CI/CD      | Quality gates, colored status, performance metrics |
+| `--report json`   | Structured JSON for API integration      | Schema v1.0, comprehensive metadata |
+| `--report md`     | Documentation-friendly Markdown          | Tables, charts, actionable insights |
+| `--report text`   | Simple human-readable text format        | Clean formatting, easy to parse |
+| `--out-dir`       | Output directory for generated reports   | Multi-format support, organized structure |
+
+#### Enhanced Scanning Options
+
+| Option            | Description                               | Example                           |
+| ----------------- | ----------------------------------------- | --------------------------------- |
+| `--scope`         | Package scanning scope (workspace-only/deps-only/all) | `--scope workspace-only` |
+| `--baseline`      | Baseline file for drift detection        | `--baseline test_baseline.yaml`  |
+| `--report`        | Multiple output formats (comma-separated) | `--report html,ci,json,md`       |
+| `--out-dir`       | Output directory for reports             | `--out-dir reports`               |
+| `--path`          | Project path to scan                      | `--path ./my_flutter_app`         |
+| `--config`        | Configuration file path                   | `--config .flutter_keycheck.yaml` |
+
+#### Legacy v2 Compatibility Options
 
 | Option            | Description                               | Example                           |
 | ----------------- | ----------------------------------------- | --------------------------------- |
 | `--keys`          | Path to expected keys YAML file           | `--keys keys/expected_keys.yaml`  |
-| `--path`          | Project path to scan                      | `--path ./my_flutter_app`         |
 | `--strict`        | Fail if integration test setup incomplete | `--strict`                        |
 | `--verbose`       | Show detailed output                      | `--verbose`                       |
 | `--fail-on-extra` | Fail if extra keys found                  | `--fail-on-extra`                 |
 | `--generate-keys` | Generate keys file from project           | `--generate-keys`                 |
 | `--include-only`  | Include only matching patterns            | `--include-only="qa_,e2e_"`       |
 | `--exclude`       | Exclude matching patterns                 | `--exclude="temp_,debug_"`        |
-| `--config`        | Configuration file path                   | `--config .flutter_keycheck.yaml` |
-| `--report`        | Output format (human/json)                | `--report json`                   |
 
 #### Configuration File Reference
 

@@ -1,0 +1,109 @@
+# GitLab CI/CD Example for Flutter KeyCheck
+# Copy this to .gitlab-ci.yml in your Flutter project
+
+stages:
+  - analyze
+  - build
+  - test
+
+variables:
+  FLUTTER_VERSION: "3.16.0"
+  PUB_CACHE: "$CI_PROJECT_DIR/.pub-cache"
+
+cache:
+  paths:
+    - .pub-cache/
+    - .dart_tool/
+
+# Install Flutter KeyCheck
+.install_keycheck: &install_keycheck
+  - dart pub global activate flutter_keycheck
+
+# Flutter KeyCheck Analysis Job
+flutter_keycheck:
+  stage: analyze
+  image: dart:3.3.0
+  script:
+    - *install_keycheck
+    - echo "🔍 Running Flutter KeyCheck Analysis..."
+    - flutter_keycheck scan --report ci --scope workspace-only
+  artifacts:
+    reports:
+      # GitLab CI can display CI format in job logs
+      junit: reports/key-snapshot.ci
+    paths:
+      - reports/
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  allow_failure: false
+
+# Advanced job with quality gates
+flutter_keycheck_quality:
+  stage: analyze
+  image: dart:3.3.0
+  script:
+    - *install_keycheck
+    - echo "🎯 Running Quality Gates Analysis..."
+    - |
+      # Run scan and capture result
+      flutter_keycheck scan --report ci --scope workspace-only > keycheck.log 2>&1
+      RESULT=$?
+      
+      # Display beautiful output
+      cat keycheck.log
+      
+      # Parse quality gates from CI output
+      if grep -q "FAIL" keycheck.log; then
+        echo "❌ Quality gates failed!"
+        exit 1
+      elif grep -q "WARNING" keycheck.log; then
+        echo "⚠️  Quality gates passed with warnings"
+        exit 0
+      else
+        echo "✅ All quality gates passed!"
+        exit 0
+      fi
+  artifacts:
+    when: always
+    paths:
+      - reports/
+      - keycheck.log
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# Integration with other Flutter jobs
+flutter_analyze:
+  stage: analyze
+  image: flutter:$FLUTTER_VERSION
+  script:
+    - flutter analyze
+  needs: []
+
+flutter_test:
+  stage: test
+  image: flutter:$FLUTTER_VERSION
+  script:
+    - flutter test
+  needs: ["flutter_keycheck"]
+  dependencies:
+    - flutter_keycheck
+
+# Build job that depends on KeyCheck passing
+flutter_build:
+  stage: build
+  image: flutter:$FLUTTER_VERSION
+  script:
+    - flutter build apk --release
+  artifacts:
+    paths:
+      - build/app/outputs/flutter-apk/
+    expire_in: 1 week
+  needs: ["flutter_keycheck", "flutter_analyze"]
+  dependencies:
+    - flutter_keycheck
+  only:
+    - main
+    - develop

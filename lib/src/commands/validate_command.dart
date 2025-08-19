@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_keycheck/src/commands/base_command.dart';
-import 'package:flutter_keycheck/src/scanner/workspace_scanner.dart';
+import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 import 'package:flutter_keycheck/src/validator/policy_validator.dart';
 import 'package:flutter_keycheck/src/models/validation_result.dart';
 
@@ -62,8 +62,23 @@ class ValidateCommand extends BaseCommand {
       final registry = await getRegistry(config);
       final keyRegistry = await registry.load();
 
+      // Use project-root if specified, otherwise current directory
+      String projectRoot;
+      if (argResults!.wasParsed('project-root')) {
+        final specifiedRoot = argResults!['project-root'] as String;
+        // Convert to absolute path
+        projectRoot = Directory(specifiedRoot).absolute.path;
+      } else {
+        projectRoot = Directory.current.path;
+      }
+
       // Scan current workspace
-      final scanner = WorkspaceScanner(config);
+      final scanner = AstScannerV3(
+        projectPath: projectRoot,
+        includeTests: false,
+        includeGenerated: false,
+        config: config,
+      );
       final snapshot = await scanner.scan();
 
       // Create validator with policies

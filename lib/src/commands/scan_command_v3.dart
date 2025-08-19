@@ -25,8 +25,8 @@ class ScanCommandV3 extends BaseCommandV3 {
       )
       ..addOption(
         'report',
-        help: 'Report format (json, junit, md)',
-        allowed: ['json', 'junit', 'md'],
+        help: 'Report format (json, junit, md, html, text)',
+        allowed: ['json', 'junit', 'md', 'html', 'text'],
         defaultsTo: 'json',
       )
       ..addFlag(
@@ -67,9 +67,17 @@ class ScanCommandV3 extends BaseCommandV3 {
       final config = await loadConfig();
       final outDir = await ensureOutputDir();
 
-      // Configure scanner
-      final projectRoot =
-          argResults!['project-root'] as String? ?? Directory.current.path;
+      // Configure scanner with absolute path
+      String projectRoot;
+      final specifiedRoot = argResults!['project-root'] as String?;
+      if (specifiedRoot != null) {
+        // Convert to absolute path and normalize
+        final dir = Directory(specifiedRoot).absolute;
+        projectRoot = path.normalize(dir.path);
+      } else {
+        projectRoot = Directory.current.path;
+      }
+      
       final scanner = AstScannerV3(
         projectPath: projectRoot,
         includeTests: argResults!['include-tests'] as bool,

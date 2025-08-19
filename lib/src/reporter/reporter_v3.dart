@@ -16,8 +16,12 @@ abstract class ReporterV3 {
       case 'md':
       case 'markdown':
         return MarkdownReporter();
+      case 'html':
+        return HtmlReporter();
+      case 'text':
+        return TextReporter();
       default:
-        return JsonReporter();
+        return TextReporter();
     }
   }
 
@@ -433,5 +437,210 @@ class MarkdownReporter extends ReporterV3 {
   String _capitalize(String text) {
     if (text.isEmpty) return text;
     return text[0].toUpperCase() + text.substring(1);
+  }
+}
+
+/// HTML reporter for rich web reports
+class HtmlReporter extends ReporterV3 {
+  @override
+  Future<void> generateScanReport(
+    ScanResult result,
+    File outputFile, {
+    bool includeMetrics = true,
+    bool includeLocations = false,
+  }) async {
+    final buffer = StringBuffer();
+    
+    // HTML header
+    buffer.writeln('<!DOCTYPE html>');
+    buffer.writeln('<html lang="en">');
+    buffer.writeln('<head>');
+    buffer.writeln('  <meta charset="UTF-8">');
+    buffer.writeln('  <title>Flutter KeyCheck Scan Report</title>');
+    buffer.writeln(_getInlineStyles());
+    buffer.writeln('</head>');
+    buffer.writeln('<body>');
+    
+    // Summary section
+    buffer.writeln('<div class="container">');
+    buffer.writeln('  <h1>Flutter KeyCheck Scan Report</h1>');
+    buffer.writeln('  <div class="summary">');
+    buffer.writeln('    <div class="stat">');
+    buffer.writeln('      <span class="label">Total Keys:</span>');
+    buffer.writeln('      <span class="value">${result.keyUsages.length}</span>');
+    buffer.writeln('    </div>');
+    buffer.writeln('    <div class="stat">');
+    buffer.writeln('      <span class="label">Files Scanned:</span>');
+    buffer.writeln('      <span class="value">${result.metrics.scannedFiles}</span>');
+    buffer.writeln('    </div>');
+    buffer.writeln('    <div class="stat">');
+    buffer.writeln('      <span class="label">Coverage:</span>');
+    buffer.writeln('      <span class="value">${result.metrics.fileCoverage.toStringAsFixed(1)}%</span>');
+    buffer.writeln('    </div>');
+    buffer.writeln('  </div>');
+    
+    // Keys table
+    if (result.keyUsages.isNotEmpty) {
+      buffer.writeln('  <h2>Keys Found</h2>');
+      buffer.writeln('  <table>');
+      buffer.writeln('    <thead>');
+      buffer.writeln('      <tr>');
+      buffer.writeln('        <th>Key ID</th>');
+      buffer.writeln('        <th>Status</th>');
+      buffer.writeln('        <th>Locations</th>');
+      buffer.writeln('        <th>Tags</th>');
+      buffer.writeln('      </tr>');
+      buffer.writeln('    </thead>');
+      buffer.writeln('    <tbody>');
+      
+      for (final entry in result.keyUsages.entries) {
+        buffer.writeln('      <tr>');
+        buffer.writeln('        <td><code>${entry.key}</code></td>');
+        buffer.writeln('        <td>${entry.value.status}</td>');
+        buffer.writeln('        <td>${entry.value.locations.length}</td>');
+        buffer.writeln('        <td>${entry.value.tags.join(', ')}</td>');
+        buffer.writeln('      </tr>');
+      }
+      
+      buffer.writeln('    </tbody>');
+      buffer.writeln('  </table>');
+    }
+    
+    // Dependency tree if available
+    if (result.metrics.dependencyTree != null) {
+      buffer.writeln('  <h2>Dependency Analysis</h2>');
+      buffer.writeln('  <div class="dependency-info">');
+      buffer.writeln('    <p>Total packages scanned: ${result.metrics.dependencyTree!.length}</p>');
+      buffer.writeln('  </div>');
+    }
+    
+    buffer.writeln('</div>');
+    buffer.writeln('</body>');
+    buffer.writeln('</html>');
+    
+    await outputFile.writeAsString(buffer.toString());
+  }
+  
+  @override
+  Future<void> generateValidationReport(
+    ValidationResult result,
+    File outputFile, {
+    bool includeMetrics = true,
+  }) async {
+    final buffer = StringBuffer();
+    
+    // HTML structure
+    buffer.writeln('<!DOCTYPE html>');
+    buffer.writeln('<html lang="en">');
+    buffer.writeln('<head>');
+    buffer.writeln('  <meta charset="UTF-8">');
+    buffer.writeln('  <title>Flutter KeyCheck Validation Report</title>');
+    buffer.writeln(_getInlineStyles());
+    buffer.writeln('</head>');
+    buffer.writeln('<body>');
+    
+    final statusClass = result.hasViolations ? 'failed' : 'passed';
+    buffer.writeln('<div class="container">');
+    buffer.writeln('  <h1 class="$statusClass">Validation ${result.hasViolations ? 'Failed' : 'Passed'}</h1>');
+    
+    if (result.hasViolations) {
+      buffer.writeln('  <div class="violations">');
+      if (result.lostKeys.isNotEmpty) {
+        buffer.writeln('    <h2>Lost Keys (${result.lostKeys.length})</h2>');
+        buffer.writeln('    <ul>');
+        for (final key in result.lostKeys) {
+          buffer.writeln('      <li>${key.id}</li>');
+        }
+        buffer.writeln('    </ul>');
+      }
+      buffer.writeln('  </div>');
+    }
+    
+    buffer.writeln('</div>');
+    buffer.writeln('</body>');
+    buffer.writeln('</html>');
+    
+    await outputFile.writeAsString(buffer.toString());
+  }
+  
+  String _getInlineStyles() {
+    return '''
+    <style>
+      body { font-family: sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+      .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+      h1 { color: #333; }
+      h1.passed { color: #22c55e; }
+      h1.failed { color: #ef4444; }
+      .summary { display: flex; gap: 30px; margin: 20px 0; }
+      .stat { display: flex; flex-direction: column; }
+      .label { font-size: 12px; color: #666; }
+      .value { font-size: 24px; font-weight: bold; color: #333; }
+      table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+      th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+      th { background: #f0f0f0; font-weight: 600; }
+      code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; }
+    </style>
+    ''';
+  }
+}
+
+/// Text reporter for human-readable output
+class TextReporter extends ReporterV3 {
+  @override
+  Future<void> generateScanReport(
+    ScanResult result,
+    File outputFile, {
+    bool includeMetrics = true,
+    bool includeLocations = false,
+  }) async {
+    final buffer = StringBuffer();
+    
+    buffer.writeln('Flutter KeyCheck Scan Report');
+    buffer.writeln('=' * 40);
+    buffer.writeln();
+    buffer.writeln('Summary:');
+    buffer.writeln('  Total Keys: ${result.keyUsages.length}');
+    buffer.writeln('  Files Scanned: ${result.metrics.scannedFiles}/${result.metrics.totalFiles}');
+    buffer.writeln('  Coverage: ${result.metrics.fileCoverage.toStringAsFixed(1)}%');
+    buffer.writeln();
+    
+    if (result.keyUsages.isNotEmpty) {
+      buffer.writeln('Keys Found:');
+      for (final entry in result.keyUsages.entries.take(20)) {
+        buffer.writeln('  - ${entry.key} (${entry.value.locations.length} locations)');
+      }
+      if (result.keyUsages.length > 20) {
+        buffer.writeln('  ... and ${result.keyUsages.length - 20} more');
+      }
+    }
+    
+    await outputFile.writeAsString(buffer.toString());
+  }
+  
+  @override
+  Future<void> generateValidationReport(
+    ValidationResult result,
+    File outputFile, {
+    bool includeMetrics = true,
+  }) async {
+    final buffer = StringBuffer();
+    
+    buffer.writeln('Flutter KeyCheck Validation Report');
+    buffer.writeln('=' * 40);
+    buffer.writeln();
+    buffer.writeln('Status: ${result.hasViolations ? 'FAILED' : 'PASSED'}');
+    buffer.writeln();
+    
+    if (result.hasViolations) {
+      buffer.writeln('Violations:');
+      if (result.lostKeys.isNotEmpty) {
+        buffer.writeln('  Lost Keys: ${result.lostKeys.length}');
+      }
+      if (result.renamedKeys.isNotEmpty) {
+        buffer.writeln('  Renamed Keys: ${result.renamedKeys.length}');
+      }
+    }
+    
+    await outputFile.writeAsString(buffer.toString());
   }
 }

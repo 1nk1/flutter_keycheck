@@ -1,0 +1,574 @@
+name: Performance Monitoring
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize, reopened ]
+  schedule:
+    # Run performance benchmarks daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      project_size:
+        description: 'Test project size'
+        required: false
+        default: 'medium'
+        type: choice
+        options:
+          - small
+          - medium
+          - large
+          - enterprise
+      scenarios:
+        description: 'Benchmark scenarios (comma-separated)'
+        required: false
+        default: 'scanning,baseline,diff,validation'
+      regression_threshold:
+        description: 'Performance regression threshold (%)'
+        required: false
+        default: '20'
+
+env:
+  BENCHMARK_CACHE_KEY: flutter-keycheck-benchmark-v1
+  PERFORMANCE_BASELINE_BRANCH: main
+
+jobs:
+  performance-benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    strategy:
+      matrix:
+        project-size: 
+          - ${{ github.event.inputs.project_size || 'medium' }}
+        dart-version: ['3.0.0', 'stable']
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for performance comparisons
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          dart-version: ${{ matrix.dart-version }}
+
+      - name: Cache Dart dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool/package_config.json
+          key: dart-deps-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            dart-deps-${{ runner.os }}-
+
+      - name: Cache benchmark data
+        uses: actions/cache@v3
+        with:
+          path: |
+            benchmark_test_data/
+            .dart_tool/flutter_keycheck/
+          key: ${{ env.BENCHMARK_CACHE_KEY }}-${{ matrix.project-size }}-${{ hashFiles('tool/run_benchmark.dart') }}
+          restore-keys: |
+            ${{ env.BENCHMARK_CACHE_KEY }}-${{ matrix.project-size }}-
+            ${{ env.BENCHMARK_CACHE_KEY }}-
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Verify installation
+        run: |
+          dart --version
+          dart pub deps
+
+      - name: Setup performance monitoring
+        run: |
+          echo "Setting up performance monitoring environment..."
+          mkdir -p benchmark_results
+          mkdir -p performance_baselines
+          
+          # System info for performance context
+          echo "System Information:" > benchmark_results/system_info.txt
+          echo "OS: $(uname -a)" >> benchmark_results/system_info.txt
+          echo "CPU: $(nproc) cores" >> benchmark_results/system_info.txt
+          echo "Memory: $(free -h | grep '^Mem:' | awk '{print $2}')" >> benchmark_results/system_info.txt
+          echo "Dart Version: $(dart --version)" >> benchmark_results/system_info.txt
+          echo "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> benchmark_results/system_info.txt
+
+      - name: Download baseline performance data
+        if: github.event_name == 'pull_request' || github.ref != 'refs/heads/main'
+        run: |
+          echo "Downloading baseline performance data..."
+          
+          # Try to get baseline from main branch
+          if git show ${{ env.PERFORMANCE_BASELINE_BRANCH }}:benchmark_results/performance_baseline.json > performance_baselines/baseline.json 2>/dev/null; then
+            echo "✅ Baseline found from ${{ env.PERFORMANCE_BASELINE_BRANCH }} branch"
+          else
+            echo "⚠️ No baseline found, will create new baseline"
+            echo '{}' > performance_baselines/baseline.json
+          fi
+
+      - name: Generate test data
+        run: |
+          echo "Generating test data for ${{ matrix.project-size }} project..."
+          dart run lib/src/commands/benchmark_command.dart \
+            --generate-data \
+            --project-size ${{ matrix.project-size }} \
+            --output benchmark_results/current_results.json
+
+      - name: Run performance benchmarks
+        run: |
+          echo "Running comprehensive performance benchmarks..."
+          
+          SCENARIOS="${{ github.event.inputs.scenarios || 'scanning,baseline,diff,validation,ci-integration' }}"
+          
+          dart run lib/src/commands/benchmark_command.dart \
+            --scenarios $SCENARIOS \
+            --output benchmark_results/current_results.json \
+            --ci-mode \
+            --memory-profile \
+            --project-size ${{ matrix.project-size }} \
+            2>&1 | tee benchmark_results/benchmark_log.txt
+
+      - name: Run regression analysis
+        if: github.event_name == 'pull_request' && hashFiles('performance_baselines/baseline.json') != ''
+        run: |
+          echo "Running performance regression analysis..."
+          
+          THRESHOLD="${{ github.event.inputs.regression_threshold || '20' }}"
+          
+          if [ -s performance_baselines/baseline.json ] && [ "$(cat performance_baselines/baseline.json)" != "{}" ]; then
+            dart run lib/src/commands/benchmark_command.dart \
+              --regression-test \
+              --baseline performance_baselines/baseline.json \
+              --threshold $THRESHOLD \
+              --output benchmark_results/current_results.json \
+              2>&1 | tee benchmark_results/regression_log.txt
+          else
+            echo "⚠️ No valid baseline available for regression testing"
+          fi
+
+      - name: Analyze performance trends
+        run: |
+          echo "Analyzing performance trends..."
+          
+          # Create trend analysis
+          cat > benchmark_results/trend_analysis.py << 'EOF'
+          import json
+          import sys
+          from datetime import datetime
+          
+          def analyze_trends(current_file):
+              try:
+                  with open(current_file, 'r') as f:
+                      data = json.load(f)
+                  
+                  metadata = data.get('metadata', {})
+                  results = data.get('results', {})
+                  
+                  print("📊 Performance Trend Analysis")
+                  print("=" * 50)
+                  print(f"Timestamp: {metadata.get('timestamp', 'Unknown')}")
+                  print(f"Platform: {metadata.get('platform', 'Unknown')}")
+                  print(f"CPU Cores: {metadata.get('cpu_cores', 'Unknown')}")
+                  print(f"Duration: {metadata.get('duration_ms', 'Unknown')}ms")
+                  
+                  # Analyze scanning performance
+                  scanning = results.get('scanning', {})
+                  if scanning:
+                      print("\n🔍 Scanning Performance:")
+                      perf_results = scanning.get('performance_results', {})
+                      for config, metrics in perf_results.items():
+                          if isinstance(metrics, dict):
+                              time_ms = metrics.get('total_time_ms', 'N/A')
+                              files_sec = metrics.get('files_per_second', 'N/A')
+                              memory_mb = metrics.get('memory_used_mb', 'N/A')
+                              print(f"  {config}: {time_ms}ms, {files_sec} files/sec, {memory_mb}MB")
+                  
+                  # Performance targets
+                  targets = scanning.get('performance_targets_met', {})
+                  if targets:
+                      met = sum(1 for v in targets.values() if v)
+                      total = len(targets)
+                      percentage = (met / total * 100) if total > 0 else 0
+                      print(f"\n🎯 Performance Targets: {met}/{total} ({percentage:.1f}%)")
+                      
+                      if percentage < 80:
+                          print("⚠️ Performance targets below 80% - consider optimization")
+                          return 1
+                      else:
+                          print("✅ Performance targets acceptable")
+                  
+                  return 0
+                  
+              except Exception as e:
+                  print(f"❌ Error analyzing trends: {e}")
+                  return 1
+          
+          if __name__ == "__main__":
+              exit_code = analyze_trends("benchmark_results/current_results.json")
+              sys.exit(exit_code)
+          EOF
+          
+          python3 benchmark_results/trend_analysis.py
+
+      - name: Generate performance report
+        run: |
+          echo "Generating performance report..."
+          
+          # Create HTML report
+          cat > benchmark_results/performance_report.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Flutter KeyCheck Performance Report</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 20px; }
+                  .header { background: #2196F3; color: white; padding: 20px; border-radius: 5px; }
+                  .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+                  .metric { display: inline-block; margin: 10px; padding: 10px; background: #f5f5f5; border-radius: 3px; }
+                  .pass { color: green; font-weight: bold; }
+                  .fail { color: red; font-weight: bold; }
+                  .warning { color: orange; font-weight: bold; }
+                  table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+                  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                  th { background-color: #f2f2f2; }
+              </style>
+          </head>
+          <body>
+              <div class="header">
+                  <h1>Flutter KeyCheck Performance Report</h1>
+                  <p>Generated on: $(date -u +"%Y-%m-%d %H:%M:%S UTC")</p>
+                  <p>Project Size: ${{ matrix.project-size }}</p>
+                  <p>Dart Version: ${{ matrix.dart-version }}</p>
+                  <p>Event: ${{ github.event_name }}</p>
+              </div>
+          EOF
+          
+          # Add system information
+          echo '    <div class="section">' >> benchmark_results/performance_report.html
+          echo '        <h2>System Information</h2>' >> benchmark_results/performance_report.html
+          echo '        <pre>' >> benchmark_results/performance_report.html
+          cat benchmark_results/system_info.txt >> benchmark_results/performance_report.html
+          echo '        </pre>' >> benchmark_results/performance_report.html
+          echo '    </div>' >> benchmark_results/performance_report.html
+          
+          # Add benchmark results if available
+          if [ -f benchmark_results/current_results.json ]; then
+            echo '    <div class="section">' >> benchmark_results/performance_report.html
+            echo '        <h2>Benchmark Results Summary</h2>' >> benchmark_results/performance_report.html
+            echo '        <div id="benchmark-summary">Loading...</div>' >> benchmark_results/performance_report.html
+            echo '    </div>' >> benchmark_results/performance_report.html
+          fi
+          
+          # Close HTML
+          echo '</body></html>' >> benchmark_results/performance_report.html
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-benchmarks-${{ matrix.dart-version }}-${{ matrix.project-size }}
+          path: |
+            benchmark_results/
+            benchmark_test_data/
+          retention-days: 30
+
+      - name: Update performance baseline
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          echo "Updating performance baseline..."
+          
+          if [ -f benchmark_results/current_results.json ]; then
+            # Copy current results as new baseline
+            cp benchmark_results/current_results.json benchmark_results/performance_baseline.json
+            
+            # Commit baseline if in main branch
+            git config --global user.name 'Performance Monitor'
+            git config --global user.email 'performance@flutter-keycheck.dev'
+            
+            git add benchmark_results/performance_baseline.json
+            if git diff --staged --quiet; then
+              echo "No performance changes to commit"
+            else
+              git commit -m "chore: Update performance baseline [skip ci]
+
+              - Project size: ${{ matrix.project-size }}
+              - Dart version: ${{ matrix.dart-version }}
+              - Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+              
+              Performance targets met: $(python3 -c "
+              import json
+              with open('benchmark_results/current_results.json') as f:
+                  data = json.load(f)
+              scanning = data.get('results', {}).get('scanning', {})
+              targets = scanning.get('performance_targets_met', {})
+              met = sum(1 for v in targets.values() if v)
+              total = len(targets)
+              print(f'{met}/{total}' if total > 0 else '0/0')
+              ")"
+              
+              git push origin main
+            fi
+          fi
+
+      - name: Comment on PR with performance results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read benchmark results
+            let performanceData = {};
+            try {
+              const resultsPath = 'benchmark_results/current_results.json';
+              if (fs.existsSync(resultsPath)) {
+                performanceData = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+              }
+            } catch (error) {
+              console.log('Could not read performance data:', error);
+            }
+            
+            // Read regression analysis if available
+            let regressionInfo = '';
+            try {
+              const regressionPath = 'benchmark_results/regression_log.txt';
+              if (fs.existsSync(regressionPath)) {
+                regressionInfo = fs.readFileSync(regressionPath, 'utf8');
+              }
+            } catch (error) {
+              console.log('Could not read regression log:', error);
+            }
+            
+            // Format performance comment
+            let comment = `## 📊 Performance Benchmark Results\n\n`;
+            comment += `**Project Size:** ${{ matrix.project-size }}\n`;
+            comment += `**Dart Version:** ${{ matrix.dart-version }}\n`;
+            comment += `**Event:** ${{ github.event_name }}\n\n`;
+            
+            // Add scanning performance if available
+            const scanning = performanceData.results?.scanning;
+            if (scanning?.performance_results) {
+              comment += `### 🔍 Scanning Performance\n\n`;
+              comment += `| Configuration | Time (ms) | Files/sec | Memory (MB) |\n`;
+              comment += `|---------------|-----------|-----------|-------------|\n`;
+              
+              for (const [config, metrics] of Object.entries(scanning.performance_results)) {
+                comment += `| ${config} | ${metrics.total_time_ms || 'N/A'} | ${metrics.files_per_second || 'N/A'} | ${metrics.memory_used_mb || 'N/A'} |\n`;
+              }
+              comment += `\n`;
+            }
+            
+            // Add performance targets
+            const targets = scanning?.performance_targets_met;
+            if (targets) {
+              const met = Object.values(targets).filter(v => v).length;
+              const total = Object.keys(targets).length;
+              const percentage = total > 0 ? (met / total * 100).toFixed(1) : 0;
+              
+              comment += `### 🎯 Performance Targets\n\n`;
+              comment += `**Targets Met:** ${met}/${total} (${percentage}%)\n\n`;
+              
+              if (percentage < 80) {
+                comment += `⚠️ **Warning:** Performance targets below 80%. Consider optimization.\n\n`;
+              } else {
+                comment += `✅ Performance targets acceptable.\n\n`;
+              }
+            }
+            
+            // Add regression analysis if available
+            if (regressionInfo.includes('regression detected')) {
+              comment += `### ⚠️ Performance Regression Detected\n\n`;
+              comment += `\`\`\`\n${regressionInfo.split('\n').slice(-10).join('\n')}\`\`\`\n\n`;
+            } else if (regressionInfo.includes('No performance regressions')) {
+              comment += `### ✅ No Performance Regressions\n\n`;
+              comment += `All performance metrics are within acceptable thresholds.\n\n`;
+            }
+            
+            comment += `---\n*Performance monitoring powered by flutter_keycheck benchmark suite*`;
+            
+            // Post comment on PR
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  performance-comparison:
+    name: Performance Comparison
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: performance-benchmark
+    
+    steps:
+      - name: Download current benchmark
+        uses: actions/download-artifact@v3
+        with:
+          name: performance-benchmarks-stable-medium
+          path: current/
+
+      - name: Download baseline benchmark
+        uses: actions/download-artifact@v3
+        with:
+          name: performance-benchmarks-stable-medium
+          path: baseline/
+        continue-on-error: true
+
+      - name: Compare performance
+        run: |
+          echo "🔍 Comparing performance between baseline and current..."
+          
+          if [ -f current/benchmark_results/current_results.json ] && [ -f baseline/benchmark_results/performance_baseline.json ]; then
+            echo "Both files found, running comparison..."
+            
+            # Create comparison script
+            cat > compare_performance.py << 'EOF'
+            import json
+            import sys
+            
+            def compare_performance(baseline_file, current_file):
+                try:
+                    with open(baseline_file, 'r') as f:
+                        baseline = json.load(f)
+                    with open(current_file, 'r') as f:
+                        current = json.load(f)
+                    
+                    print("📊 Performance Comparison Report")
+                    print("=" * 50)
+                    
+                    # Compare scanning performance
+                    baseline_scanning = baseline.get('results', {}).get('scanning', {}).get('performance_results', {})
+                    current_scanning = current.get('results', {}).get('scanning', {}).get('performance_results', {})
+                    
+                    if baseline_scanning and current_scanning:
+                        print("\n🔍 Scanning Performance Changes:")
+                        for config in baseline_scanning:
+                            if config in current_scanning:
+                                baseline_time = baseline_scanning[config].get('total_time_ms', 0)
+                                current_time = current_scanning[config].get('total_time_ms', 0)
+                                
+                                if baseline_time > 0:
+                                    change = ((current_time - baseline_time) / baseline_time) * 100
+                                    symbol = "⚠️" if change > 20 else "✅" if change < -5 else "➡️"
+                                    print(f"  {config}: {symbol} {change:+.1f}% ({baseline_time}ms → {current_time}ms)")
+                    
+                    return 0
+                    
+                except Exception as e:
+                    print(f"❌ Error comparing performance: {e}")
+                    return 1
+            
+            if __name__ == "__main__":
+                exit_code = compare_performance("baseline/benchmark_results/performance_baseline.json", "current/benchmark_results/current_results.json")
+                sys.exit(exit_code)
+            EOF
+            
+            python3 compare_performance.py
+          else
+            echo "⚠️ Missing performance files for comparison"
+            ls -la current/benchmark_results/ || echo "No current results"
+            ls -la baseline/benchmark_results/ || echo "No baseline results"
+          fi
+
+  scheduled-performance-report:
+    name: Daily Performance Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    needs: performance-benchmark
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download benchmark results
+        uses: actions/download-artifact@v3
+        with:
+          name: performance-benchmarks-stable-medium
+          path: daily_results/
+
+      - name: Generate daily report
+        run: |
+          echo "📅 Generating daily performance report..."
+          
+          DATE=$(date +%Y-%m-%d)
+          
+          cat > daily_performance_report.md << EOF
+          # Daily Performance Report - $DATE
+          
+          ## Summary
+          
+          **Date:** $DATE  
+          **Project:** Flutter KeyCheck  
+          **Branch:** main  
+          **Event:** Scheduled Daily Run  
+          
+          ## Performance Metrics
+          
+          EOF
+          
+          # Add performance data if available
+          if [ -f daily_results/benchmark_results/current_results.json ]; then
+            echo "Adding performance metrics to report..."
+            
+            python3 << 'PYTHON_EOF'
+          import json
+          
+          with open('daily_results/benchmark_results/current_results.json', 'r') as f:
+              data = json.load(f)
+          
+          metadata = data.get('metadata', {})
+          results = data.get('results', {})
+          
+          print(f"**Duration:** {metadata.get('duration_ms', 'Unknown')}ms")
+          print(f"**Platform:** {metadata.get('platform', 'Unknown')}")
+          print(f"**CPU Cores:** {metadata.get('cpu_cores', 'Unknown')}")
+          print()
+          
+          # Scanning performance
+          scanning = results.get('scanning', {})
+          if scanning:
+              print("### Scanning Performance")
+              print()
+              perf_results = scanning.get('performance_results', {})
+              for config, metrics in perf_results.items():
+                  if isinstance(metrics, dict):
+                      time_ms = metrics.get('total_time_ms', 'N/A')
+                      files_sec = metrics.get('files_per_second', 'N/A')
+                      memory_mb = metrics.get('memory_used_mb', 'N/A')
+                      print(f"**{config}:** {time_ms}ms, {files_sec} files/sec, {memory_mb}MB")
+              print()
+              
+              # Performance targets
+              targets = scanning.get('performance_targets_met', {})
+              if targets:
+                  met = sum(1 for v in targets.values() if v)
+                  total = len(targets)
+                  percentage = (met / total * 100) if total > 0 else 0
+                  status = "✅" if percentage >= 80 else "⚠️"
+                  print(f"**Performance Targets:** {status} {met}/{total} ({percentage:.1f}%)")
+          PYTHON_EOF
+          
+          # Add historical trend note
+          echo "" >> daily_performance_report.md
+          echo "## Historical Trends" >> daily_performance_report.md
+          echo "" >> daily_performance_report.md
+          echo "Performance data is tracked daily to identify trends and regressions." >> daily_performance_report.md
+          echo "View detailed results in the Actions artifacts." >> daily_performance_report.md
+          
+          echo "✅ Daily report generated:"
+          cat daily_performance_report.md
+
+      - name: Upload daily report
+        uses: actions/upload-artifact@v3
+        with:
+          name: daily-performance-report-$(date +%Y-%m-%d)
+          path: daily_performance_report.md
+          retention-days: 90

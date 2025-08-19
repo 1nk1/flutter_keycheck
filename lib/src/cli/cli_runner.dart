@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:flutter_keycheck/src/commands/baseline_command.dart';
+import 'package:flutter_keycheck/src/commands/benchmark_command.dart';
 import 'package:flutter_keycheck/src/commands/diff_command.dart';
 import 'package:flutter_keycheck/src/commands/report_command.dart';
 import 'package:flutter_keycheck/src/commands/scan_command_v3.dart';
@@ -53,6 +54,7 @@ class CliRunner extends CommandRunner<int> {
     addCommand(ValidateCommandV3());
     addCommand(SyncCommand());
     addCommand(ReportCommand());
+    addCommand(BenchmarkCommand());
   }
 
   @override

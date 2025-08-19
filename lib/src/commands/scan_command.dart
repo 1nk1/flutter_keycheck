@@ -29,7 +29,7 @@ class ScanCommand extends BaseCommand {
       ..addOption(
         'report',
         help: 'Output format',
-        allowed: ['json', 'junit', 'md', 'text'],
+        allowed: ['json', 'junit', 'md', 'text', 'html'],
         defaultsTo: 'text',
       )
       ..addOption(
@@ -53,8 +53,19 @@ class ScanCommand extends BaseCommand {
   Future<int> run() async {
     try {
       final config = await loadConfig();
+      
+      // Use project-root if specified, otherwise current directory
+      String projectRoot;
+      if (argResults!.wasParsed('project-root')) {
+        final specifiedRoot = argResults!['project-root'] as String;
+        // Convert to absolute path
+        projectRoot = Directory(specifiedRoot).absolute.path;
+      } else {
+        projectRoot = Directory.current.path;
+      }
+      
       final scanner = AstScannerV3(
-        projectPath: Directory.current.path,
+        projectPath: projectRoot,
         includeTests: argResults!['include-tests'] as bool,
         includeGenerated: argResults!['include-generated'] as bool,
         gitDiffBase: argResults!.wasParsed('since')

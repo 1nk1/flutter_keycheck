@@ -1,0 +1,21 @@
+# Flutter KeyCheck Code Owners
+# These owners will be requested for review when changes are made to specific paths
+
+# Core validation logic and CLI
+/lib/src/ @1nk1
+/bin/ @1nk1
+
+# Key validation configuration and baselines
+/.flutter_keycheck.yaml @1nk1
+/baseline.json @1nk1
+
+# CI/CD workflows and automation
+/.github/workflows/ @1nk1
+
+# Documentation and examples
+/README.md @1nk1
+/CHANGELOG.md @1nk1
+/example/ @1nk1
+
+# Package configuration
+/pubspec.yaml @1nk1

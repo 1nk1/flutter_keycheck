@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flutter KeyCheck Dashboard - Demo</title>
+  <style>
+    :root {
+      --primary-color: #3b82f6;
+      --success-color: #22c55e;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --info-color: #06b6d4;
+      --secondary-color: #64748b;
+      --background-color: #f8fafc;
+      --surface-color: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --border-color: #e2e8f0;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+    
+    [data-theme="dark"] {
+      --background-color: #0f172a;
+      --surface-color: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --border-color: #334155;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: var(--text-primary);
+      background: var(--background-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    /* Navigation */
+    .dashboard-nav {
+      background: var(--surface-color);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    
+    .nav-links {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      padding: 1rem 0;
+    }
+    
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+      position: relative;
+    }
+    
+    .nav-link:hover, .nav-link.active {
+      color: var(--primary-color);
+    }
+    
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1rem;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--primary-color);
+    }
+    
+    /* Header */
+    .dashboard-header {
+      background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
+      color: white;
+      padding: 3rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .dashboard-header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+    
+    .timestamp {
+      opacity: 0.9;
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    
+    .export-controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      position: relative;
+    }
+    
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.875rem;
+    }
+    
+    .btn-primary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      backdrop-filter: blur(10px);
+    }
+    
+    .btn-primary:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background: var(--secondary-color);
+      color: white;
+    }
+    
+    .btn-outline {
+      background: transparent;
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Main Content */
+    .dashboard-main {
+      padding: 2rem 0;
+    }
+    
+    .dashboard-section {
+      background: var(--surface-color);
+      margin-bottom: 2rem;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+    }
+    
+    .dashboard-section h2 {
+      color: var(--text-primary);
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+    
+    /* Overview Grid */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .overview-card {
+      background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .overview-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .overview-card.success {
+      background: linear-gradient(135deg, var(--success-color) 0%, #16a34a 100%);
+    }
+    
+    .overview-card.warning {
+      background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
+    }
+    
+    .overview-card.info {
+      background: linear-gradient(135deg, var(--info-color) 0%, #0891b2 100%);
+    }
+    
+    .card-icon {
+      font-size: 2.5rem;
+      opacity: 0.9;
+      position: relative;
+    }
+    
+    .card-content {
+      flex: 1;
+      position: relative;
+    }
+    
+    .card-value {
+      font-size: 2.25rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    
+    .card-label {
+      font-size: 0.875rem;
+      opacity: 0.9;
+      font-weight: 500;
+    }
+    
+    /* Key Distribution */
+    .key-distribution {
+      background: var(--surface-color);
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-color);
+    }
+    
+    .key-distribution h3 {
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+    
+    .distribution-chart {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    
+    .distribution-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+    
+    .legend-color {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 0.25rem;
+    }
+    
+    /* Footer */
+    .dashboard-footer {
+      background: var(--surface-color);
+      border-top: 1px solid var(--border-color);
+      padding: 2rem 0;
+      margin-top: 3rem;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+    
+    /* Demo message */
+    .demo-message {
+      background: var(--warning-color);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-weight: 600;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 1rem;
+      }
+      
+      .dashboard-header h1 {
+        font-size: 2rem;
+      }
+      
+      .nav-links {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .overview-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-message">
+    🚀 Flutter KeyCheck Dashboard Demo - This shows the new comprehensive reporting features
+  </div>
+
+  <nav class="dashboard-nav">
+    <div class="container">
+      <ul class="nav-links">
+        <li><a href="#overview" class="nav-link active">Overview</a></li>
+        <li><a href="#metrics" class="nav-link">Metrics</a></li>
+        <li><a href="#coverage" class="nav-link">Coverage</a></li>
+        <li><a href="#performance" class="nav-link">Performance</a></li>
+        <li><a href="#patterns" class="nav-link">Patterns</a></li>
+        <li><a href="#files" class="nav-link">Files</a></li>
+        <li><a href="#trends" class="nav-link">Trends</a></li>
+        <li><a href="#issues" class="nav-link">Issues</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="dashboard-header">
+    <div class="container">
+      <h1>🔍 Flutter KeyCheck Dashboard</h1>
+      <div class="timestamp">Generated: 2024-01-15T10:30:00Z</div>
+      <div class="export-controls">
+        <button onclick="exportToPDF()" class="btn btn-primary">📄 Export PDF</button>
+        <button onclick="exportToCSV()" class="btn btn-secondary">📊 Export CSV</button>
+        <button onclick="toggleTheme()" class="btn btn-outline">🌙 Dark Mode</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+    <div class="container">
+      <section id="overview" class="dashboard-section">
+        <h2>📊 Overview</h2>
+        <div class="overview-grid">
+          <div class="overview-card primary">
+            <div class="card-icon">🔑</div>
+            <div class="card-content">
+              <div class="card-value">847</div>
+              <div class="card-label">Total Keys Found</div>
+            </div>
+          </div>
+          
+          <div class="overview-card success">
+            <div class="card-icon">📁</div>
+            <div class="card-content">
+              <div class="card-value">23</div>
+              <div class="card-label">Files Scanned</div>
+            </div>
+          </div>
+          
+          <div class="overview-card info">
+            <div class="card-icon">📊</div>
+            <div class="card-content">
+              <div class="card-value">94.2%</div>
+              <div class="card-label">Coverage</div>
+            </div>
+          </div>
+          
+          <div class="overview-card warning">
+            <div class="card-icon">⚡</div>
+            <div class="card-content">
+              <div class="card-value">1,250ms</div>
+              <div class="card-label">Scan Duration</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="key-distribution">
+          <h3>Key Type Distribution</h3>
+          <div class="distribution-chart">
+            <canvas id="keyTypeChart" width="400" height="200"></canvas>
+          </div>
+          <div class="distribution-legend">
+            <div class="legend-item"><span class="legend-color" style="background-color: #3b82f6"></span>ValueKey: 342</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: #22c55e"></span>GlobalKey: 156</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: #f59e0b"></span>ObjectKey: 89</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: #ef4444"></span>Key: 260</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="metrics" class="dashboard-section">
+        <h2>📈 Interactive Metrics</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+          Interactive charts and detailed performance metrics would be displayed here with real-time data visualization.
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          <div style="background: var(--background-color); padding: 1rem; border-radius: 0.5rem; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--primary-color);">89%</div>
+            <div style="font-size: 0.875rem; color: var(--text-secondary);">File Coverage</div>
+          </div>
+          <div style="background: var(--background-color); padding: 1rem; border-radius: 0.5rem; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--success-color);">95%</div>
+            <div style="font-size: 0.875rem; color: var(--text-secondary);">Widget Coverage</div>
+          </div>
+          <div style="background: var(--background-color); padding: 1rem; border-radius: 0.5rem; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--warning-color);">78%</div>
+            <div style="font-size: 0.875rem; color: var(--text-secondary);">Handler Coverage</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="coverage" class="dashboard-section">
+        <h2>🎯 Key Coverage Analysis</h2>
+        <p style="color: var(--text-secondary);">
+          Detailed coverage analysis with progress bars, targets, and recommendations for improvement.
+        </p>
+      </section>
+
+      <section id="performance" class="dashboard-section">
+        <h2>⚡ Performance Metrics</h2>
+        <p style="color: var(--text-secondary);">
+          Comprehensive performance dashboard with scan times, throughput metrics, and optimization recommendations.
+        </p>
+      </section>
+
+      <section id="patterns" class="dashboard-section">
+        <h2>🔑 Key Usage Patterns</h2>
+        <p style="color: var(--text-secondary);">
+          Analysis of key types, sources, and usage patterns throughout your Flutter application.
+        </p>
+      </section>
+
+      <section id="files" class="dashboard-section">
+        <h2>📁 File-by-File Analysis</h2>
+        <p style="color: var(--text-secondary);">
+          Interactive file browser with search, filtering, and detailed analysis for each file.
+        </p>
+      </section>
+
+      <section id="trends" class="dashboard-section">
+        <h2>📊 Historical Trends</h2>
+        <p style="color: var(--text-secondary);">
+          Track key usage trends, coverage improvements, and performance changes over time.
+        </p>
+      </section>
+
+      <section id="issues" class="dashboard-section">
+        <h2>⚠️ Issues & Recommendations</h2>
+        <p style="color: var(--text-secondary);">
+          Intelligent issue detection with actionable recommendations for improving your key management.
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="dashboard-footer">
+    <div class="container">
+      <p>Generated by Flutter KeyCheck v3.0.0 | Dashboard v2.0</p>
+    </div>
+  </footer>
+
+  <script>
+    // Theme Management
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('dashboard-theme', newTheme);
+    }
+
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('dashboard-theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    // Export Functions
+    function exportToPDF() {
+      alert('PDF export functionality - would generate a print-optimized version');
+      window.print();
+    }
+
+    function exportToCSV() {
+      const csvData = [
+        ['Flutter KeyCheck Report'],
+        ['Metric', 'Value'],
+        ['Total Keys', '847'],
+        ['Files Scanned', '23'],
+        ['Coverage', '94.2%'],
+        ['Scan Duration', '1,250ms']
+      ];
+      
+      const csvString = csvData.map(row => 
+        row.map(cell => '"' + String(cell).replace(/"/g, '""') + '"').join(',')
+      ).join('\n');
+      
+      const blob = new Blob([csvString], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'flutter_keycheck_demo_' + new Date().toISOString().split('T')[0] + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }
+
+    // Navigation
+    function initNavigation() {
+      const navLinks = document.querySelectorAll('.nav-link');
+      
+      navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetId = link.getAttribute('href').substring(1);
+          const targetElement = document.getElementById(targetId);
+          
+          if (targetElement) {
+            targetElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+            
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+          }
+        });
+      });
+    }
+
+    // Simple chart rendering
+    function renderChart() {
+      const canvas = document.getElementById('keyTypeChart');
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = Math.min(centerX, centerY) - 20;
+      
+      const data = {
+        'ValueKey': 342,
+        'GlobalKey': 156,
+        'ObjectKey': 89,
+        'Key': 260
+      };
+      
+      const total = Object.values(data).reduce((sum, val) => sum + val, 0);
+      let currentAngle = -Math.PI / 2;
+      
+      const colors = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444'];
+      let colorIndex = 0;
+      
+      Object.entries(data).forEach(([key, value]) => {
+        const sliceAngle = (value / total) * 2 * Math.PI;
+        
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+        ctx.arc(centerX, centerY, radius * 0.6, currentAngle + sliceAngle, currentAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = colors[colorIndex % colors.length];
+        ctx.fill();
+        
+        currentAngle += sliceAngle;
+        colorIndex++;
+      });
+      
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(total, centerX, centerY - 5);
+      ctx.font = '12px Arial';
+      ctx.fillText('Total Keys', centerX, centerY + 10);
+    }
+
+    // Initialize dashboard
+    function initDashboard() {
+      loadTheme();
+      initNavigation();
+      renderChart();
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initDashboard);
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'p':
+            e.preventDefault();
+            exportToPDF();
+            break;
+          case 'e':
+            e.preventDefault();
+            exportToCSV();
+            break;
+          case 'd':
+            e.preventDefault();
+            toggleTheme();
+            break;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

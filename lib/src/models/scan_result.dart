@@ -96,6 +96,15 @@ class ScanMetrics {
   List<ScanError> errors = [];
   bool incrementalScan = false;
   String? incrementalBase;
+  Map<String, dynamic>? dependencyTree;
+  
+  // Performance optimization metrics
+  int parallelFilesProcessed = 0;
+  int cacheHits = 0;
+  int cacheMisses = 0;
+  int largeFilesProcessed = 0;
+  double avgFileSizeKB = 0;
+  Duration totalScanTime = Duration.zero;
 
   // Default constructor
   ScanMetrics();
@@ -113,6 +122,16 @@ class ScanMetrics {
       'errors': errors.map((e) => e.toMap()).toList(),
       'incremental_scan': incrementalScan,
       'incremental_base': incrementalBase,
+      'parallel_files_processed': parallelFilesProcessed,
+      'cache_hits': cacheHits,
+      'cache_misses': cacheMisses,
+      'cache_hit_rate': cacheHits + cacheMisses > 0 
+          ? (cacheHits / (cacheHits + cacheMisses) * 100).toStringAsFixed(1) + '%'
+          : '0%',
+      'large_files_processed': largeFilesProcessed,
+      'avg_file_size_kb': avgFileSizeKB.toStringAsFixed(1),
+      'total_scan_time_ms': totalScanTime.inMilliseconds,
+      if (dependencyTree != null) 'dependency_tree': dependencyTree,
     };
   }
 
@@ -131,6 +150,13 @@ class ScanMetrics {
     );
     metrics.incrementalScan = map['incremental_scan'] ?? false;
     metrics.incrementalBase = map['incremental_base'];
+    metrics.parallelFilesProcessed = map['parallel_files_processed'] ?? 0;
+    metrics.cacheHits = map['cache_hits'] ?? 0;
+    metrics.cacheMisses = map['cache_misses'] ?? 0;
+    metrics.largeFilesProcessed = map['large_files_processed'] ?? 0;
+    metrics.avgFileSizeKB = (map['avg_file_size_kb'] ?? 0).toDouble();
+    metrics.totalScanTime = Duration(milliseconds: map['total_scan_time_ms'] ?? 0);
+    metrics.dependencyTree = map['dependency_tree'];
     return metrics;
   }
 }

@@ -7,15 +7,29 @@ class ValidationResult {
   final List<String> warnings;
   final DateTime timestamp;
   final bool hasViolations;
+  
+  // Direct access properties for backward compatibility
+  final List<KeyInfo> lostKeys;
+  final List<RenamedKey> renamedKeys;
+  final List<KeyInfo> extraKeys;
+  final List<KeyInfo> deprecatedInUse;
+  final List<KeyInfo> removedInUse;
 
   ValidationResult({
     required this.summary,
     required this.violations,
     required this.warnings,
     required this.timestamp,
+    this.lostKeys = const [],
+    this.renamedKeys = const [],
+    this.extraKeys = const [],
+    this.deprecatedInUse = const [],
+    this.removedInUse = const [],
   }) : hasViolations = violations.isNotEmpty;
 
   bool get passed => !hasViolations;
+  int get totalViolations => violations.length;
+  double get driftPercentage => summary.driftPercentage;
 
   Map<String, dynamic> toMap() {
     return {
@@ -127,6 +141,35 @@ class Violation {
       message: map['message'],
       remediation: map['remediation'],
       policy: map['policy'],
+    );
+  }
+}
+
+/// Renamed key information
+class RenamedKey {
+  final String oldId;
+  final String newId;
+  final double confidence;
+  
+  RenamedKey({
+    required this.oldId,
+    required this.newId,
+    this.confidence = 1.0,
+  });
+  
+  Map<String, dynamic> toMap() {
+    return {
+      'old_id': oldId,
+      'new_id': newId,
+      'confidence': confidence,
+    };
+  }
+  
+  factory RenamedKey.fromMap(Map<String, dynamic> map) {
+    return RenamedKey(
+      oldId: map['old_id'],
+      newId: map['new_id'],
+      confidence: (map['confidence'] ?? 1.0).toDouble(),
     );
   }
 }

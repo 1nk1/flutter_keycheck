@@ -1,0 +1,53 @@
+# Local GitLab CI Testing Configuration
+# Use with gitlab-ci-local: npm install -g gitlab-ci-local
+# Run: gitlab-ci-local --file .gitlabci-local.yml
+
+# Simplified pipeline for local development testing
+image: dart:3.9.0
+
+variables:
+  PUB_CACHE: ".pub-cache"
+  REPORTS_DIR: "reports"
+  CI_MODE: "true"
+
+cache:
+  key: local-dev
+  paths:
+    - .dart_tool/
+    - $PUB_CACHE/
+
+before_script:
+  - dart --version
+  - dart pub get
+  - mkdir -p $REPORTS_DIR
+
+# Essential jobs for local validation
+lint:
+  stage: test
+  script:
+    - dart analyze --fatal-infos --fatal-warnings
+    - dart format --output=none --set-exit-if-changed .
+
+test:
+  stage: test
+  script:
+    - dart test --concurrency=2
+  coverage: '/Lines covered: \d+\.\d+%/'
+
+validate:
+  stage: test
+  script:
+    - dart pub global activate --source path .
+    - export PATH="$PATH:$PUB_CACHE/bin"
+    - flutter_keycheck scan --scope workspace-only
+    - flutter_keycheck validate --fail-on-package-missing
+
+build:
+  stage: build
+  script:
+    - dart compile exe bin/flutter_keycheck.dart -o flutter_keycheck_local
+  artifacts:
+    paths:
+      - flutter_keycheck_local
+    expire_in: 1 hour
+  when: manual

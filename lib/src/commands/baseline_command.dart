@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -23,9 +24,25 @@ class BaselineCommand extends BaseCommandV3 {
         'scan',
         help: 'Path to scan snapshot file',
       )
+      ..addOption(
+        'output',
+        abbr: 'o',
+        help: 'Output file path for baseline',
+        defaultsTo: 'baseline.json',
+      )
       ..addFlag(
         'auto-tags',
         help: 'Automatically assign tags based on patterns',
+        defaultsTo: false,
+      )
+      ..addFlag(
+        'include-deps',
+        help: 'Include keys from dependencies in baseline',
+        defaultsTo: true,
+      )
+      ..addFlag(
+        'exclude-deps',
+        help: 'Exclude keys from dependencies in baseline',
         defaultsTo: false,
       );
 
@@ -104,16 +121,59 @@ class BaselineCommand extends BaseCommandV3 {
       _applyAutoTags(scanResult, config);
     }
 
+    // Generate enhanced baseline structure
+    final excludeDeps = argResults!.command!['exclude-deps'] as bool? ?? false;
+    final baselineData = _generateBaselineJson(
+      scanResult,
+      projectRoot: argResults!['project-root'] as String? ?? Directory.current.path,
+      includeDeps: !excludeDeps,
+    );
+
     // Save baseline to registry
     final registry = await getRegistry(config);
     await registry.saveBaseline(scanResult);
 
     logInfo('✅ Baseline created with ${scanResult.keyUsages.length} keys');
 
-    // Also save local copy
-    final baselineFile = File(path.join(outDir.path, 'baseline.json'));
-    await baselineFile.writeAsString(scanResult.toJson());
-    logVerbose('Local copy saved to: ${baselineFile.path}');
+    // Save enhanced baseline format
+    final outputPath = argResults!.command!['output'] as String? ?? 'baseline.json';
+    final baselineFile = File(
+      path.isAbsolute(outputPath) 
+        ? outputPath
+        : path.join(outDir.path, outputPath)
+    );
+    
+    // Ensure directory exists
+    await baselineFile.parent.create(recursive: true);
+    
+    // Write formatted JSON
+    final encoder = const JsonEncoder.withIndent('  ');
+    await baselineFile.writeAsString(encoder.convert(baselineData));
+    logInfo('📄 Baseline saved to: ${baselineFile.path}');
+    
+    // Log statistics
+    final workspaceKeys = scanResult.keyUsages.values
+        .where((u) => u.source == 'workspace')
+        .length;
+    final packageKeys = scanResult.keyUsages.values
+        .where((u) => u.source == 'package')
+        .length;
+    
+    logInfo('  • Workspace keys: $workspaceKeys');
+    if (packageKeys > 0) {
+      logInfo('  • Package keys: $packageKeys');
+    }
+    
+    // Count dependencies scanned
+    final uniquePackages = <String>{};
+    for (final usage in scanResult.keyUsages.values) {
+      if (usage.package != null) {
+        uniquePackages.add(usage.package!.split('@').first);
+      }
+    }
+    if (uniquePackages.isNotEmpty) {
+      logInfo('  • Dependencies scanned: ${uniquePackages.length}');
+    }
 
     return ExitCode.ok;
   }
@@ -215,5 +275,65 @@ class BaselineCommand extends BaseCommandV3 {
     }
 
     return merged;
+  }
+
+  Map<String, dynamic> _generateBaselineJson(
+    ScanResult scanResult, {
+    required String projectRoot,
+    bool includeDeps = true,
+  }) {
+    // Count dependencies scanned
+    final uniquePackages = <String>{};
+    for (final usage in scanResult.keyUsages.values) {
+      if (usage.package != null) {
+        uniquePackages.add(usage.package!.split('@').first);
+      }
+    }
+
+    // Build keys array
+    final keys = <Map<String, dynamic>>[];
+    for (final entry in scanResult.keyUsages.entries) {
+      final keyId = entry.key;
+      final usage = entry.value;
+      
+      // Skip dependency keys if exclude-deps is set
+      if (!includeDeps && usage.source == 'package') {
+        continue;
+      }
+
+      for (final location in usage.locations) {
+        keys.add({
+          'key': keyId,
+          'type': _extractKeyType(location.context),
+          'file': location.file,
+          'line': location.line,
+          'package': usage.package ?? 'my_app',
+          'dependency_level': usage.source == 'package' ? 'transitive' : 'direct',
+          if (usage.tags.isNotEmpty) 'tags': usage.tags.toList(),
+          if (usage.status != 'active') 'status': usage.status,
+        });
+      }
+    }
+
+    return {
+      'metadata': {
+        'created_at': DateTime.now().toUtc().toIso8601String(),
+        'project_root': projectRoot,
+        'total_keys': keys.length,
+        'dependencies_scanned': uniquePackages.length,
+        'schema_version': '2.0',
+        'flutter_keycheck_version': '3.0.0',
+      },
+      'keys': keys,
+    };
+  }
+
+  String _extractKeyType(String context) {
+    // Extract key type from context (e.g., "Key('...')" -> "Key", "ValueKey('...')" -> "ValueKey")
+    if (context.contains('ValueKey')) return 'ValueKey';
+    if (context.contains('ObjectKey')) return 'ObjectKey';
+    if (context.contains('UniqueKey')) return 'UniqueKey';
+    if (context.contains('GlobalKey')) return 'GlobalKey';
+    return 'Key';
   }
 }

@@ -8,6 +8,7 @@
 build/
 
 .claude
+.claude.local.md
 
 # IDEs
 .idea/

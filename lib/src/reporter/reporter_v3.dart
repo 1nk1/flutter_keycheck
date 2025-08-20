@@ -5098,7 +5098,6 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     return 'Other';
   }
 
-
   // ignore: unused_element
 
   // ignore: unused_element
@@ -5244,7 +5243,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     if (efficiency > 80) return 'good';
     if (efficiency > 70) return 'average';
     return 'poor';
-  // ignore: unused_element
+    // ignore: unused_element
   }
   // ignore: unused_element
   // ignore: unused_element
@@ -5329,9 +5328,9 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
       organizationScore -= 10;
     }
 
-  // ignore: unused_element
+    // ignore: unused_element
     return organizationScore.clamp(0, 100);
-  // ignore: unused_element
+    // ignore: unused_element
   }
   // ignore: unused_element
   // ignore: unused_element
@@ -5368,11 +5367,11 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
       case 'Lists':
         return '#ef4444';
       default:
-  // ignore: unused_element
+        // ignore: unused_element
         return '#6b7280';
-  // ignore: unused_element
+      // ignore: unused_element
     }
-  // ignore: unused_element
+    // ignore: unused_element
   }
   // ignore: unused_element
 

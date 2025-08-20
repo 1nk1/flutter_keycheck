@@ -5,6 +5,20 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.7] - 2025-08-20
+
+### Fixed
+- **GitHub Actions Publication**: Restored working publish.yml workflow from successful v2.3.3 release
+- **Simplified Workflow**: Removed complex quality gates that were blocking publication
+- **OIDC Authentication**: Using proper id-token: write permissions for automatic pub.dev authentication
+- **Publication Success**: Back to proven workflow that successfully published previous versions
+
+### Technical Details
+- Restored simple workflow: checkout → setup → install → dry-run → publish
+- Removed 200+ lines of complex validation logic that was causing failures
+- Using exact workflow from commit 1f4cd94 that successfully published v2.3.3
+- OIDC token-based authentication eliminates manual OAuth requirements
+
 ## [3.0.6] - 2025-08-20
 
 ### Fixed

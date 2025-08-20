@@ -5,7 +5,7 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.9] - 2025-08-20
+## 3.0.9 - 2025-08-20
 
 ### Fixed
 - **GitHub Actions Workflows**: Added essential CI and publish workflows
@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Essential 2-workflow setup: ci.yml for testing, publish.yml for releases
 - Simplified from complex multi-workflow setup to focused automation
 
-## [3.0.8] - 2025-08-20
+## 3.0.8 - 2025-08-20
 
 ### Changed
 - **Repository Cleanup**: Removed all unnecessary GitHub Actions workflows

@@ -1,0 +1,154 @@
+# Flutter KeyCheck GitLab CI Template
+# 
+# Usage:
+# 1. Add key registry as Git submodule:
+#    git submodule add git@gitlab.com:org/key-registry.git tools/key-registry
+# 2. Include this template in your .gitlab-ci.yml:
+#    include:
+#      - project: 'org/flutter-keycheck-templates'
+#        file: '/gitlab-ci-template.yml'
+# 3. Override variables as needed
+
+stages:
+  - validate
+
+default:
+  image: dart:stable
+  cache:
+    key: "pub-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .pub-cache/
+      - .dart_tool/
+
+variables:
+  PUB_CACHE: "$CI_PROJECT_DIR/.pub-cache"
+  KEY_REGISTRY_REPO: "${KEY_REGISTRY_REPO:-git@gitlab.com:org/key-registry.git}"
+  KEY_REGISTRY_PATH: "${KEY_REGISTRY_PATH:-key-registry.yaml}"
+  KEYCHECK_VERSION: "latest"
+
+# Main validation job
+validate:keycheck:
+  stage: validate
+  before_script:
+    - dart --version
+    - dart pub global activate flutter_keycheck${KEYCHECK_VERSION:+:$KEYCHECK_VERSION}
+    # Fetch registry submodule or clone directly
+    - |
+      if [ -f .gitmodules ]; then
+        git submodule update --init --recursive
+      else
+        git clone --depth 1 "$KEY_REGISTRY_REPO" .flutter_keycheck/registry
+      fi
+  script:
+    # Sync with central registry
+    - flutter_keycheck sync --registry git --repo "$KEY_REGISTRY_REPO" --path "$KEY_REGISTRY_PATH"
+    
+    # Scan current workspace
+    - flutter_keycheck scan --packages resolve --report json --out-dir reports
+    
+    # Validate against policies
+    - |
+      flutter_keycheck validate \
+        --strict \
+        --fail-on-lost \
+        --report json,junit,md \
+        --out-dir reports \
+        || EXIT_CODE=$?
+    
+    # Generate MR comment if in merge request
+    - |
+      if [ -n "$CI_MERGE_REQUEST_IID" ] && [ -f reports/validation-report.md ]; then
+        echo "## 🔑 Key Validation Report" > mr-comment.md
+        cat reports/validation-report.md >> mr-comment.md
+        # Post comment via GitLab API (requires API token)
+        if [ -n "$GITLAB_API_TOKEN" ]; then
+          curl -X POST \
+            -H "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"body\": \"$(cat mr-comment.md | jq -Rs .)\"}" \
+            "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes"
+        fi
+      fi
+    
+    # Exit with validation result
+    - exit ${EXIT_CODE:-0}
+  artifacts:
+    when: always
+    paths:
+      - reports/
+    reports:
+      junit: reports/validation-report.xml
+    expire_in: 1 week
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
+
+# Manual job to update baseline
+baseline:update:
+  stage: validate
+  when: manual
+  before_script:
+    - dart --version
+    - dart pub global activate flutter_keycheck${KEYCHECK_VERSION:+:$KEYCHECK_VERSION}
+    - git config --global user.email "ci@example.com"
+    - git config --global user.name "GitLab CI"
+  script:
+    # Clone registry with write access
+    - git clone "$KEY_REGISTRY_REPO" registry-update
+    - cd registry-update
+    
+    # Update baseline from current scan
+    - flutter_keycheck scan --packages resolve --report json --out-dir ../reports
+    - flutter_keycheck baseline update --scan ../reports/key-snapshot.json
+    
+    # Commit and push if changed
+    - |
+      if [ -n "$(git status --porcelain)" ]; then
+        git add .
+        git commit -m "Update key baseline from $CI_PROJECT_NAME [skip ci]"
+        git push origin main
+        echo "✅ Baseline updated successfully"
+      else
+        echo "ℹ️  No changes to baseline"
+      fi
+  artifacts:
+    paths:
+      - reports/
+    expire_in: 1 day
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: manual
+
+# Monorepo support - validate each package
+.validate_package_template:
+  extends: validate:keycheck
+  parallel:
+    matrix:
+      - PACKAGE: ["app", "packages/feature_auth", "packages/feature_profile", "packages/shared"]
+  script:
+    - cd $PACKAGE
+    - flutter_keycheck sync --registry git --repo "$KEY_REGISTRY_REPO"
+    - flutter_keycheck validate --strict --fail-on-lost --report json,junit --out-dir reports
+  artifacts:
+    paths:
+      - $PACKAGE/reports/
+
+# Schedule job to check for drift
+check:drift:
+  stage: validate
+  only:
+    - schedules
+  script:
+    - flutter_keycheck sync --registry git --repo "$KEY_REGISTRY_REPO"
+    - flutter_keycheck diff --baseline registry --current scan
+    - |
+      DRIFT=$(flutter_keycheck report --format json | jq '.summary.drift_percentage')
+      if (( $(echo "$DRIFT > 10" | bc -l) )); then
+        echo "⚠️  High drift detected: ${DRIFT}%"
+        exit 1
+      fi
+  artifacts:
+    paths:
+      - reports/
+    expire_in: 1 week

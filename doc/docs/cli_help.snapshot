@@ -1,0 +1,20 @@
+flutter_keycheck - Flutter automation key validator v3.0.0-rc.1
+
+Usage: flutter_keycheck <command> [arguments]
+
+Global options:
+-h, --help       Print this usage information.
+-V, --version    Show version information
+    --verbose    Enable verbose output
+    --config     Path to configuration file
+                 (defaults to ".flutter_keycheck.yaml")
+
+Available commands:
+  scan        Build current snapshot of keys
+  baseline    Create or update baseline
+  diff        Compare snapshots
+  validate    CI gate enforcement (alias: ci-validate)
+  sync        Pull/push from external registry
+  report      Generate reports
+
+Run "flutter_keycheck help <command>" for more information about a command.

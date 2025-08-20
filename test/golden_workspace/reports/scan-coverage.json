@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "version": "1.0.0",
+  "timestamp": "2025-08-16T23:51:54.751572",
+  "summary": {
+    "totalKeys": 14,
+    "criticalKeys": 4,
+    "filesScanned": 1,
+    "scanDuration": 100
+  },
+  "keys": [{"key":"app_root","file":"lib/main.dart","line":11,"column":20,"type":"ValueKey","critical":false},{"key":"home_scaffold","file":"lib/main.dart","line":17,"column":20,"type":"ValueKey","critical":false},{"key":"home_appbar","file":"lib/main.dart","line":22,"column":12,"type":"ValueKey","critical":false},{"key":"login_button","file":"lib/main.dart","line":26,"column":12,"type":"ValueKey","critical":true},{"key":"settings_button","file":"lib/main.dart","line":30,"column":12,"type":"ValueKey","critical":false},{"key":"login_scaffold","file":"lib/main.dart","line":38,"column":20,"type":"ValueKey","critical":false},{"key":"email_field","file":"lib/main.dart","line":43,"column":12,"type":"ValueKey","critical":true},{"key":"password_field","file":"lib/main.dart","line":47,"column":12,"type":"ValueKey","critical":true},{"key":"submit_button","file":"lib/main.dart","line":51,"column":12,"type":"ValueKey","critical":true},{"key":"forgot_password_link","file":"lib/main.dart","line":55,"column":12,"type":"ValueKey","critical":false},{"key":"settings_scaffold","file":"lib/main.dart","line":63,"column":20,"type":"ValueKey","critical":false},{"key":"dark_mode_switch","file":"lib/main.dart","line":67,"column":12,"type":"ValueKey","critical":false},{"key":"profile_tile","file":"lib/main.dart","line":71,"column":12,"type":"ValueKey","critical":false},{"key":"logout_tile","file":"lib/main.dart","line":75,"column":12,"type":"ValueKey","critical":false}],
+  "metadata": {
+    "projectPath": "test/golden_workspace",
+    "configFile": null,
+    "scanMode": "full"
+  }
+}

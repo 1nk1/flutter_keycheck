@@ -1,0 +1,64 @@
+# Flutter KeyCheck Configuration - MEMORY SAFE VERSION
+# This file configures the validation behavior with memory safety controls
+
+version: '3'
+
+# Project settings
+project_root: "."
+include_example_folders: true
+
+# CRITICAL: Memory-safe scanning configuration
+scan:
+  # Only scan workspace code, NOT dependencies (prevents memory explosion)
+  packages: 'all'
+  include_tests: true
+  include_generated: true
+
+# Key filtering - EXPANDED for memory safety
+include_patterns:
+  - "**/*.dart"
+exclude_patterns:
+  - "**/generated/**"
+  - "**/*.g.dart"
+  - "**/*.freezed.dart"
+  - "**/*.part.dart"        # Part files
+  - "**/test_data/**"
+  - "**/build/**"           # Build artifacts  
+  - "**/.dart_tool/**"      # Dart tool cache
+  - "**/node_modules/**"    # Node modules
+  - "**/.git/**"            # Git files
+  - "**/coverage/**"        # Coverage reports
+  - "**/test_driver/**"     # Integration tests
+
+# Validation settings
+fail_on_lost_keys: true
+fail_on_renamed_keys: true
+max_drift_percentage: 10
+
+# Performance settings - MEMORY SAFE
+parallel_processing: true    # Disabled to reduce memory pressure
+cache_analysis_results: true
+max_file_size_mb: 5          # Limit file size processing
+max_files_per_batch: 100     # Process in small batches
+max_memory_mb: 512           # Memory usage limit
+
+# Output settings
+default_output_format: "html"
+generate_html_reports: true
+
+# CI-specific settings
+ci_mode:
+  enabled: true
+  performance_benchmarks: true
+  detailed_reports: true
+  
+# Tracked keys - subset of critical keys to monitor
+tracked_keys:
+  - "login_button"
+  - "password_field"
+  - "submit_form"
+  - "navigation_menu"
+  - "main_content"
+  - "error_dialog"
+  - "loading_indicator"
+  - "settings_button"

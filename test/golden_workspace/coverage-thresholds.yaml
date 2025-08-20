@@ -1,0 +1,12 @@
+version: 1
+thresholds:
+  file_coverage: 0.8
+  widget_coverage: 0.7
+  handler_coverage: 0.6
+  parse_success_rate: 0.9
+fail_on_lost: true
+fail_on_extra: false
+protected_tags:
+  - critical
+  - required
+max_drift: 10

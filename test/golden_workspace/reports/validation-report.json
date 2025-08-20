@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "timestamp": "2025-08-17T22:11:39.644341",
+  "summary": {
+    "total_keys": 14,
+    "lost": 0,
+    "added": 0,
+    "renamed": 0,
+    "deprecated_in_use": 0,
+    "drift_percentage": 0.0,
+    "scanned_packages": [
+      "app_main"
+    ]
+  },
+  "violations": [],
+  "warnings": [],
+  "has_violations": false
+}

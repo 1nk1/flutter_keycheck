@@ -1,0 +1,4 @@
+keys:
+  - id: test_key
+    package: main
+    tags: [core]

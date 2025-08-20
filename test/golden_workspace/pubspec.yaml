@@ -1,0 +1,14 @@
+name: golden_workspace
+description: Golden workspace for testing flutter_keycheck v3
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  # No dependencies needed for testing the CLI tool
+
+dev_dependencies:
+  test: ^1.24.9
+  path: any

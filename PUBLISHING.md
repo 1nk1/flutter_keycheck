@@ -25,6 +25,28 @@ This document contains step-by-step instructions for publishing the `flutter_key
 - [ ] Example project works correctly
 - [ ] CLI tool works as expected: `dart run bin/flutter_keycheck.dart --keys example/expected_keys.yaml`
 
+### ✅ Golden Baseline & Performance Gates
+
+- [ ] Golden snapshot test passes: `dart test test/golden_workspace/snapshot_test.dart`
+- [ ] Performance regression check passes: `dart test test/golden_workspace/performance_test.dart`
+- [ ] Schema version is consistent across baselines
+- [ ] All critical keys are present in golden baseline
+- [ ] No performance regressions >20% from baseline
+
+**Note:** If legitimate baseline updates are needed:
+```bash
+# Update baselines with justification
+dart run tool/update_baseline.dart
+
+# Verify changes
+git diff test/golden_workspace/
+
+# Commit with detailed rationale
+git commit -m "chore(baseline): update golden snapshot and perf thresholds
+  - Reason: [explain why]
+  - Impact: [describe impact]"
+```
+
 ## 🔧 Publishing Steps
 
 ### 1. Final Validation

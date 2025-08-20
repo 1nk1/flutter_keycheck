@@ -10,6 +10,7 @@
 /// - Support configuration files (.flutter_keycheck.yaml)
 library;
 
-export 'src/checker.dart';
-export 'src/cli.dart';
-export 'src/config.dart';
+// Legacy exports - v3 uses command system instead
+// export 'src/checker.dart';
+// export 'src/cli.dart';
+// export 'src/config.dart';

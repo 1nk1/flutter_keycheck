@@ -1,0 +1,23 @@
+routes:
+  - agent: flutter-keycheck-senior
+    when:
+      any:
+        - "flutter_keycheck"
+        - "ValueKey"
+        - "GlobalKey"
+        - "workflow"
+        - "actions"
+        - "pipeline"
+        - "rc"
+        - "ga"
+        - "release"
+        - "pana"
+        - "pub publish"
+        - "cli snapshot"
+        - "baseline"
+        - "regression"
+        - "detector"
+        - "plugin"
+        - "MIGRATION.md"
+        - "CHANGELOG"
+        - "pubspec.yaml"

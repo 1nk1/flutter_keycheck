@@ -1,0 +1,6 @@
+- [ ] Only ci.yml, pr-validation.yml, publish.yml
+- [ ] actions pinned, cache enabled
+- [ ] matrix: stable (+beta)
+- [ ] global activate + smoke + help drift
+- [ ] pana job (non-blocking)
+- [ ] required checks enforced

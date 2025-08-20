@@ -1,0 +1,39 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "if [[ \"$( jq -r .tool_input.file_path )\" =~ \\.(ts|tsx|js|jsx)$ ]]; then prettier --write \"$( jq -r .tool_input.file_path )\"; fi",
+            "type": "command"
+          },
+          {
+            "command": "if [[ \"$( jq -r .tool_input.file_path )\" =~ \\.go$ ]]; then gofmt -w \"$( jq -r .tool_input.file_path )\"; fi",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit|MultiEdit"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "input=$(cat); session_id=$(echo \"$input\" | jq -r '.session_id // \"unknown\"'); model_name=$(echo \"$input\" | jq -r '.model.display_name // \"Claude\"'); cwd=$(echo \"$input\" | jq -r '.workspace.current_dir // \"/\"'); project_dir=$(echo \"$input\" | jq -r '.workspace.project_dir // \"\"'); output_style=$(echo \"$input\" | jq -r '.output_style.name // \"default\"'); os_icon=\"\"; current_time=$(date '+%H:%M:%S'); if [[ -n \"$project_dir\" && \"$cwd\" == \"$project_dir\"* ]]; then rel_path=${cwd#$project_dir}; if [[ -z \"$rel_path\" ]]; then dir_display=\"$(basename \"$project_dir\")\"; else dir_display=\"$(basename \"$project_dir\")${rel_path}\"; fi; else if [[ \"$cwd\" == \"/\" ]]; then dir_display=\"/\"; else dir_display=\"$(basename \"$cwd\")\"; fi; fi; git_info=\"\"; if git rev-parse --git-dir >/dev/null 2>&1; then branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null); if [[ -n \"$branch\" ]]; then status_indicators=\"\"; if ! git diff --quiet 2>/dev/null; then status_indicators=\"${status_indicators}*\"; fi; if ! git diff --cached --quiet 2>/dev/null; then status_indicators=\"${status_indicators}+\"; fi; if [[ -n \"$(git ls-files --others --exclude-standard 2>/dev/null)\" ]]; then status_indicators=\"${status_indicators}?\"; fi; git_info=\" ${branch}${status_indicators}\"; fi; fi; env_info=\"\"; if command -v fvm >/dev/null 2>&1 && [[ -f \"pubspec.yaml\" ]]; then fvm_version=$(fvm list 2>/dev/null | grep \"^>\" | sed 's/^> //' || echo \"\"); if [[ -n \"$fvm_version\" ]]; then env_info=\"${env_info} ${fvm_version}\"; fi; elif command -v dart >/dev/null 2>&1 && [[ -f \"pubspec.yaml\" ]]; then dart_version=$(dart --version 2>&1 | grep -o '[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+' | head -1); if [[ -n \"$dart_version\" ]]; then env_info=\"${env_info} ${dart_version}\"; fi; fi; if [[ -f \"package.json\" ]] && command -v node >/dev/null 2>&1; then node_version=$(node --version 2>/dev/null | sed 's/^v//'); if [[ -n \"$node_version\" ]]; then env_info=\"${env_info} ${node_version}\"; fi; fi; if [[ -n \"$VIRTUAL_ENV\" ]]; then venv_name=$(basename \"$VIRTUAL_ENV\"); env_info=\"${env_info} ${venv_name}\"; fi; printf \"\\033[38;5;39m%s\\033[0m \\033[38;5;33m%s\\033[0m\\033[38;5;244m%s\\033[0m%s \\033[38;5;246m│\\033[0m \\033[38;5;178m%s\\033[0m%s \\033[38;5;246m│\\033[0m \\033[38;5;244m%s\\033[0m\" \"$os_icon\" \"$dir_display\" \"$git_info\" \"$env_info\" \"$model_name\" \"$(echo \"$output_style\" | sed 's/^default$//' | sed 's/./ (&)/')\" \"$current_time\"",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [
+          {
+            "command": "if [[ \"$(jq -r .tool_input.command)\" =~ \"git commit\" ]] && [[ \"$(git branch --show-current 2>/dev/null)\" =~ ^(main|master)$ ]]; then echo \"Direct commits to main/master branch are not allowed\"; exit 2; fi",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ]
+  }
+}

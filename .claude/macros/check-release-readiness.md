@@ -1,0 +1,9 @@
+- [ ] dart format — no changes
+- [ ] dart analyze — fatal infos/warnings
+- [ ] dart test — green
+- [ ] CLI help == docs/cli_help.snapshot
+- [ ] pana non-failing
+- [ ] dart pub publish --dry-run — clean
+- [ ] pubspec version == git tag
+- [ ] perf baseline within 20%
+- [ ] README / MIGRATION / CHANGELOG updated

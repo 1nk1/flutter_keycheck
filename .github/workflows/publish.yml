@@ -65,7 +65,7 @@ jobs:
           echo "✓ Code formatting (skipped)"
           
           # Analysis (warnings allowed for publication)
-          dart analyze || true
+          dart analyze --no-fatal-warnings || true
           echo "✓ Code analysis completed (warnings allowed)"
           
           # Tests

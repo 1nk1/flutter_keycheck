@@ -23,6 +23,7 @@ analyzer:
     todo: ignore
     dead_null_aware_expression: ignore
     cast_from_null_always_fails: ignore
+    unused_element: ignore
   exclude:
     - example/**
     - examples/**

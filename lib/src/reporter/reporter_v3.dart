@@ -2698,9 +2698,6 @@ class HtmlReporter extends ReporterV3 {
   }
 
   void _addHeader(StringBuffer buffer) {
-    final timestamp = DateTime.now();
-    final formattedTime = '${timestamp.day.toString().padLeft(2, '0')}.${timestamp.month.toString().padLeft(2, '0')}.${timestamp.year} - ${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}:${timestamp.second.toString().padLeft(2, '0')}';
-    
     buffer.writeln('''
     <!-- Header -->
     <div class="header">
@@ -2920,10 +2917,10 @@ class HtmlReporter extends ReporterV3 {
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <button class="action-btn" title="View key details" onclick="showKeyDetails('${keyName}')">
+                                    <button class="action-btn" title="View key details" onclick="showKeyDetails('$keyName')">
                                         <i class="fa-solid fa-eye"></i>
                                     </button>
-                                    <button class="action-btn" title="Show code locations" onclick="openLocationsModal('${keyName}')">
+                                    <button class="action-btn" title="Show code locations" onclick="openLocationsModal('$keyName')">
                                         <i class="fa-solid fa-code"></i>
                                     </button>
                                 </div>
@@ -2956,50 +2953,6 @@ class HtmlReporter extends ReporterV3 {
     ''');
   }
 
-  void _addExportSection(StringBuffer buffer) {
-    buffer.writeln('''
-        <!-- Export Options Section -->
-        <div class="keys-section glass-card">
-            <h3 class="keys-title">Export Report</h3>
-            <div class="metrics-grid" style="grid-template-columns: repeat(5, 1fr);">
-                <!-- HTML Export -->
-                <button class="metric-card export-btn" onclick="exportReport('html')" style="padding: 16px; cursor: pointer; text-align: center;" title="Export as interactive HTML file">
-                    <i class="fa-brands fa-html5 text-orange-500 text-2xl mb-2"></i>
-                    <div style="font-size: 14px; font-weight: 500; margin-bottom: 4px;">HTML Report</div>
-                    <div style="font-size: 12px; color: #9CA3AF;">Interactive UI</div>
-                </button>
-                
-                <!-- CI Export -->
-                <button class="metric-card export-btn" onclick="exportReport('ci')" style="padding: 16px; cursor: pointer; text-align: center;" title="Export as CI/CD pipeline output">
-                    <i class="fa-solid fa-terminal text-green-500 text-2xl mb-2"></i>
-                    <div style="font-size: 14px; font-weight: 500; margin-bottom: 4px;">CI Output</div>
-                    <div style="font-size: 12px; color: #9CA3AF;">For GitLab/GitHub</div>
-                </button>
-                
-                <!-- JSON Export -->
-                <button class="metric-card export-btn" onclick="exportReport('json')" style="padding: 16px; cursor: pointer; text-align: center;" title="Export as structured JSON data">
-                    <i class="fa-solid fa-code text-blue-400 text-2xl mb-2"></i>
-                    <div style="font-size: 14px; font-weight: 500; margin-bottom: 4px;">JSON Data</div>
-                    <div style="font-size: 12px; color: #9CA3AF;">For integration</div>
-                </button>
-                
-                <!-- Markdown Export -->
-                <button class="metric-card export-btn" onclick="exportReport('md')" style="padding: 16px; cursor: pointer; text-align: center;" title="Export as markdown documentation">
-                    <i class="fa-brands fa-markdown text-purple-400 text-2xl mb-2"></i>
-                    <div style="font-size: 14px; font-weight: 500; margin-bottom: 4px;">Markdown</div>
-                    <div style="font-size: 12px; color: #9CA3AF;">For documentation</div>
-                </button>
-                
-                <!-- Text Export -->
-                <button class="metric-card export-btn" onclick="exportReport('text')" style="padding: 16px; cursor: pointer; text-align: center;" title="Export as plain text report">
-                    <i class="fa-solid fa-file-alt text-gray-400 text-2xl mb-2"></i>
-                    <div style="font-size: 14px; font-weight: 500; margin-bottom: 4px;">Plain Text</div>
-                    <div style="font-size: 12px; color: #9CA3AF;">Simple log</div>
-                </button>
-            </div>
-        </div>
-    ''');
-  }
 
   String _inferCategory(String keyName, Set<String> tags) {
     if (keyName.toLowerCase().contains('button') || keyName.toLowerCase().contains('widget')) return 'widget';
@@ -3228,7 +3181,7 @@ function showKeyDetails(keyName) {
         detailModal = document.createElement('div');
         detailModal.id = 'keyDetailsModal';
         detailModal.className = 'modal';
-        detailModal.innerHTML = \`
+        detailModal.innerHTML = `
             <div class="modal-content" style="max-width: 800px;">
                 <div class="modal-header">
                     <h2 id="keyDetailsTitle">Key Details</h2>
@@ -3238,7 +3191,7 @@ function showKeyDetails(keyName) {
                     <!-- Key details content will be populated here -->
                 </div>
             </div>
-        \`;
+        `;
         document.body.appendChild(detailModal);
     }
     
@@ -3293,7 +3246,7 @@ function showKeyDetails(keyName) {
         if (!document.getElementById('keyDetailsStyles')) {
             const styles = document.createElement('style');
             styles.id = 'keyDetailsStyles';
-            styles.textContent = \`
+            styles.textContent = `
                 .key-details-grid { display: flex; flex-direction: column; gap: 20px; }
                 .detail-section { 
                     background: rgba(30, 41, 59, 0.3); 
@@ -3325,7 +3278,7 @@ function showKeyDetails(keyName) {
                 .file-breakdown-item:last-child { border-bottom: none; }
                 .file-name { color: #94a3b8; display: flex; align-items: center; gap: 8px; }
                 .file-stats { color: #64748b; font-size: 14px; }
-            \`;
+            `;
             document.head.appendChild(styles);
         }
         
@@ -3353,7 +3306,7 @@ function showSection(sectionName) {
     });
     
     // Add active class to clicked nav item
-    const activeItem = document.querySelector(\`[onclick="showSection('\${sectionName}')"]\`);
+    const activeItem = document.querySelector(`[onclick="showSection('\${sectionName}')"]`);
     if (activeItem) {
         activeItem.classList.add('active');
     }
@@ -3364,7 +3317,7 @@ function showSection(sectionName) {
     });
     
     // Show the requested section
-    const targetSection = document.getElementById(\`\${sectionName}-section\`);
+    const targetSection = document.getElementById(`\${sectionName}-section`);
     if (targetSection) {
         targetSection.style.display = 'block';
     }
@@ -3389,7 +3342,7 @@ function showSection(sectionName) {
         'export': '📤 Export Options'
     };
     
-    showToast(\`Switched to \${sectionNames[sectionName] || sectionName}\`, 'info');
+    showToast(`Switched to \${sectionNames[sectionName] || sectionName}`, 'info');
 }
 
 // Initialize charts
@@ -3589,16 +3542,16 @@ function exportReport(format) {
             filename += '.md';
             mimeType = 'text/markdown';
             content = '# Flutter KeyCheck Report\\n\\n';
-            content += \`Generated: \${new Date().toISOString()}\\n\\n\`;
-            content += \`## Summary\\n\\n\`;
-            content += \`- **Total Keys Found**: \${Object.keys(keyLocations).length}\\n\`;
-            content += \`- **Report Date**: \${timestamp}\\n\\n\`;
-            content += \`## Key Details\\n\\n\`;
+            content += `Generated: \${new Date().toISOString()}\\n\\n`;
+            content += `## Summary\\n\\n`;
+            content += `- **Total Keys Found**: \${Object.keys(keyLocations).length}\\n`;
+            content += `- **Report Date**: \${timestamp}\\n\\n`;
+            content += `## Key Details\\n\\n`;
             
             Object.entries(keyLocations).forEach(([keyName, locations]) => {
-                content += \`### \${keyName}\\n\\n\`;
-                content += \`- **Locations**: \${locations.length}\\n\`;
-                content += \`- **Files**:\\n\`;
+                content += `### \$keyName\\n\\n`;
+                content += `- **Locations**: \${locations.length}\\n`;
+                content += `- **Files**:\\n`;
                 
                 const files = {};
                 locations.forEach(loc => {
@@ -3608,10 +3561,10 @@ function exportReport(format) {
                 });
                 
                 Object.entries(files).forEach(([file, locs]) => {
-                    content += \`  - \${file}: \${locs.length} occurrence(s)\\n\`;
+                    content += `  - \${file}: \${locs.length} occurrence(s)\\n`;
                 });
                 
-                content += \`\\n\`;
+                content += `\\n`;
             });
             break;
             
@@ -3620,14 +3573,14 @@ function exportReport(format) {
             mimeType = 'text/plain';
             content = 'Flutter KeyCheck Report - CI Output\\n';
             content += '=' + '='.repeat(40) + '\\n\\n';
-            content += \`Generated: \${new Date().toISOString()}\\n\`;
-            content += \`Total Keys: \${Object.keys(keyLocations).length}\\n\\n\`;
+            content += `Generated: \${new Date().toISOString()}\\n`;
+            content += `Total Keys: \${Object.keys(keyLocations).length}\\n\\n`;
             
             Object.entries(keyLocations).forEach(([keyName, locations]) => {
-                content += \`[\${keyName}] \${locations.length} location(s)\\n\`;
+                content += `[\$keyName] \${locations.length} location(s)\\n`;
                 locations.forEach(loc => {
                     const file = loc.file.replace(/.*[\\\\/](?:lib|test|example)[\\\\/]/g, '');
-                    content += \`  \${file}:\${loc.line}:\${loc.column} (\${loc.detector})\\n\`;
+                    content += `  \${file}:\${loc.line}:\${loc.column} (\${loc.detector})\\n`;
                 });
                 content += '\\n';
             });
@@ -3638,15 +3591,15 @@ function exportReport(format) {
             mimeType = 'text/plain';
             content = 'Flutter KeyCheck Report\\n';
             content += '='.repeat(30) + '\\n\\n';
-            content += \`Report Generated: \${new Date().toLocaleString()}\\n\`;
-            content += \`Total Keys Found: \${Object.keys(keyLocations).length}\\n\\n\`;
+            content += `Report Generated: \${new Date().toLocaleString()}\\n`;
+            content += `Total Keys Found: \${Object.keys(keyLocations).length}\\n\\n`;
             
             Object.entries(keyLocations).forEach(([keyName, locations]) => {
-                content += \`Key: \${keyName}\\n\`;
-                content += \`Locations: \${locations.length}\\n\`;
+                content += `Key: \$keyName\\n`;
+                content += `Locations: \${locations.length}\\n`;
                 locations.forEach((loc, index) => {
                     const file = loc.file.replace(/.*[\\\\/](?:lib|test|example)[\\\\/]/g, '');
-                    content += \`  \${index + 1}. \${file} (Line \${loc.line}, Column \${loc.column})\\n\`;
+                    content += `  \${index + 1}. \${file} (Line \${loc.line}, Column \${loc.column})\\n`;
                 });
                 content += '\\n';
             });
@@ -3665,10 +3618,10 @@ function exportReport(format) {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         
-        showToast(\`📥 Downloaded: \${filename}\`, 'success');
+        showToast(`📥 Downloaded: \${filename}`, 'success');
     } catch (error) {
         console.error('Export failed:', error);
-        showToast(\`❌ Export failed: \${error.message}\`, 'error');
+        showToast(`❌ Export failed: \${error.message}`, 'error');
     }
 }
 
@@ -3898,7 +3851,7 @@ function analyzeDuplicates(keyName) {
     console.log('Analyzing duplicates for key:', keyName);
     
     // Find all duplicate rows for this key
-    const duplicateRows = document.querySelectorAll(`tr[data-key="\${keyName}"]`);
+    const duplicateRows = document.querySelectorAll(`tr[data-key="\$keyName"]`);
     
     if (duplicateRows.length === 0) {
         showToast('❌ Key not found in duplicates table', 'error');
@@ -3915,7 +3868,7 @@ function analyzeDuplicates(keyName) {
     
     // Create analysis content
     let analysisContent = `<div class="duplicate-analysis">`;
-    analysisContent += `<h4 style="margin-top: 0; color: #fb923c;">Duplicate Analysis: \${keyName}</h4>`;
+    analysisContent += `<h4 style="margin-top: 0; color: #fb923c;">Duplicate Analysis: \$keyName</h4>`;
     analysisContent += `<div class="analysis-summary">`;
     analysisContent += `<p><strong>Total References:</strong> \${locations.length}</p>`;
     analysisContent += `<p><strong>Impact Level:</strong> \${locations.length > 5 ? '<span class="high">High</span>' : locations.length > 3 ? '<span class="medium">Medium</span>' : '<span class="low">Low</span>'}</p>`;
@@ -3941,7 +3894,7 @@ function analyzeDuplicates(keyName) {
     
     analysisContent += `</div>`;
     analysisContent += `<div class="analysis-actions">`;
-    analysisContent += `<button onclick="openLocationsModal('\${keyName}')" class="action-btn primary">`;
+    analysisContent += `<button onclick="openLocationsModal('\$keyName')" class="action-btn primary">`;
     analysisContent += `<i class="fa-solid fa-map-pin"></i> View All Locations`;
     analysisContent += `</button>`;
     analysisContent += `</div>`;
@@ -3956,7 +3909,6 @@ function analyzeDuplicates(keyName) {
   }
   
   void _addAnalysisSection(StringBuffer buffer, ScanResult result) {
-    final blindSpots = result.blindSpots.length;
     final orphanKeys = result.keyUsages.values.where((k) => k.locations.isEmpty).length;
     final duplicateKeys = result.keyUsages.values.where((k) => k.locations.length > 1).length;
     
@@ -3982,16 +3934,16 @@ function analyzeDuplicates(keyName) {
                 </div>
                 <div class="quality-score">
                     <div class="score-circle">
-                        <span class="score-text">${(100 - (blindSpots * 5)).clamp(0, 100)}%</span>
+                        <span class="score-text">${(100 - (result.blindSpots.length * 5)).clamp(0, 100)}%</span>
                     </div>
                     <div class="score-details">
                         <div class="score-item">
                             <span class="label">Blind Spots:</span>
-                            <span class="value ${blindSpots > 0 ? 'text-red-400' : 'text-green-400'}">${blindSpots}</span>
+                            <span class="value ${result.blindSpots.length > 0 ? 'text-red-400' : 'text-green-400'}">${result.blindSpots.length}</span>
                         </div>
                         <div class="score-item">
                             <span class="label">Orphan Keys:</span>
-                            <span class="value ${orphanKeys > 0 ? 'text-yellow-400' : 'text-green-400'}">${orphanKeys}</span>
+                            <span class="value ${orphanKeys > 0 ? 'text-yellow-400' : 'text-green-400'}">$orphanKeys</span>
                         </div>
                     </div>
                 </div>
@@ -4015,19 +3967,19 @@ function analyzeDuplicates(keyName) {
                     <h3>Issues Found</h3>
                 </div>
                 <div class="issues-list">
-                    <div class="issue-item ${blindSpots > 0 ? 'critical' : 'resolved'}">
-                        <i class="fa-solid fa-${blindSpots > 0 ? 'circle-exclamation' : 'circle-check'}"></i>
-                        <span class="issue-text">${blindSpots} Blind Spots</span>
-                        <span class="issue-severity">${blindSpots > 5 ? 'High' : blindSpots > 0 ? 'Medium' : 'None'}</span>
+                    <div class="issue-item ${result.blindSpots.length > 0 ? 'critical' : 'resolved'}">
+                        <i class="fa-solid fa-${result.blindSpots.length > 0 ? 'circle-exclamation' : 'circle-check'}"></i>
+                        <span class="issue-text">${result.blindSpots.length} Blind Spots</span>
+                        <span class="issue-severity">${result.blindSpots.length > 5 ? 'High' : result.blindSpots.length > 0 ? 'Medium' : 'None'}</span>
                     </div>
                     <div class="issue-item ${duplicateKeys > 0 ? 'warning' : 'resolved'}">
                         <i class="fa-solid fa-${duplicateKeys > 0 ? 'circle-minus' : 'circle-check'}"></i>
-                        <span class="issue-text">${duplicateKeys} Duplicate References</span>
+                        <span class="issue-text">$duplicateKeys Duplicate References</span>
                         <span class="issue-severity">${duplicateKeys > 3 ? 'Medium' : duplicateKeys > 0 ? 'Low' : 'None'}</span>
                     </div>
                     <div class="issue-item ${orphanKeys > 0 ? 'warning' : 'resolved'}">
                         <i class="fa-solid fa-${orphanKeys > 0 ? 'circle-minus' : 'circle-check'}"></i>
-                        <span class="issue-text">${orphanKeys} Orphan Keys</span>
+                        <span class="issue-text">$orphanKeys Orphan Keys</span>
                         <span class="issue-severity">${orphanKeys > 2 ? 'Medium' : orphanKeys > 0 ? 'Low' : 'None'}</span>
                     </div>
                 </div>
@@ -4066,9 +4018,9 @@ function analyzeDuplicates(keyName) {
                 <span class="category-count">${entry.value} keys</span>
             </div>
             <div class="category-bar">
-                <div class="bar-fill" style="width: ${percentage}%"></div>
+                <div class="bar-fill" style="width: $percentage%"></div>
             </div>
-            <div class="category-percentage">${percentage}%</div>
+            <div class="category-percentage">$percentage%</div>
         </div>
       ''');
     }
@@ -4121,15 +4073,15 @@ function analyzeDuplicates(keyName) {
                     <div class="coverage-details">
                         <div class="detail-item">
                             <span class="detail-label">Total Files:</span>
-                            <span class="detail-value">${totalFiles}</span>
+                            <span class="detail-value">$totalFiles</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Files with Keys:</span>
-                            <span class="detail-value">${filesWithKeys}</span>
+                            <span class="detail-value">$filesWithKeys</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Avg Keys/File:</span>
-                            <span class="detail-value">${averageKeysPerFile}</span>
+                            <span class="detail-value">$averageKeysPerFile</span>
                         </div>
                     </div>
                 </div>
@@ -4247,61 +4199,7 @@ function analyzeDuplicates(keyName) {
     ''');
   }
 
-  String _buildStatusChart(ScanResult result) {
-    final activeKeys = result.keyUsages.values.where((k) => k.status == 'active').length;
-    final inactiveKeys = result.keyUsages.values.where((k) => k.status == 'inactive').length;
-    final total = result.keyUsages.length;
-    
-    return '''
-      <div class="status-chart">
-        <div class="status-item">
-          <div class="status-indicator active"></div>
-          <div class="status-info">
-            <span class="status-name">Active Keys</span>
-            <span class="status-count">${activeKeys}</span>
-            <span class="status-percent">${total > 0 ? (activeKeys / total * 100).round() : 0}%</span>
-          </div>
-        </div>
-        <div class="status-item">
-          <div class="status-indicator inactive"></div>
-          <div class="status-info">
-            <span class="status-name">Inactive Keys</span>
-            <span class="status-count">${inactiveKeys}</span>
-            <span class="status-percent">${total > 0 ? (inactiveKeys / total * 100).round() : 0}%</span>
-          </div>
-        </div>
-      </div>
-    ''';
-  }
 
-  String _buildInsights(ScanResult result) {
-    final insights = <String>[];
-    final blindSpots = result.blindSpots.length;
-    final coverage = result.metrics.fileCoverage;
-    final totalKeys = result.keyUsages.length;
-    
-    if (coverage < 50) {
-      insights.add('<div class="insight warning"><i class="fa-solid fa-triangle-exclamation"></i>Low key coverage detected. Consider adding keys to more UI components.</div>');
-    } else if (coverage > 90) {
-      insights.add('<div class="insight success"><i class="fa-solid fa-check-circle"></i>Excellent key coverage! Your project has great test automation potential.</div>');
-    }
-    
-    if (blindSpots > 10) {
-      insights.add('<div class="insight critical"><i class="fa-solid fa-exclamation-circle"></i>High number of blind spots. Review file coverage and add missing keys.</div>');
-    } else if (blindSpots == 0) {
-      insights.add('<div class="insight success"><i class="fa-solid fa-star"></i>Perfect! No blind spots detected. Your key coverage is comprehensive.</div>');
-    }
-    
-    if (totalKeys > 100) {
-      insights.add('<div class="insight info"><i class="fa-solid fa-info-circle"></i>Large project detected. Consider grouping keys by feature or page for better organization.</div>');
-    }
-    
-    if (insights.isEmpty) {
-      insights.add('<div class="insight info"><i class="fa-solid fa-chart-line"></i>Your project shows healthy key usage patterns. Continue monitoring for optimal test coverage.</div>');
-    }
-    
-    return insights.join('\n');
-  }
 
   void _addExportSectionPage(StringBuffer buffer) {
     buffer.writeln('''
@@ -4658,7 +4556,6 @@ function analyzeDuplicates(keyName) {
 
   String _buildEnhancedInsights(ScanResult result) {
     final insights = <String>[];
-    final blindSpots = result.blindSpots.length;
     final coverage = result.metrics.fileCoverage;
     final totalKeys = result.keyUsages.length;
     final qualityScore = _calculateQualityScore(result);
@@ -4703,7 +4600,7 @@ function analyzeDuplicates(keyName) {
           <i class="fa-solid fa-exclamation-triangle"></i>
           <div class="insight-content">
             <h4>Quality Improvement Needed</h4>
-            <p>Quality score: ${qualityScore}%. Focus on consistency and organization.</p>
+            <p>Quality score: $qualityScore%. Focus on consistency and organization.</p>
             <div class="action-items">
               <span class="action-item">• Establish consistent naming conventions</span>
               <span class="action-item">• Organize keys by feature or screen</span>
@@ -4720,7 +4617,7 @@ function analyzeDuplicates(keyName) {
           <i class="fa-solid fa-copy"></i>
           <div class="insight-content">
             <h4>Duplicate Key Management</h4>
-            <p>${duplicates} keys have multiple references. Consider consolidating or documenting intentional duplicates.</p>
+            <p>$duplicates keys have multiple references. Consider consolidating or documenting intentional duplicates.</p>
             <div class="action-items">
               <span class="action-item">• Review duplicate keys in Analysis section</span>
               <span class="action-item">• Consolidate unintentional duplicates</span>
@@ -4737,7 +4634,7 @@ function analyzeDuplicates(keyName) {
           <i class="fa-solid fa-layer-group"></i>
           <div class="insight-content">
             <h4>Large Scale Project</h4>
-            <p>${totalKeys} keys detected. Consider advanced organization strategies.</p>
+            <p>$totalKeys keys detected. Consider advanced organization strategies.</p>
             <div class="action-items">
               <span class="action-item">• Group keys by feature modules</span>
               <span class="action-item">• Implement key prefixing strategy</span>
@@ -4862,6 +4759,8 @@ class CIReporter extends ReporterV3 {
   static const String _magenta = '\x1B[35m';
   static const String _cyan = '\x1B[36m';
   static const String _white = '\x1B[37m';
+  static const String _boldValidation = '\x1B[1m🔍';
+  static const String _boldBuild = '\x1B[1m🔨';
 
   final bool useColors;
   final bool isGitLabCI;
@@ -4918,19 +4817,19 @@ class CIReporter extends ReporterV3 {
     final color = hasViolations ? _red : _green;
     
     if (useColors) {
-      buffer.writeln('${_bold}Validation Result:${_reset} ${color}${_bold}● $status${_reset}');
+      buffer.writeln('$_boldValidation Result:$_reset $color$_bold● $status$_reset');
     } else {
       buffer.writeln('Validation Result: $status');
     }
     
     if (hasViolations && result.violations.isNotEmpty) {
-      buffer.writeln('\n${useColors ? '${_red}${_bold}❌ Critical Issues${_reset}' : 'Critical Issues:'}');
+      buffer.writeln('\n${useColors ? '$_red$_bold❌ Critical Issues$_reset' : 'Critical Issues:'}');
       
       for (final violation in result.violations.take(10)) {
         final type = violation.type;
         final key = violation.key?.id ?? 'unknown';
         if (useColors) {
-          buffer.writeln('${_red}• $type: ${_white}$key${_reset} ${_dim}- ${violation.message}${_reset}');
+          buffer.writeln('$_red• $type: $_white$key$_reset $_dim- ${violation.message}$_reset');
         } else {
           buffer.writeln('• $type: $key - ${violation.message}');
         }
@@ -4949,10 +4848,10 @@ class CIReporter extends ReporterV3 {
     if (!useColors) return '=== Flutter KeyCheck CI Report ===\n';
     
     return '''
-${_cyan}╔═══════════════════════════════════════════════════════════╗
-║${_bold}${_white}                 🔑 FLUTTER KEYCHECK                    ${_reset}${_cyan}║
-║${_dim}                  CI/CD Analysis Report                   ${_reset}${_cyan}║
-╚═══════════════════════════════════════════════════════════╝${_reset}
+$_cyan╔═══════════════════════════════════════════════════════════╗
+║$_bold$_white                 🔑 FLUTTER KEYCHECK                    $_reset$_cyan║
+║$_dim                  CI/CD Analysis Report                   $_reset$_cyan║
+╚═══════════════════════════════════════════════════════════╝$_reset
 ''';
   }
 
@@ -4964,7 +4863,7 @@ ${_cyan}╔═══════════════════════
     if (!useColors) return 'Status: $status\n';
     
     return '''
-${_bold}Build Status:${_reset} ${color}${_bold}● $status${_reset}
+$_boldBuild Status:$_reset $color$_bold● $status$_reset
 ''';
   }
 
@@ -4980,15 +4879,15 @@ Metrics:
     }
 
     return '''
-${_bold}📊 Key Metrics${_reset}
-${_cyan}┌─────────────────┬────────────────────────────────┐
-│${_bold} Metric          ${_reset}${_cyan}│${_bold} Value                          ${_reset}${_cyan}│
+$_bold📊 Key Metrics$_reset
+$_cyan┌─────────────────┬────────────────────────────────┐
+│$_bold Metric          $_reset$_cyan│$_bold Value                          $_reset$_cyan│
 ├─────────────────┼────────────────────────────────┤
-│ Keys Found      │${_green}${_bold} ${result.keyUsages.length.toString().padLeft(29)} ${_reset}${_cyan}│
-│ Files Scanned   │${_blue}${_bold} ${'${result.metrics.scannedFiles}/${result.metrics.totalFiles}'.padLeft(29)} ${_reset}${_cyan}│
-│ Coverage        │${_yellow}${_bold} ${'${result.metrics.fileCoverage.toStringAsFixed(1)}%'.padLeft(29)} ${_reset}${_cyan}│
-│ Scan Duration   │${_magenta}${_bold} ${'${result.metrics.totalScanTime.inMilliseconds}ms'.padLeft(29)} ${_reset}${_cyan}│
-└─────────────────┴────────────────────────────────┘${_reset}
+│ Keys Found      │$_green$_bold ${result.keyUsages.length.toString().padLeft(29)} $_reset$_cyan│
+│ Files Scanned   │$_blue$_bold ${'${result.metrics.scannedFiles}/${result.metrics.totalFiles}'.padLeft(29)} $_reset$_cyan│
+│ Coverage        │$_yellow$_bold ${'${result.metrics.fileCoverage.toStringAsFixed(1)}%'.padLeft(29)} $_reset$_cyan│
+│ Scan Duration   │$_magenta$_bold ${'${result.metrics.totalScanTime.inMilliseconds}ms'.padLeft(29)} $_reset$_cyan│
+└─────────────────┴────────────────────────────────┘$_reset
 ''';
   }
 
@@ -5003,14 +4902,14 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     }
 
     final buffer = StringBuffer();
-    buffer.writeln('${_bold}🎯 Quality Gates${_reset}');
+    buffer.writeln('$_bold🎯 Quality Gates$_reset');
     
     for (final gate in gates) {
       final icon = gate['status'] == 'PASS' ? '✓' : '✗';
       final color = gate['status'] == 'PASS' ? _green : _red;
       final status = gate['status'] == 'PASS' ? 'PASS' : 'FAIL';
       
-      buffer.writeln('${color}${_bold}$icon ${gate['name']}: $status${_reset} ${_dim}- ${gate['description']}${_reset}');
+      buffer.writeln('$color$_bold$icon ${gate['name']}: $status$_reset $_dim- ${gate['description']}$_reset');
     }
     
     return buffer.toString();
@@ -5041,16 +4940,16 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     
     if (!hasWarnings) {
       return useColors 
-        ? '${_green}${_bold}🎉 All checks passed! Your Flutter app is ready for automation testing.${_reset}\n'
+        ? '$_green$_bold🎉 All checks passed! Your Flutter app is ready for automation testing.$_reset\n'
         : '✓ All checks passed! Your Flutter app is ready for automation testing.\n';
     }
     
     final buffer = StringBuffer();
-    if (useColors) buffer.writeln('${_yellow}${_bold}⚠️  Action Required${_reset}');
+    if (useColors) buffer.writeln('$_yellow$_bold⚠️  Action Required$_reset');
     
     if (hasWarnings) {
       buffer.writeln(useColors 
-        ? '${_yellow}• ${result.blindSpots.length} blind spots detected${_reset}'
+        ? '$_yellow• ${result.blindSpots.length} blind spots detected$_reset'
         : '• ${result.blindSpots.length} blind spots detected');
     }
     
@@ -5104,8 +5003,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     return 'Other';
   }
 
-  void _addAnalysisSection(StringBuffer buffer, ScanResult result) {
-    final blindSpots = result.blindSpots.length;
+  void _unusedAddAnalysisSection(StringBuffer buffer, ScanResult result) {
     final orphanKeys = result.keyUsages.values.where((k) => k.locations.isEmpty).length;
     final duplicateKeys = result.keyUsages.values.where((k) => k.locations.length > 1).length;
     
@@ -5131,16 +5029,16 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
                 </div>
                 <div class="quality-score">
                     <div class="score-circle">
-                        <span class="score-text">${(100 - (blindSpots * 5)).clamp(0, 100)}%</span>
+                        <span class="score-text">${(100 - (result.blindSpots.length * 5)).clamp(0, 100)}%</span>
                     </div>
                     <div class="score-details">
                         <div class="score-item">
                             <span class="label">Blind Spots:</span>
-                            <span class="value ${blindSpots > 0 ? 'text-red-400' : 'text-green-400'}">${blindSpots}</span>
+                            <span class="value ${result.blindSpots.length > 0 ? 'text-red-400' : 'text-green-400'}">${result.blindSpots.length}</span>
                         </div>
                         <div class="score-item">
                             <span class="label">Orphan Keys:</span>
-                            <span class="value ${orphanKeys > 0 ? 'text-yellow-400' : 'text-green-400'}">${orphanKeys}</span>
+                            <span class="value ${orphanKeys > 0 ? 'text-yellow-400' : 'text-green-400'}">$orphanKeys</span>
                         </div>
                     </div>
                 </div>
@@ -5164,19 +5062,19 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
                     <h3>Issues Found</h3>
                 </div>
                 <div class="issues-list">
-                    <div class="issue-item ${blindSpots > 0 ? 'critical' : 'resolved'}">
-                        <i class="fa-solid fa-${blindSpots > 0 ? 'circle-exclamation' : 'circle-check'}"></i>
-                        <span class="issue-text">${blindSpots} Blind Spots</span>
-                        <span class="issue-severity">${blindSpots > 5 ? 'High' : blindSpots > 0 ? 'Medium' : 'None'}</span>
+                    <div class="issue-item ${result.blindSpots.length > 0 ? 'critical' : 'resolved'}">
+                        <i class="fa-solid fa-${result.blindSpots.length > 0 ? 'circle-exclamation' : 'circle-check'}"></i>
+                        <span class="issue-text">${result.blindSpots.length} Blind Spots</span>
+                        <span class="issue-severity">${result.blindSpots.length > 5 ? 'High' : result.blindSpots.length > 0 ? 'Medium' : 'None'}</span>
                     </div>
                     <div class="issue-item ${duplicateKeys > 0 ? 'warning' : 'resolved'}">
                         <i class="fa-solid fa-${duplicateKeys > 0 ? 'circle-minus' : 'circle-check'}"></i>
-                        <span class="issue-text">${duplicateKeys} Duplicate References</span>
+                        <span class="issue-text">$duplicateKeys Duplicate References</span>
                         <span class="issue-severity">${duplicateKeys > 3 ? 'Medium' : duplicateKeys > 0 ? 'Low' : 'None'}</span>
                     </div>
                     <div class="issue-item ${orphanKeys > 0 ? 'warning' : 'resolved'}">
                         <i class="fa-solid fa-${orphanKeys > 0 ? 'circle-minus' : 'circle-check'}"></i>
-                        <span class="issue-text">${orphanKeys} Orphan Keys</span>
+                        <span class="issue-text">$orphanKeys Orphan Keys</span>
                         <span class="issue-severity">${orphanKeys > 2 ? 'Medium' : orphanKeys > 0 ? 'Low' : 'None'}</span>
                     </div>
                 </div>
@@ -5215,9 +5113,9 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
                 <span class="category-count">${entry.value} keys</span>
             </div>
             <div class="category-bar">
-                <div class="bar-fill" style="width: ${percentage}%"></div>
+                <div class="bar-fill" style="width: $percentage%"></div>
             </div>
-            <div class="category-percentage">${percentage}%</div>
+            <div class="category-percentage">$percentage%</div>
         </div>
       ''');
     }
@@ -5270,15 +5168,15 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
                     <div class="coverage-details">
                         <div class="detail-item">
                             <span class="detail-label">Total Files:</span>
-                            <span class="detail-value">${totalFiles}</span>
+                            <span class="detail-value">$totalFiles</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Files with Keys:</span>
-                            <span class="detail-value">${filesWithKeys}</span>
+                            <span class="detail-value">$filesWithKeys</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Avg Keys/File:</span>
-                            <span class="detail-value">${averageKeysPerFile}</span>
+                            <span class="detail-value">$averageKeysPerFile</span>
                         </div>
                     </div>
                 </div>
@@ -5396,61 +5294,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     ''');
   }
 
-  String _buildStatusChart(ScanResult result) {
-    final activeKeys = result.keyUsages.values.where((k) => k.status == 'active').length;
-    final inactiveKeys = result.keyUsages.values.where((k) => k.status == 'inactive').length;
-    final total = result.keyUsages.length;
-    
-    return '''
-      <div class="status-chart">
-        <div class="status-item">
-          <div class="status-indicator active"></div>
-          <div class="status-info">
-            <span class="status-name">Active Keys</span>
-            <span class="status-count">${activeKeys}</span>
-            <span class="status-percent">${total > 0 ? (activeKeys / total * 100).round() : 0}%</span>
-          </div>
-        </div>
-        <div class="status-item">
-          <div class="status-indicator inactive"></div>
-          <div class="status-info">
-            <span class="status-name">Inactive Keys</span>
-            <span class="status-count">${inactiveKeys}</span>
-            <span class="status-percent">${total > 0 ? (inactiveKeys / total * 100).round() : 0}%</span>
-          </div>
-        </div>
-      </div>
-    ''';
-  }
 
-  String _buildInsights(ScanResult result) {
-    final insights = <String>[];
-    final blindSpots = result.blindSpots.length;
-    final coverage = result.metrics.fileCoverage;
-    final totalKeys = result.keyUsages.length;
-    
-    if (coverage < 50) {
-      insights.add('<div class="insight warning"><i class="fa-solid fa-triangle-exclamation"></i>Low key coverage detected. Consider adding keys to more UI components.</div>');
-    } else if (coverage > 90) {
-      insights.add('<div class="insight success"><i class="fa-solid fa-check-circle"></i>Excellent key coverage! Your project has great test automation potential.</div>');
-    }
-    
-    if (blindSpots > 10) {
-      insights.add('<div class="insight critical"><i class="fa-solid fa-exclamation-circle"></i>High number of blind spots. Review file coverage and add missing keys.</div>');
-    } else if (blindSpots == 0) {
-      insights.add('<div class="insight success"><i class="fa-solid fa-star"></i>Perfect! No blind spots detected. Your key coverage is comprehensive.</div>');
-    }
-    
-    if (totalKeys > 100) {
-      insights.add('<div class="insight info"><i class="fa-solid fa-info-circle"></i>Large project detected. Consider grouping keys by feature or page for better organization.</div>');
-    }
-    
-    if (insights.isEmpty) {
-      insights.add('<div class="insight info"><i class="fa-solid fa-chart-line"></i>Your project shows healthy key usage patterns. Continue monitoring for optimal test coverage.</div>');
-    }
-    
-    return insights.join('\n');
-  }
 
   void _addExportSectionPage(StringBuffer buffer) {
     buffer.writeln('''
@@ -5819,7 +5663,6 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
 
   String _buildEnhancedInsights(ScanResult result) {
     final insights = <String>[];
-    final blindSpots = result.blindSpots.length;
     final coverage = result.metrics.fileCoverage;
     final totalKeys = result.keyUsages.length;
     final qualityScore = _calculateQualityScore(result);
@@ -5864,7 +5707,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
           <i class="fa-solid fa-exclamation-triangle"></i>
           <div class="insight-content">
             <h4>Quality Improvement Needed</h4>
-            <p>Quality score: ${qualityScore}%. Focus on consistency and organization.</p>
+            <p>Quality score: $qualityScore%. Focus on consistency and organization.</p>
             <div class="action-items">
               <span class="action-item">• Establish consistent naming conventions</span>
               <span class="action-item">• Organize keys by feature or screen</span>
@@ -5881,7 +5724,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
           <i class="fa-solid fa-copy"></i>
           <div class="insight-content">
             <h4>Duplicate Key Management</h4>
-            <p>${duplicates} keys have multiple references. Consider consolidating or documenting intentional duplicates.</p>
+            <p>$duplicates keys have multiple references. Consider consolidating or documenting intentional duplicates.</p>
             <div class="action-items">
               <span class="action-item">• Review duplicate keys in Analysis section</span>
               <span class="action-item">• Consolidate unintentional duplicates</span>
@@ -5898,7 +5741,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
           <i class="fa-solid fa-layer-group"></i>
           <div class="insight-content">
             <h4>Large Scale Project</h4>
-            <p>${totalKeys} keys detected. Consider advanced organization strategies.</p>
+            <p>$totalKeys keys detected. Consider advanced organization strategies.</p>
             <div class="action-items">
               <span class="action-item">• Group keys by feature modules</span>
               <span class="action-item">• Implement key prefixing strategy</span>

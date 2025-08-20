@@ -5,6 +5,20 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.9] - 2025-08-20
+
+### Added
+- **CLI Enhancement**: Add --project-root flag support to scan and validate commands
+- **Documentation**: Complete v3 CLI documentation update with correct examples
+
+### Fixed
+- **CI/CD Pipeline**: Remove failing legacy command tests, restore simple working pipeline
+- **Documentation**: Update README.md with accurate v3 command examples
+- **CLI Support**: Add --project-root flag to enable scanning specific project paths
+
+### Removed
+- **Legacy Tests**: Remove tests for non-existent commands (baseline, diff, sync, report)
+
 ## [3.1.8] - 2025-08-20
 
 ### Fixed

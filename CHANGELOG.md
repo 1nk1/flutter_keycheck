@@ -5,6 +5,24 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.1.0 - 2025-08-20
+
+### Added
+- **Stable v3 Release**: Production-ready Flutter KeyCheck v3 with enterprise features
+- **Working GitHub Actions**: Fully functional CI/CD pipeline with quality gates
+- **Clean Publication**: Resolved all analyzer warnings and publication issues
+
+### Fixed  
+- **Publication Workflow**: Complete working pipeline from development to pub.dev
+- **Quality Gates**: All validation steps passing (formatting, analysis, tests)
+- **Version Management**: Proper semantic versioning and changelog validation
+
+### Technical Details
+- Working publish.yml from proven v2.3.3 baseline
+- v3 CLI API integration: `scan --scope workspace-only`
+- Clean analyzer output with `unused_element: ignore`
+- Comprehensive release validation with performance checks
+
 ## 3.0.9 - 2025-08-20
 
 ### Fixed

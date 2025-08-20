@@ -5073,7 +5073,6 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     return 'Other';
   }
 
-
   String _buildKeyDistribution(ScanResult result) {
     final categories = <String, int>{};
     for (final usage in result.keyUsages.values) {
@@ -5115,7 +5114,6 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     if (name.contains('list') || name.contains('item')) return 'Lists';
     return 'Other';
   }
-
 
   String _buildDuplicateKeysTable(ScanResult result) {
     final duplicateKeysList = result.keyUsages.entries

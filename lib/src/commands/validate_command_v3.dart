@@ -73,11 +73,6 @@ class ValidateCommandV3 extends BaseCommandV3 {
         'baseline',
         help: 'Baseline source (registry, file path)',
         defaultsTo: 'registry',
-      )
-      ..addOption(
-        'project-root',
-        help: 'Project root path to scan',
-        defaultsTo: '.',
       );
   }
 

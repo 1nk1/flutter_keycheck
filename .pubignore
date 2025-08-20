@@ -55,6 +55,18 @@ migrate_*.sh
 *.bak
 *.orig
 
+# Legacy v2 files (should not be published)
+lib/src/checker.dart
+lib/src/cli.dart
+lib/src/scanner/ast_scanner.dart
+lib/src/scanner/key_detectors.dart
+lib/src/commands/base_command.dart
+lib/src/commands/scan_command.dart
+lib/src/commands/validate_command.dart
+lib/src/commands/report_command.dart
+lib/src/commands/diff_command.dart
+lib/src/commands/sync_command.dart
+
 # Generated files
 *.g.dart
 *.freezed.dart

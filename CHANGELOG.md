@@ -5,6 +5,18 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.1.1 - 2025-08-20
+
+### Fixed
+- **Pub.dev Score**: Exclude legacy v2 files from publication to fix static analysis errors
+- **Clean Package**: Remove 79 analyzer issues by excluding legacy code with ConsoleColors references
+- **Publication Quality**: Improve pub.dev score from 90/160 to target 140+/160 points
+
+### Technical Details
+- Added legacy v2 files to .pubignore: cli.dart, checker.dart, scanner files
+- Removes undefined ConsoleColors references from published package
+- Focuses publication on clean v3 codebase only
+
 ## 3.1.0 - 2025-08-20
 
 ### Added

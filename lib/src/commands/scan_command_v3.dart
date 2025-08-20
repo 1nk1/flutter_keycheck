@@ -51,6 +51,11 @@ class ScanCommandV3 extends BaseCommandV3 {
       ..addOption(
         'filter',
         help: 'Filter packages by pattern (for monorepo)',
+      )
+      ..addOption(
+        'project-root',
+        help: 'Project root path to scan',
+        defaultsTo: '.',
       );
   }
 

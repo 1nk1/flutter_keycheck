@@ -28,9 +28,9 @@ A comprehensive Flutter widget key coverage analyzer with AST parsing, premium g
 **Important**: Flutter KeyCheck provides "Scan Coverage" - static analysis of which widgets have keys in your codebase. This is different from runtime code coverage that measures executed code during tests. Scan Coverage helps identify testability gaps before runtime.
 
 ### Breaking Changes
-- **CLI redesigned** with subcommands: `scan`, `validate`, `baseline`, `diff`, `sync`, `report`
+- **CLI redesigned** with subcommands: `scan`, `validate`
 - **Deterministic exit codes**: 0 (success), 1 (policy), 2 (config), 3 (I/O), 4 (internal)
-- **Schema v1.0** with standardized metrics (parse_success_rate as fraction 0.0-1.0)
+- **Scope-based scanning**: `--scope workspace-only|deps-only|all`
 
 ### Migration from v2.x
 
@@ -39,9 +39,9 @@ A comprehensive Flutter widget key coverage analyzer with AST parsing, premium g
 # Old (v2.x)
 flutter_keycheck --keys file.yaml --strict
 
-# New (v3.0)
-flutter_keycheck validate --strict
-dart run flutter_keycheck:flutter_keycheck scan --path <project_root> --output keycheck.json
+# New (v3.x)
+flutter_keycheck scan --scope workspace-only --report json
+flutter_keycheck validate --baseline test_baseline.yaml
 ```
 
 **Exit codes:** Now deterministic (0=OK, 1=Policy, 2=Config, 3=IO, 4=Internal)
@@ -156,9 +156,8 @@ dev_dependencies:
 dart pub global activate flutter_keycheck
 
 # Run commands
-flutter_keycheck scan --report json
-flutter_keycheck validate --strict
-flutter_keycheck baseline create
+flutter_keycheck scan --scope workspace-only --report json
+flutter_keycheck validate --baseline test_baseline.yaml
 ```
 
 ### Local Installation
@@ -167,18 +166,18 @@ flutter_keycheck baseline create
 dart pub add --dev flutter_keycheck
 
 # Run with dart run
-dart run flutter_keycheck:flutter_keycheck scan --report json
-dart run flutter_keycheck:flutter_keycheck validate --strict
+dart run flutter_keycheck:flutter_keycheck scan --scope workspace-only --report json
+dart run flutter_keycheck:flutter_keycheck validate --baseline test_baseline.yaml
 ```
 
 ### 1. Scan Your Project
 
 ```bash
-# Scan and generate coverage report
-flutter_keycheck scan --report json,junit,md --out-dir reports
+# Scan workspace-only and generate multiple reports
+flutter_keycheck scan --scope workspace-only --report json,md --out-dir reports
 
-# Scan with specific packages mode
-flutter_keycheck scan --packages workspace --report json
+# Scan specific project root
+flutter_keycheck scan --project-root ./my_app --scope workspace-only --report json
 ```
 
 ### 2. Validate Coverage

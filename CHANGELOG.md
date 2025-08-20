@@ -5,6 +5,14 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.7] - 2025-08-20
+
+### Fixed
+- **CRITICAL**: Fix analyzer package SDK constraint (8.1.1 → ^7.7.1)
+- **GitHub Actions**: Complete Dart 3.6.0 compatibility in CI/CD
+- **Dependencies**: All package constraints now resolve correctly
+- **Publication**: Final working publication pipeline guaranteed
+
 ## [3.1.6] - 2025-08-20
 
 ### Fixed

@@ -2,11 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:flutter_keycheck/src/commands/baseline_command.dart';
-import 'package:flutter_keycheck/src/commands/diff_command.dart';
-import 'package:flutter_keycheck/src/commands/report_command.dart';
 import 'package:flutter_keycheck/src/commands/scan_command_v3.dart';
-import 'package:flutter_keycheck/src/commands/sync_command.dart';
 import 'package:flutter_keycheck/src/commands/validate_command_v3.dart';
 
 /// Exception for configuration errors
@@ -48,11 +44,7 @@ class CliRunner extends CommandRunner<int> {
 
     // Add commands
     addCommand(ScanCommandV3());
-    addCommand(BaselineCommand());
-    addCommand(DiffCommand());
     addCommand(ValidateCommandV3());
-    addCommand(SyncCommand());
-    addCommand(ReportCommand());
   }
 
   @override

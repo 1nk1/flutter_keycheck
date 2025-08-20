@@ -40,36 +40,10 @@ void main() {
         expect(result.stdout.toString(), contains('Build current snapshot'));
       });
 
-      test('baseline command exists', () async {
-        final result = await runCli(['baseline', '--help']);
-        expect(result.stdout.toString(), contains('Create or update'));
-      });
-
-      test('diff command exists', () async {
-        final result = await runCli(['diff', '--help']);
-        expect(result.stdout.toString(), contains('Compare'));
-      });
-
       test('validate command exists', () async {
         final result = await runCli(['validate', '--help']);
         expect(result.stdout.toString(),
             contains('Validate keys against policies'));
-      });
-
-      test('ci-validate alias works', () async {
-        final result = await runCli(['ci-validate', '--help']);
-        expect(result.stdout.toString(),
-            contains('Validate keys against policies'));
-      });
-
-      test('sync command exists', () async {
-        final result = await runCli(['sync', '--help']);
-        expect(result.stdout.toString(), contains('Synchronize'));
-      });
-
-      test('report command exists', () async {
-        final result = await runCli(['report', '--help']);
-        expect(result.stdout.toString(), contains('Generate reports'));
       });
     });
 

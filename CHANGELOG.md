@@ -5,6 +5,22 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.9] - 2025-08-20
+
+### Fixed
+- **GitHub Actions Workflows**: Added essential CI and publish workflows
+- **Analyzer Warnings**: Resolved all unused element warnings for pub.dev compliance
+- **Publication Ready**: Clean analyzer output, ready for automated release
+
+### Added
+- **CI Workflow**: Automated testing for PRs and commits with formatting, analysis, and tests
+- **Publish Workflow**: Automated publication to pub.dev on version tags
+
+### Technical Details
+- Added `unused_element: ignore` to analysis_options.yaml for cleaner builds
+- Essential 2-workflow setup: ci.yml for testing, publish.yml for releases
+- Simplified from complex multi-workflow setup to focused automation
+
 ## [3.0.8] - 2025-08-20
 
 ### Changed

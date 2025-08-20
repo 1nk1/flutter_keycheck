@@ -126,7 +126,7 @@ Future<bool> _validateChangelog() async {
     final currentYear = DateTime.now().year;
     if (!content.contains('$currentYear')) {
       print(
-          '⚠️  Warning: CHANGELOG.md might not contain current year ($currentYear)');
+          '⚠️ Warning: CHANGELOG.md might not contain current year ($currentYear)');
     }
 
     print('✅ CHANGELOG.md contains current version');
@@ -163,7 +163,7 @@ Future<bool> _validatePubignore() async {
   try {
     final file = File('.pubignore');
     if (!file.existsSync()) {
-      print('⚠️  .pubignore not found (recommended)');
+      print('⚠️ .pubignore not found (recommended)');
       return true; // Not critical
     }
 
@@ -192,7 +192,7 @@ Future<bool> _validatePubignore() async {
 
     if (!hasRecommended) {
       print(
-          '⚠️  .pubignore exists but might be missing recommended exclusions');
+          '⚠️ .pubignore exists but might be missing recommended exclusions');
     }
 
     print('✅ .pubignore validation passed');

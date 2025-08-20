@@ -138,7 +138,7 @@ void runChecks(List<String> args) {
         }
 
         if (constants.isEmpty && methods.isEmpty) {
-          print(ConsoleColors.warning('⚠️  KeyConstants class is empty'));
+          print(ConsoleColors.warning('⚠️ KeyConstants class is empty'));
         }
       } else {
         print(ConsoleColors.error('❌ KeyConstants class not found'));

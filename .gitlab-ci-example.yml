@@ -255,7 +255,7 @@ integration-tests:
         if [ "$KEYCHECK_SCAN_DURATION" -lt "$REGRESSION_THRESHOLD" ]; then
           echo "   ✅ Performance within baseline (${KEYCHECK_SCAN_DURATION}ms vs ${BASELINE_DURATION}ms)"
         else
-          echo "   ⚠️  Performance regression detected (${KEYCHECK_SCAN_DURATION}ms vs ${BASELINE_DURATION}ms)"
+          echo "   ⚠️ Performance regression detected (${KEYCHECK_SCAN_DURATION}ms vs ${BASELINE_DURATION}ms)"
         fi
       fi
       
@@ -318,14 +318,14 @@ quality-gates:
       if [ "$PANA_SCORE" -ge 120 ]; then
         echo "   ✅ Package Quality: $PANA_SCORE >= 120"
       else
-        echo "   ⚠️  Package Quality: $PANA_SCORE < 120 (recommended)"
+        echo "   ⚠️ Package Quality: $PANA_SCORE < 120 (recommended)"
         QUALITY_ISSUES=$((QUALITY_ISSUES + 1))
       fi
       
       if [ "$QUALITY_ISSUES" -eq 0 ]; then
         echo "   ✅ All quality checks passed"
       else
-        echo "   ⚠️  $QUALITY_ISSUES quality issues found (non-blocking)"
+        echo "   ⚠️ $QUALITY_ISSUES quality issues found (non-blocking)"
       fi
       
   artifacts:

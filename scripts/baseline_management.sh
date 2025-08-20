@@ -37,7 +37,7 @@ log_success() {
 }
 
 log_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+    echo -e "${YELLOW}⚠️ $1${NC}"
 }
 
 log_error() {

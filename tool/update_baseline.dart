@@ -45,7 +45,7 @@ void main(List<String> args) async {
 
   // Confirm with user unless --force is used
   if (!force) {
-    print('\n⚠️  Warning: This will update the golden baseline files.');
+    print('\n⚠️ Warning: This will update the golden baseline files.');
     print('   These changes should only be made when:');
     print('   - The schema version changes');
     print('   - Critical keys are intentionally added/removed');
@@ -89,7 +89,7 @@ Future<void> _updateGoldenSnapshot() async {
 
   final goldenFile = File(path.join(goldenWorkspacePath, expectedKeycheckFile));
   if (!goldenFile.existsSync()) {
-    print('   ⚠️  Golden file not found, will be created on next test run');
+    print('   ⚠️ Golden file not found, will be created on next test run');
     return;
   }
 
@@ -181,7 +181,7 @@ Future<void> _runVerificationTests() async {
   );
 
   if (result.exitCode != 0) {
-    print('   ⚠️  Snapshot test failed - this is expected after update');
+    print('   ⚠️ Snapshot test failed - this is expected after update');
   } else {
     print('   ✅ Snapshot test passed');
   }
@@ -194,7 +194,7 @@ Future<void> _runVerificationTests() async {
   );
 
   if (result.exitCode != 0) {
-    print('   ⚠️  Performance test failed - verify thresholds are appropriate');
+    print('   ⚠️ Performance test failed - verify thresholds are appropriate');
   } else {
     print('   ✅ Performance test passed');
   }

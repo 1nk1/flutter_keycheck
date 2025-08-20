@@ -499,7 +499,7 @@ publish:release:
   stage: 🚀 publish
   script:
     - echo "🚀 Publishing package to pub.dev"
-    - echo "⚠️  Manual intervention required for actual publication"
+    - echo "⚠️ Manual intervention required for actual publication"
     - echo "To publish, run: dart pub publish --force"
     - echo "Current validation shows package is ready for publication"
   rules:

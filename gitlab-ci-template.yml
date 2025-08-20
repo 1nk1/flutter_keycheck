@@ -145,7 +145,7 @@ check:drift:
     - |
       DRIFT=$(flutter_keycheck report --format json | jq '.summary.drift_percentage')
       if (( $(echo "$DRIFT > 10" | bc -l) )); then
-        echo "⚠️  High drift detected: ${DRIFT}%"
+        echo "⚠️ High drift detected: ${DRIFT}%"
         exit 1
       fi
   artifacts:

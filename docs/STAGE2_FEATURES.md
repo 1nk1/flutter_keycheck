@@ -106,7 +106,7 @@ flutter_keycheck diff \
   • Removed: 2
   • Renamed: 3
   • Drift: 6.4%
-⚠️  Changes detected
+⚠️ Changes detected
 ```
 
 #### Markdown Report (GitHub PR-friendly)
@@ -188,7 +188,7 @@ flutter_keycheck validate \
   • Renamed keys: 3
   • Drift: 6.4%
 
-⚠️  Violations found:
+⚠️ Violations found:
   • [error] Critical key 'login_button' is missing
     Remediation: Restore the key or update baseline if intentionally removed
 

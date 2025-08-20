@@ -166,7 +166,7 @@ class ValidateCommand extends BaseCommand {
 
     if (result.deprecatedInUse.isNotEmpty) {
       stdout.writeln(
-          '  ⚠️  Deprecated keys in use: ${result.deprecatedInUse.length}');
+          '  ⚠️ Deprecated keys in use: ${result.deprecatedInUse.length}');
     }
 
     if (result.removedInUse.isNotEmpty) {

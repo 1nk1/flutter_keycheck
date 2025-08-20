@@ -332,7 +332,7 @@ class DiffCommand extends BaseCommandV3 {
     logInfo('  • Drift: ${driftPercentage.toStringAsFixed(1)}%');
 
     if (diff.hasChanges) {
-      logWarning('⚠️  Changes detected');
+      logWarning('⚠️ Changes detected');
     } else {
       logInfo('✅ No changes detected');
     }

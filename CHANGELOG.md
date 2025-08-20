@@ -5,6 +5,19 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.11] - 2025-08-21
+
+### Fixed
+- **CRITICAL**: Fix missing exports in lib/flutter_keycheck.dart that prevented v3 commands from being accessible
+- **Package**: All v3 command classes are now properly exported and available when importing the package
+- **Exports**: Added exports for base_command_v3, scan_command_v3, validate_command_v3
+- **Core Modules**: Added exports for analysis, cache, metrics, and performance modules
+
+### Technical Details
+- The library file was missing exports for v3 command system components
+- This caused "type not found" errors when trying to use v3 commands from pub.dev
+- All v3 functionality is now properly exposed through the main library export
+
 ## [3.1.10] - 2025-08-20
 
 ### Fixed

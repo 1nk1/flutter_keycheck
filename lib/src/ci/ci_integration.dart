@@ -399,7 +399,7 @@ class CiIntegration {
       print('Blind Spots: ${result.blindSpotChecks.length} detected');
       final blocked = result.blindSpotChecks.where((b) => b.blocked).length;
       if (blocked > 0) {
-        print('  ⚠️  $blocked blocked blind spots!');
+        print('  ⚠️ $blocked blocked blind spots!');
       }
     }
 
@@ -408,7 +408,7 @@ class CiIntegration {
         result.regressionChecks.where((r) => r.regression).length;
     if (regressions > 0) {
       print('');
-      print('⚠️  Regressions: $regressions metrics degraded');
+      print('⚠️ Regressions: $regressions metrics degraded');
     }
 
     print('');

@@ -173,7 +173,7 @@ flutter_keycheck validate \
 if [ $? -eq 0 ]; then
     echo "✅ Validation passed (as expected)"
 else
-    echo "⚠️  Validation failed (unexpected)"
+    echo "⚠️ Validation failed (unexpected)"
 fi
 
 # Now validate against old baseline (should fail due to changes)

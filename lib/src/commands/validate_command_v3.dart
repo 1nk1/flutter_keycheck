@@ -242,7 +242,7 @@ class ValidateCommandV3 extends BaseCommandV3 {
     logInfo('  • Drift: ${result.summary.driftPercentage.toStringAsFixed(1)}%');
 
     if (result.violations.isNotEmpty) {
-      logWarning('⚠️  Violations found:');
+      logWarning('⚠️ Violations found:');
       for (final violation in result.violations) {
         logError('  • [${violation.severity}] ${violation.message}');
         if (argResults!['verbose'] as bool) {
@@ -252,7 +252,7 @@ class ValidateCommandV3 extends BaseCommandV3 {
     }
 
     if (result.warnings.isNotEmpty) {
-      logWarning('⚠️  Warnings:');
+      logWarning('⚠️ Warnings:');
       for (final warning in result.warnings) {
         logWarning('  • $warning');
       }

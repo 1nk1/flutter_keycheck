@@ -5012,7 +5012,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     }
 
     final buffer = StringBuffer();
-    if (useColors) buffer.writeln('$_yellow$_bold⚠️  Action Required$_reset');
+    if (useColors) buffer.writeln('$_yellow$_bold⚠️ Action Required$_reset');
 
     if (hasWarnings) {
       buffer.writeln(useColors
@@ -5051,7 +5051,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     // Collapsible section for blind spots
     if (result.blindSpots.isNotEmpty) {
       buffer.writeln(
-          '\ndetail<summary><b>⚠️  Blind Spots (${result.blindSpots.length} found)</b></summary>');
+          '\ndetail<summary><b>⚠️ Blind Spots (${result.blindSpots.length} found)</b></summary>');
 
       for (final spot in result.blindSpots) {
         buffer.writeln('- **${spot.location}**: ${spot.message}');

@@ -165,7 +165,7 @@ class SyncCommand extends BaseCommandV3 {
         if (remote.lastUpdated != null &&
             keyRegistry.lastUpdated != null &&
             remote.lastUpdated!.isAfter(keyRegistry.lastUpdated!)) {
-          stderr.writeln('⚠️  Remote registry is newer than local');
+          stderr.writeln('⚠️ Remote registry is newer than local');
           stderr.writeln('   Remote: ${remote.lastUpdated}');
           stderr.writeln('   Local: ${keyRegistry.lastUpdated}');
           stderr.writeln('   Use --force to override or pull first');
@@ -240,7 +240,7 @@ class SyncCommand extends BaseCommandV3 {
         // Compare
         if (remote.lastUpdated != null && local.lastUpdated != null) {
           if (remote.lastUpdated!.isAfter(local.lastUpdated!)) {
-            stdout.writeln('\n⚠️  Remote is newer - consider pulling');
+            stdout.writeln('\n⚠️ Remote is newer - consider pulling');
           } else if (local.lastUpdated!.isAfter(remote.lastUpdated!)) {
             stdout.writeln('\n📤 Local is newer - consider pushing');
           } else {

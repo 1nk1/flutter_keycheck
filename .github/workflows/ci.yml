@@ -187,7 +187,7 @@ jobs:
       - name: Code Analysis
         run: |
           echo "🔍 Running static analysis..."
-          dart analyze --fatal-infos --fatal-warnings
+          dart analyze --fatal-infos
           echo "✅ Static analysis passed"
       
       - name: Format Check

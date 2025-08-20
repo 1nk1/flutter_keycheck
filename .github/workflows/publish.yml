@@ -65,7 +65,7 @@ jobs:
           echo "✓ Code formatting (skipped)"
           
           # Analysis
-          dart analyze --fatal-infos --fatal-warnings || {
+          dart analyze --fatal-infos || {
             echo "::error::Code analysis failed"
             exit 1
           }

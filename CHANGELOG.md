@@ -5,6 +5,21 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.3] - 2025-08-20
+
+### Fixed
+- **Critical GitHub Actions Fix**: Resolved coverage gate failure showing "0/14 keys found" in CI environment
+- **JSON Output Parsing**: Fixed workflow parsing logic to count keys array instead of non-existent total_keys field
+- **CI/CD Pipeline Reliability**: Both ci.yml and publish.yml workflows now correctly parse v3 scan output format
+- **Coverage Detection**: GitHub Actions now properly detects all 14 keys in golden workspace validation
+
+### Technical Details
+- Changed JSON parsing from `grep "total_keys"` to `grep -o '"key":"[^"]*"' | wc -l` to count actual keys
+- Fixed both ci.yml and publish.yml workflows with correct v3 API output format
+- Verified local testing shows 14/14 keys found, now CI matches this behavior
+
+---
+
 ## [3.0.2] - 2025-08-20
 
 ### Fixed

@@ -116,9 +116,9 @@ jobs:
           if [ "$TOTAL_KEYS" -gt 0 ]; then
             echo "✓ Golden snapshot valid - found $TOTAL_KEYS keys"
           else
-            echo "::warning::No keys found in golden workspace - this may indicate an issue"
+            echo "::warning::No keys found in golden workspace - this may indicate an environment issue"
           fi
-          echo "✓ Golden snapshot valid"
+          echo "✓ Golden snapshot validation completed (warnings allowed)"
       
       - name: Performance regression check
         env:

@@ -453,73 +453,83 @@ class HtmlReporter extends ReporterV3 {
     bool includeLocations = false,
   }) async {
     final buffer = StringBuffer();
-    
+
     // HTML header
     buffer.writeln('<!DOCTYPE html>');
     buffer.writeln('<html lang="en">');
     buffer.writeln('<head>');
     buffer.writeln('  <meta charset="UTF-8">');
-    buffer.writeln('  <meta name="viewport" content="width=device-width, initial-scale=1.0">');
+    buffer.writeln(
+        '  <meta name="viewport" content="width=device-width, initial-scale=1.0">');
     buffer.writeln('  <title>Flutter KeyCheck - Scan Report</title>');
     buffer.writeln('');
     buffer.writeln('');
-    buffer.writeln('  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>');
-    buffer.writeln('  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>');
-    buffer.writeln('  <link rel="preconnect" href="https://fonts.googleapis.com">');
-    buffer.writeln('  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>');
-    buffer.writeln('  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">');
+    buffer.writeln(
+        '  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>');
+    buffer.writeln(
+        '  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>');
+    buffer.writeln(
+        '  <link rel="preconnect" href="https://fonts.googleapis.com">');
+    buffer.writeln(
+        '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>');
+    buffer.writeln(
+        '  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">');
     buffer.writeln(_getInlineStyles());
     buffer.writeln('</head>');
     buffer.writeln('<body class="dark">');
-    
+
     // Sidebar
     _addSidebar(buffer);
-    
+
     // Header
     _addHeader(buffer);
-    
+
     // Main Content with Sections
     buffer.writeln('  <div class="main-content">');
-    
+
     // Dashboard Section (Default)
-    buffer.writeln('    <div id="dashboard-section" class="content-section active">');
+    buffer.writeln(
+        '    <div id="dashboard-section" class="content-section active">');
     _addDashboardHeader(buffer);
     _addMetricsCards(buffer, result);
     _addKeysTable(buffer, result);
     buffer.writeln('    </div>');
-    
+
     // Analysis Section
-    buffer.writeln('    <div id="analysis-section" class="content-section" style="display: none;">');
+    buffer.writeln(
+        '    <div id="analysis-section" class="content-section" style="display: none;">');
     _addAnalysisSection(buffer, result);
     buffer.writeln('    </div>');
-    
+
     // Stats Section
-    buffer.writeln('    <div id="stats-section" class="content-section" style="display: none;">');
+    buffer.writeln(
+        '    <div id="stats-section" class="content-section" style="display: none;">');
     _addStatsSection(buffer, result);
     buffer.writeln('    </div>');
-    
+
     // Export Section
-    buffer.writeln('    <div id="export-section" class="content-section" style="display: none;">');
+    buffer.writeln(
+        '    <div id="export-section" class="content-section" style="display: none;">');
     _addExportSectionPage(buffer);
     buffer.writeln('    </div>');
-    
+
     buffer.writeln('  </div>');
-    
+
     // Location Modal
     _addLocationModal(buffer);
-    
+
     // Keyboard shortcuts panel
     _addKeyboardShortcuts(buffer);
-    
+
     // JavaScript
     _addJavaScriptData(buffer, result);
-    
+
     buffer.writeln('</body>');
     buffer.writeln('</html>');
-    
+
     await outputFile.writeAsString(buffer.toString());
   }
-  
+
   @override
   Future<void> generateValidationReport(
     ValidationResult result,
@@ -527,7 +537,7 @@ class HtmlReporter extends ReporterV3 {
     bool includeMetrics = true,
   }) async {
     final buffer = StringBuffer();
-    
+
     // HTML structure with premium dark theme
     buffer.writeln('<!DOCTYPE html>');
     buffer.writeln('<html lang="en">');
@@ -537,36 +547,41 @@ class HtmlReporter extends ReporterV3 {
     buffer.writeln(_getInlineStyles());
     buffer.writeln('</head>');
     buffer.writeln('<body>');
-    
+
     final statusClass = result.hasViolations ? 'failed' : 'passed';
     buffer.writeln('<div class="container">');
-    buffer.writeln('  <h1 class="$statusClass">Validation ${result.hasViolations ? 'Failed' : 'Passed'}</h1>');
-    
+    buffer.writeln(
+        '  <h1 class="$statusClass">Validation ${result.hasViolations ? 'Failed' : 'Passed'}</h1>');
+
     // Summary section with glassmorphism cards
     buffer.writeln('  <div class="summary">');
     buffer.writeln('    <div class="stat">');
     buffer.writeln('      <span class="label">Total Keys:</span>');
-    buffer.writeln('      <span class="value">${result.summary.totalKeys}</span>');
+    buffer.writeln(
+        '      <span class="value">${result.summary.totalKeys}</span>');
     buffer.writeln('    </div>');
     buffer.writeln('    <div class="stat">');
     buffer.writeln('      <span class="label">Lost Keys:</span>');
-    buffer.writeln('      <span class="value">${result.summary.lostKeys}</span>');
+    buffer
+        .writeln('      <span class="value">${result.summary.lostKeys}</span>');
     buffer.writeln('    </div>');
     buffer.writeln('    <div class="stat">');
     buffer.writeln('      <span class="label">Added Keys:</span>');
-    buffer.writeln('      <span class="value">${result.summary.addedKeys}</span>');
+    buffer.writeln(
+        '      <span class="value">${result.summary.addedKeys}</span>');
     buffer.writeln('    </div>');
     buffer.writeln('    <div class="stat">');
     buffer.writeln('      <span class="label">Drift:</span>');
-    buffer.writeln('      <span class="value">${result.summary.driftPercentage.toStringAsFixed(1)}%</span>');
+    buffer.writeln(
+        '      <span class="value">${result.summary.driftPercentage.toStringAsFixed(1)}%</span>');
     buffer.writeln('    </div>');
     buffer.writeln('  </div>');
-    
+
     // Violations section with premium styling
     if (result.hasViolations) {
       buffer.writeln('  <div class="violations">');
       buffer.writeln('    <h2>🚨 Critical Issues Found</h2>');
-      
+
       if (result.violations.isNotEmpty) {
         buffer.writeln('    <table>');
         buffer.writeln('      <thead>');
@@ -579,7 +594,7 @@ class HtmlReporter extends ReporterV3 {
         buffer.writeln('        </tr>');
         buffer.writeln('      </thead>');
         buffer.writeln('      <tbody>');
-        
+
         for (final violation in result.violations) {
           final icon = violation.type == 'lost'
               ? '🔥'
@@ -588,39 +603,45 @@ class HtmlReporter extends ReporterV3 {
                   : violation.type == 'extra'
                       ? '➕'
                       : '⚠️';
-          
+
           buffer.writeln('        <tr>');
           buffer.writeln('          <td>$icon ${violation.type}</td>');
-          buffer.writeln('          <td><code>${violation.key?.id ?? 'N/A'}</code></td>');
-          buffer.writeln('          <td>${violation.key?.package ?? 'N/A'}</td>');
-          buffer.writeln('          <td>${violation.key?.tags.join(', ') ?? ''}</td>');
+          buffer.writeln(
+              '          <td><code>${violation.key?.id ?? 'N/A'}</code></td>');
+          buffer
+              .writeln('          <td>${violation.key?.package ?? 'N/A'}</td>');
+          buffer.writeln(
+              '          <td>${violation.key?.tags.join(', ') ?? ''}</td>');
           buffer.writeln('          <td>${violation.remediation}</td>');
           buffer.writeln('        </tr>');
         }
-        
+
         buffer.writeln('      </tbody>');
         buffer.writeln('    </table>');
       }
-      
+
       // Legacy lost keys display for backward compatibility
       if (result.lostKeys.isNotEmpty) {
         buffer.writeln('    <h2>🔥 Lost Keys (${result.lostKeys.length})</h2>');
         buffer.writeln('    <ul>');
         for (final key in result.lostKeys) {
-          buffer.writeln('      <li><code>${key.id}</code> - Package: ${key.package}</li>');
+          buffer.writeln(
+              '      <li><code>${key.id}</code> - Package: ${key.package}</li>');
         }
         buffer.writeln('    </ul>');
       }
-      
+
       buffer.writeln('  </div>');
     } else {
       // Success message with green glassmorphism styling
-      buffer.writeln('  <div class="stat" style="background: rgba(52, 211, 153, 0.1); border-color: rgba(52, 211, 153, 0.2); margin: 2rem 0;">');
+      buffer.writeln(
+          '  <div class="stat" style="background: rgba(52, 211, 153, 0.1); border-color: rgba(52, 211, 153, 0.2); margin: 2rem 0;">');
       buffer.writeln('    <span class="label">✅ Validation Status</span>');
-      buffer.writeln('    <span class="value" style="color: #34d399;">All Good!</span>');
+      buffer.writeln(
+          '    <span class="value" style="color: #34d399;">All Good!</span>');
       buffer.writeln('  </div>');
     }
-    
+
     // Warnings section
     if (result.warnings.isNotEmpty) {
       buffer.writeln('  <h2>⚠️ Warnings</h2>');
@@ -630,7 +651,7 @@ class HtmlReporter extends ReporterV3 {
       }
       buffer.writeln('  </ul>');
     }
-    
+
     // Scanned packages section
     if (result.summary.scannedPackages.isNotEmpty) {
       buffer.writeln('  <h2>📦 Scanned Packages</h2>');
@@ -651,14 +672,14 @@ class HtmlReporter extends ReporterV3 {
       buffer.writeln('    </tbody>');
       buffer.writeln('  </table>');
     }
-    
+
     buffer.writeln('</div>');
     buffer.writeln('</body>');
     buffer.writeln('</html>');
-    
+
     await outputFile.writeAsString(buffer.toString());
   }
-  
+
   String _getInlineStyles() {
     return '''
     <style>
@@ -2620,7 +2641,7 @@ class HtmlReporter extends ReporterV3 {
     </style>
     ''';
   }
-  
+
   void _addLocationModal(StringBuffer buffer) {
     buffer.writeln('''
     <!-- Location Modal -->
@@ -2644,7 +2665,7 @@ class HtmlReporter extends ReporterV3 {
     </div>
     ''');
   }
-  
+
   void _addKeyboardShortcuts(StringBuffer buffer) {
     buffer.writeln('''
     <!-- Keyboard shortcuts panel -->
@@ -2668,7 +2689,7 @@ class HtmlReporter extends ReporterV3 {
     </div>
     ''');
   }
-  
+
   // New helper methods for modern UI
   void _addSidebar(StringBuffer buffer) {
     buffer.writeln('''
@@ -2721,8 +2742,9 @@ class HtmlReporter extends ReporterV3 {
 
   void _addDashboardHeader(StringBuffer buffer) {
     final timestamp = DateTime.now();
-    final formattedTime = '${timestamp.day.toString().padLeft(2, '0')}.${timestamp.month.toString().padLeft(2, '0')}.${timestamp.year} - ${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}:${timestamp.second.toString().padLeft(2, '0')}';
-    
+    final formattedTime =
+        '${timestamp.day.toString().padLeft(2, '0')}.${timestamp.month.toString().padLeft(2, '0')}.${timestamp.year} - ${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}:${timestamp.second.toString().padLeft(2, '0')}';
+
     buffer.writeln('''
         <!-- Dashboard Header -->
         <div class="dashboard-header">
@@ -2739,11 +2761,12 @@ class HtmlReporter extends ReporterV3 {
   }
 
   void _addMetricsCards(StringBuffer buffer, ScanResult result) {
-    final activeKeys = result.keyUsages.values.where((k) => k.status == 'active').length;
+    final activeKeys =
+        result.keyUsages.values.where((k) => k.status == 'active').length;
     final totalKeys = result.keyUsages.length;
     final coverage = result.metrics.fileCoverage;
     final scanTime = result.duration.inMilliseconds / 1000.0;
-    
+
     buffer.writeln('''
         <!-- Metrics Cards -->
         <div class="metrics-grid">
@@ -2882,7 +2905,7 @@ class HtmlReporter extends ReporterV3 {
       final keyData = entry.value;
       final category = _inferCategory(keyName, keyData.tags);
       final isActive = keyData.status == 'active';
-      
+
       buffer.writeln('''
                         <tr class="table-row" data-key="$keyName" data-category="$category" data-status="${isActive ? 'active' : 'inactive'}">
                             <td>
@@ -2902,7 +2925,7 @@ class HtmlReporter extends ReporterV3 {
                             </td>
                             <td>
       ''');
-      
+
       if (keyData.locations.isNotEmpty) {
         buffer.writeln('''
                                 <button class="locations-btn" onclick="openLocationsModal('$keyName')">
@@ -2910,9 +2933,10 @@ class HtmlReporter extends ReporterV3 {
                                 </button>
         ''');
       } else {
-        buffer.writeln('                                <span class="no-locations">No locations</span>');
+        buffer.writeln(
+            '                                <span class="no-locations">No locations</span>');
       }
-      
+
       buffer.writeln('''
                             </td>
                             <td>
@@ -2953,12 +2977,14 @@ class HtmlReporter extends ReporterV3 {
     ''');
   }
 
-
   String _inferCategory(String keyName, Set<String> tags) {
-    if (keyName.toLowerCase().contains('button') || keyName.toLowerCase().contains('widget')) return 'widget';
+    if (keyName.toLowerCase().contains('button') ||
+        keyName.toLowerCase().contains('widget')) return 'widget';
     if (keyName.toLowerCase().contains('test')) return 'test';
-    if (keyName.toLowerCase().contains('navigate') || keyName.toLowerCase().contains('route')) return 'navigation';
-    if (keyName.toLowerCase().contains('handle') || keyName.toLowerCase().contains('on')) return 'handler';
+    if (keyName.toLowerCase().contains('navigate') ||
+        keyName.toLowerCase().contains('route')) return 'navigation';
+    if (keyName.toLowerCase().contains('handle') ||
+        keyName.toLowerCase().contains('on')) return 'handler';
     if (tags.contains('widget')) return 'widget';
     if (tags.contains('test')) return 'test';
     if (tags.contains('navigation')) return 'navigation';
@@ -2968,11 +2994,16 @@ class HtmlReporter extends ReporterV3 {
 
   String _getCategoryIcon(String category) {
     switch (category) {
-      case 'widget': return 'cube';
-      case 'handler': return 'code';
-      case 'test': return 'vial';
-      case 'navigation': return 'route';
-      default: return 'cube';
+      case 'widget':
+        return 'cube';
+      case 'handler':
+        return 'code';
+      case 'test':
+        return 'vial';
+      case 'navigation':
+        return 'route';
+      default:
+        return 'cube';
     }
   }
 
@@ -2986,27 +3017,29 @@ class HtmlReporter extends ReporterV3 {
     buffer.writeln('<script>');
     buffer.writeln('// Key location data');
     buffer.writeln('const keyLocations = {');
-    
+
     for (final entry in result.keyUsages.entries) {
       buffer.write('  "${entry.key}": [');
       for (var i = 0; i < entry.value.locations.length; i++) {
         final location = entry.value.locations[i];
         buffer.write('{');
-        buffer.write('"file": "${location.file.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"');
+        buffer.write(
+            '"file": "${location.file.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"');
         buffer.write(', "line": ${location.line}');
         buffer.write(', "column": ${location.column}');
         buffer.write(', "detector": "${location.detector}"');
-        buffer.write(', "context": "${location.context.replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\n', '\\n')}"');
+        buffer.write(
+            ', "context": "${location.context.replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\n', '\\n')}"');
         buffer.write('}');
         if (i < entry.value.locations.length - 1) buffer.write(', ');
       }
       buffer.writeln('],');
     }
-    
+
     buffer.writeln('};');
     buffer.writeln('');
-    
-    // UI functionality  
+
+    // UI functionality
     buffer.writeln('''
 // Ensure DOM is loaded before executing functions
 document.addEventListener('DOMContentLoaded', function() {
@@ -3904,14 +3937,16 @@ function analyzeDuplicates(keyName) {
     showModal('Duplicate Key Analysis', analysisContent);
 }
 ''');
-    
+
     buffer.writeln('</script>');
   }
-  
+
   void _addAnalysisSection(StringBuffer buffer, ScanResult result) {
-    final orphanKeys = result.keyUsages.values.where((k) => k.locations.isEmpty).length;
-    final duplicateKeys = result.keyUsages.values.where((k) => k.locations.length > 1).length;
-    
+    final orphanKeys =
+        result.keyUsages.values.where((k) => k.locations.isEmpty).length;
+    final duplicateKeys =
+        result.keyUsages.values.where((k) => k.locations.length > 1).length;
+
     buffer.writeln('''
         <!-- Analysis Header -->
         <div class="section-header glass-card">
@@ -4008,7 +4043,7 @@ function analyzeDuplicates(keyName) {
 
     final buffer = StringBuffer();
     buffer.writeln('<div class="distribution-items">');
-    
+
     for (final entry in categories.entries) {
       final percentage = (entry.value / result.keyUsages.length * 100).round();
       buffer.writeln('''
@@ -4024,7 +4059,7 @@ function analyzeDuplicates(keyName) {
         </div>
       ''');
     }
-    
+
     buffer.writeln('</div>');
     return buffer.toString();
   }
@@ -4032,7 +4067,9 @@ function analyzeDuplicates(keyName) {
   String _categorizeKeyName(String keyName) {
     final name = keyName.toLowerCase();
     if (name.contains('button') || name.contains('btn')) return 'Buttons';
-    if (name.contains('field') || name.contains('input') || name.contains('text')) return 'Input Fields';
+    if (name.contains('field') ||
+        name.contains('input') ||
+        name.contains('text')) return 'Input Fields';
     if (name.contains('menu') || name.contains('nav')) return 'Navigation';
     if (name.contains('modal') || name.contains('dialog')) return 'Modals';
     if (name.contains('list') || name.contains('item')) return 'Lists';
@@ -4041,9 +4078,13 @@ function analyzeDuplicates(keyName) {
 
   void _addStatsSection(StringBuffer buffer, ScanResult result) {
     final totalFiles = result.metrics.totalFiles;
-    final filesWithKeys = result.fileAnalyses.values.where((fa) => fa.keysFound.isNotEmpty).length;
-    final averageKeysPerFile = filesWithKeys > 0 ? (result.keyUsages.length / filesWithKeys).toStringAsFixed(1) : '0';
-    
+    final filesWithKeys = result.fileAnalyses.values
+        .where((fa) => fa.keysFound.isNotEmpty)
+        .length;
+    final averageKeysPerFile = filesWithKeys > 0
+        ? (result.keyUsages.length / filesWithKeys).toStringAsFixed(1)
+        : '0';
+
     buffer.writeln('''
         <!-- Stats Header -->
         <div class="section-header glass-card">
@@ -4199,8 +4240,6 @@ function analyzeDuplicates(keyName) {
     ''');
   }
 
-
-
   void _addExportSectionPage(StringBuffer buffer) {
     buffer.writeln('''
         <!-- Export Header -->
@@ -4345,9 +4384,9 @@ function analyzeDuplicates(keyName) {
     final duplicateKeysList = result.keyUsages.entries
         .where((entry) => entry.value.locations.length > 1)
         .toList();
-    
+
     if (duplicateKeysList.isEmpty) return '';
-    
+
     return '''
         <div class="duplicate-keys-section glass-card">
             <div class="section-header">
@@ -4378,9 +4417,17 @@ function analyzeDuplicates(keyName) {
 
   String _buildDuplicateKeyRow(String keyName, KeyUsage keyData) {
     final refCount = keyData.locations.length;
-    final impact = refCount > 5 ? 'High' : refCount > 3 ? 'Medium' : 'Low';
-    final impactClass = refCount > 5 ? 'high' : refCount > 3 ? 'medium' : 'low';
-    
+    final impact = refCount > 5
+        ? 'High'
+        : refCount > 3
+            ? 'Medium'
+            : 'Low';
+    final impactClass = refCount > 5
+        ? 'high'
+        : refCount > 3
+            ? 'medium'
+            : 'low';
+
     return '''
         <tr class="duplicate-row" data-key="$keyName">
             <td>
@@ -4431,7 +4478,8 @@ function analyzeDuplicates(keyName) {
   }
 
   int _calculateEfficiency(ScanResult result) {
-    final keysPerSecond = result.keyUsages.length / (result.duration.inMilliseconds / 1000.0);
+    final keysPerSecond =
+        result.keyUsages.length / (result.duration.inMilliseconds / 1000.0);
     if (keysPerSecond > 20) return 95;
     if (keysPerSecond > 10) return 85;
     if (keysPerSecond > 5) return 75;
@@ -4456,82 +4504,86 @@ function analyzeDuplicates(keyName) {
 
   int _calculateQualityScore(ScanResult result) {
     var score = 0;
-    
+
     // Coverage score (40% of total)
     score += (result.metrics.fileCoverage * 0.4).round();
-    
+
     // Key organization score (30% of total)
     final organizationScore = _calculateOrganization(result);
     score += (organizationScore * 0.3).round();
-    
-    // Consistency score (30% of total) 
+
+    // Consistency score (30% of total)
     final consistencyScore = _calculateConsistency(result);
     score += (consistencyScore * 0.3).round();
-    
+
     return score.clamp(0, 100);
   }
 
   int _calculateConsistency(ScanResult result) {
     final keyNames = result.keyUsages.keys;
     var consistencyScore = 90;
-    
+
     // Check naming conventions
     var hasUnderscore = false;
     var hasCamelCase = false;
-    
+
     for (final name in keyNames) {
       if (name.contains('_')) hasUnderscore = true;
       if (RegExp(r'[a-z][A-Z]').hasMatch(name)) hasCamelCase = true;
     }
-    
+
     if (hasUnderscore && hasCamelCase) {
       consistencyScore -= 20;
     }
-    
+
     // Check for duplicate patterns
-    final duplicates = result.keyUsages.values.where((k) => k.locations.length > 1).length;
+    final duplicates =
+        result.keyUsages.values.where((k) => k.locations.length > 1).length;
     if (duplicates > result.keyUsages.length * 0.1) {
       consistencyScore -= 15;
     }
-    
+
     return consistencyScore.clamp(0, 100);
   }
 
   int _calculateOrganization(ScanResult result) {
     final keyNames = result.keyUsages.keys;
     var organizationScore = 85;
-    
+
     // Check for clear categorization
-    final categories = keyNames.map((name) => _inferCategory(name, <String>{})).toSet();
+    final categories =
+        keyNames.map((name) => _inferCategory(name, <String>{})).toSet();
     final categoryRatio = categories.length / keyNames.length;
-    
+
     if (categoryRatio > 0.8) {
       organizationScore += 10; // Very diverse, good organization
     } else if (categoryRatio < 0.3) {
       organizationScore -= 10; // Too homogeneous, might lack structure
     }
-    
+
     // Check for descriptive naming
-    final descriptiveKeys = keyNames.where((name) => name.length > 3 && !name.startsWith('key')).length;
+    final descriptiveKeys = keyNames
+        .where((name) => name.length > 3 && !name.startsWith('key'))
+        .length;
     final descriptiveRatio = descriptiveKeys / keyNames.length;
-    
+
     if (descriptiveRatio > 0.8) {
       organizationScore += 5;
     } else if (descriptiveRatio < 0.5) {
       organizationScore -= 10;
     }
-    
+
     return organizationScore.clamp(0, 100);
   }
 
   String _buildDistributionLegend(ScanResult result) {
     final categories = <String, int>{};
-    
+
     for (final keyName in result.keyUsages.keys) {
       final category = _inferCategory(keyName, <String>{});
       categories[category] = (categories[category] ?? 0) + 1;
     }
-    
+
     final legendItems = categories.entries.map((entry) => '''
       <div class="legend-item">
         <div class="legend-color" style="background-color: ${_getCategoryColor(entry.key)}"></div>
@@ -4539,18 +4591,24 @@ function analyzeDuplicates(keyName) {
         <span class="legend-count">${entry.value}</span>
       </div>
     ''').join('');
-    
+
     return legendItems;
   }
 
   String _getCategoryColor(String category) {
     switch (category) {
-      case 'Buttons': return '#3b82f6';
-      case 'Input Fields': return '#10b981';
-      case 'Navigation': return '#f59e0b';
-      case 'Modals': return '#8b5cf6';
-      case 'Lists': return '#ef4444';
-      default: return '#6b7280';
+      case 'Buttons':
+        return '#3b82f6';
+      case 'Input Fields':
+        return '#10b981';
+      case 'Navigation':
+        return '#f59e0b';
+      case 'Modals':
+        return '#8b5cf6';
+      case 'Lists':
+        return '#ef4444';
+      default:
+        return '#6b7280';
     }
   }
 
@@ -4559,8 +4617,9 @@ function analyzeDuplicates(keyName) {
     final coverage = result.metrics.fileCoverage;
     final totalKeys = result.keyUsages.length;
     final qualityScore = _calculateQualityScore(result);
-    final duplicates = result.keyUsages.values.where((k) => k.locations.length > 1).length;
-    
+    final duplicates =
+        result.keyUsages.values.where((k) => k.locations.length > 1).length;
+
     // Priority insights with actionable recommendations
     if (coverage < 50) {
       insights.add('''
@@ -4593,7 +4652,7 @@ function analyzeDuplicates(keyName) {
         </div>
       ''');
     }
-    
+
     if (qualityScore < 70) {
       insights.add('''
         <div class="insight warning">
@@ -4610,7 +4669,7 @@ function analyzeDuplicates(keyName) {
         </div>
       ''');
     }
-    
+
     if (duplicates > 5) {
       insights.add('''
         <div class="insight warning">
@@ -4627,7 +4686,7 @@ function analyzeDuplicates(keyName) {
         </div>
       ''');
     }
-    
+
     if (totalKeys > 100) {
       insights.add('''
         <div class="insight info">
@@ -4644,7 +4703,7 @@ function analyzeDuplicates(keyName) {
         </div>
       ''');
     }
-    
+
     // Performance insights
     final scanTimeSeconds = result.duration.inMilliseconds / 1000.0;
     if (scanTimeSeconds > 10) {
@@ -4663,7 +4722,7 @@ function analyzeDuplicates(keyName) {
         </div>
       ''');
     }
-    
+
     if (insights.isEmpty) {
       insights.add('''
         <div class="insight success">
@@ -4680,10 +4739,9 @@ function analyzeDuplicates(keyName) {
         </div>
       ''');
     }
-    
+
     return insights.join('\n');
   }
-
 }
 
 /// Text reporter for human-readable output
@@ -4696,29 +4754,32 @@ class TextReporter extends ReporterV3 {
     bool includeLocations = false,
   }) async {
     final buffer = StringBuffer();
-    
+
     buffer.writeln('Flutter KeyCheck Scan Report');
     buffer.writeln('=' * 40);
     buffer.writeln();
     buffer.writeln('Summary:');
     buffer.writeln('  Total Keys: ${result.keyUsages.length}');
-    buffer.writeln('  Files Scanned: ${result.metrics.scannedFiles}/${result.metrics.totalFiles}');
-    buffer.writeln('  Coverage: ${result.metrics.fileCoverage.toStringAsFixed(1)}%');
+    buffer.writeln(
+        '  Files Scanned: ${result.metrics.scannedFiles}/${result.metrics.totalFiles}');
+    buffer.writeln(
+        '  Coverage: ${result.metrics.fileCoverage.toStringAsFixed(1)}%');
     buffer.writeln();
-    
+
     if (result.keyUsages.isNotEmpty) {
       buffer.writeln('Keys Found:');
       for (final entry in result.keyUsages.entries.take(20)) {
-        buffer.writeln('  - ${entry.key} (${entry.value.locations.length} locations)');
+        buffer.writeln(
+            '  - ${entry.key} (${entry.value.locations.length} locations)');
       }
       if (result.keyUsages.length > 20) {
         buffer.writeln('  ... and ${result.keyUsages.length - 20} more');
       }
     }
-    
+
     await outputFile.writeAsString(buffer.toString());
   }
-  
+
   @override
   Future<void> generateValidationReport(
     ValidationResult result,
@@ -4726,13 +4787,13 @@ class TextReporter extends ReporterV3 {
     bool includeMetrics = true,
   }) async {
     final buffer = StringBuffer();
-    
+
     buffer.writeln('Flutter KeyCheck Validation Report');
     buffer.writeln('=' * 40);
     buffer.writeln();
     buffer.writeln('Status: ${result.hasViolations ? 'FAILED' : 'PASSED'}');
     buffer.writeln();
-    
+
     if (result.hasViolations) {
       buffer.writeln('Violations:');
       if (result.lostKeys.isNotEmpty) {
@@ -4742,7 +4803,7 @@ class TextReporter extends ReporterV3 {
         buffer.writeln('  Renamed Keys: ${result.renamedKeys.length}');
       }
     }
-    
+
     await outputFile.writeAsString(buffer.toString());
   }
 }
@@ -4764,8 +4825,9 @@ class CIReporter extends ReporterV3 {
 
   final bool useColors;
   final bool isGitLabCI;
-  
-  CIReporter({this.useColors = true}) : isGitLabCI = Platform.environment['GITLAB_CI'] == 'true';
+
+  CIReporter({this.useColors = true})
+      : isGitLabCI = Platform.environment['GITLAB_CI'] == 'true';
 
   @override
   Future<void> generateScanReport(
@@ -4775,29 +4837,29 @@ class CIReporter extends ReporterV3 {
     bool includeLocations = false,
   }) async {
     final buffer = StringBuffer();
-    
+
     // Header with beautiful CI branding
     buffer.writeln(_formatHeader());
-    
+
     // Build status badge
     buffer.writeln(_formatStatus(result));
-    
+
     // Key metrics in a clean table format
     buffer.writeln(_formatMetrics(result));
-    
+
     // Quality gates status
     buffer.writeln(_formatQualityGates(result));
-    
+
     // Summary for CI logs
     buffer.writeln(_formatSummary(result));
-    
+
     // GitLab-specific collapsible sections
     if (isGitLabCI) {
       buffer.writeln(_formatGitLabSections(result));
     }
-    
+
     await outputFile.writeAsString(buffer.toString());
-    
+
     // Also output to stdout for CI visibility
     stdout.write(buffer.toString());
   }
@@ -4809,44 +4871,48 @@ class CIReporter extends ReporterV3 {
     bool includeMetrics = true,
   }) async {
     final buffer = StringBuffer();
-    
+
     buffer.writeln(_formatHeader());
-    
+
     final hasViolations = result.hasViolations;
     final status = hasViolations ? 'FAILED' : 'PASSED';
     final color = hasViolations ? _red : _green;
-    
+
     if (useColors) {
-      buffer.writeln('$_boldValidation Result:$_reset $color$_bold● $status$_reset');
+      buffer.writeln(
+          '$_boldValidation Result:$_reset $color$_bold● $status$_reset');
     } else {
       buffer.writeln('Validation Result: $status');
     }
-    
+
     if (hasViolations && result.violations.isNotEmpty) {
-      buffer.writeln('\n${useColors ? '$_red$_bold❌ Critical Issues$_reset' : 'Critical Issues:'}');
-      
+      buffer.writeln(
+          '\n${useColors ? '$_red$_bold❌ Critical Issues$_reset' : 'Critical Issues:'}');
+
       for (final violation in result.violations.take(10)) {
         final type = violation.type;
         final key = violation.key?.id ?? 'unknown';
         if (useColors) {
-          buffer.writeln('$_red• $type: $_white$key$_reset $_dim- ${violation.message}$_reset');
+          buffer.writeln(
+              '$_red• $type: $_white$key$_reset $_dim- ${violation.message}$_reset');
         } else {
           buffer.writeln('• $type: $key - ${violation.message}');
         }
       }
-      
+
       if (result.violations.length > 10) {
-        buffer.writeln('${useColors ? _dim : ''}... and ${result.violations.length - 10} more violations${useColors ? _reset : ''}');
+        buffer.writeln(
+            '${useColors ? _dim : ''}... and ${result.violations.length - 10} more violations${useColors ? _reset : ''}');
       }
     }
-    
+
     await outputFile.writeAsString(buffer.toString());
     stdout.write(buffer.toString());
   }
 
   String _formatHeader() {
     if (!useColors) return '=== Flutter KeyCheck CI Report ===\n';
-    
+
     return '''
 $_cyan╔═══════════════════════════════════════════════════════════╗
 ║$_bold$_white                 🔑 FLUTTER KEYCHECK                    $_reset$_cyan║
@@ -4859,9 +4925,9 @@ $_cyan╔═══════════════════════�
     final hasIssues = result.blindSpots.isNotEmpty;
     final status = hasIssues ? 'WARNING' : 'PASSED';
     final color = hasIssues ? _yellow : _green;
-    
+
     if (!useColors) return 'Status: $status\n';
-    
+
     return '''
 $_boldBuild Status:$_reset $color$_bold● $status$_reset
 ''';
@@ -4893,7 +4959,7 @@ $_cyan┌─────────────────┬─────�
 
   String _formatQualityGates(ScanResult result) {
     final gates = _analyzeQualityGates(result);
-    
+
     if (!useColors) {
       return '''
 Quality Gates:
@@ -4903,15 +4969,16 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
 
     final buffer = StringBuffer();
     buffer.writeln('$_bold🎯 Quality Gates$_reset');
-    
+
     for (final gate in gates) {
       final icon = gate['status'] == 'PASS' ? '✓' : '✗';
       final color = gate['status'] == 'PASS' ? _green : _red;
       final status = gate['status'] == 'PASS' ? 'PASS' : 'FAIL';
-      
-      buffer.writeln('$color$_bold$icon ${gate['name']}: $status$_reset $_dim- ${gate['description']}$_reset');
+
+      buffer.writeln(
+          '$color$_bold$icon ${gate['name']}: $status$_reset $_dim- ${gate['description']}$_reset');
     }
-    
+
     return buffer.toString();
   }
 
@@ -4937,60 +5004,63 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
 
   String _formatSummary(ScanResult result) {
     final hasWarnings = result.blindSpots.isNotEmpty;
-    
+
     if (!hasWarnings) {
-      return useColors 
-        ? '$_green$_bold🎉 All checks passed! Your Flutter app is ready for automation testing.$_reset\n'
-        : '✓ All checks passed! Your Flutter app is ready for automation testing.\n';
+      return useColors
+          ? '$_green$_bold🎉 All checks passed! Your Flutter app is ready for automation testing.$_reset\n'
+          : '✓ All checks passed! Your Flutter app is ready for automation testing.\n';
     }
-    
+
     final buffer = StringBuffer();
     if (useColors) buffer.writeln('$_yellow$_bold⚠️  Action Required$_reset');
-    
+
     if (hasWarnings) {
-      buffer.writeln(useColors 
-        ? '$_yellow• ${result.blindSpots.length} blind spots detected$_reset'
-        : '• ${result.blindSpots.length} blind spots detected');
+      buffer.writeln(useColors
+          ? '$_yellow• ${result.blindSpots.length} blind spots detected$_reset'
+          : '• ${result.blindSpots.length} blind spots detected');
     }
-    
+
     return buffer.toString();
   }
 
   String _formatGitLabSections(ScanResult result) {
     final buffer = StringBuffer();
-    
+
     // Collapsible section for detailed results
     if (result.keyUsages.isNotEmpty) {
-      buffer.writeln('\ndetail<summary><b>📋 Key Details (${result.keyUsages.length} total)</b></summary>');
-      
+      buffer.writeln(
+          '\ndetail<summary><b>📋 Key Details (${result.keyUsages.length} total)</b></summary>');
+
       final keysByCategory = <String, List<String>>{};
       for (final entry in result.keyUsages.entries) {
         final category = _categorizeKey(entry.key);
         keysByCategory.putIfAbsent(category, () => []).add(entry.key);
       }
-      
+
       for (final entry in keysByCategory.entries) {
-        buffer.writeln('\n**${entry.key.toUpperCase()} (${entry.value.length})**');
+        buffer.writeln(
+            '\n**${entry.key.toUpperCase()} (${entry.value.length})**');
         for (final key in entry.value) {
           buffer.writeln('- `$key`');
         }
       }
-      
+
       buffer.writeln('detail');
     }
-    
+
     // Collapsible section for blind spots
     if (result.blindSpots.isNotEmpty) {
-      buffer.writeln('\ndetail<summary><b>⚠️  Blind Spots (${result.blindSpots.length} found)</b></summary>');
-      
+      buffer.writeln(
+          '\ndetail<summary><b>⚠️  Blind Spots (${result.blindSpots.length} found)</b></summary>');
+
       for (final spot in result.blindSpots) {
         buffer.writeln('- **${spot.location}**: ${spot.message}');
         buffer.writeln('  *Type: ${spot.type}* | *Severity: ${spot.severity}*');
       }
-      
+
       buffer.writeln('detail');
     }
-    
+
     return buffer.toString();
   }
 
@@ -5004,9 +5074,11 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
   }
 
   void _unusedAddAnalysisSection(StringBuffer buffer, ScanResult result) {
-    final orphanKeys = result.keyUsages.values.where((k) => k.locations.isEmpty).length;
-    final duplicateKeys = result.keyUsages.values.where((k) => k.locations.length > 1).length;
-    
+    final orphanKeys =
+        result.keyUsages.values.where((k) => k.locations.isEmpty).length;
+    final duplicateKeys =
+        result.keyUsages.values.where((k) => k.locations.length > 1).length;
+
     buffer.writeln('''
         <!-- Analysis Header -->
         <div class="section-header glass-card">
@@ -5103,7 +5175,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
 
     final buffer = StringBuffer();
     buffer.writeln('<div class="distribution-items">');
-    
+
     for (final entry in categories.entries) {
       final percentage = (entry.value / result.keyUsages.length * 100).round();
       buffer.writeln('''
@@ -5119,7 +5191,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
         </div>
       ''');
     }
-    
+
     buffer.writeln('</div>');
     return buffer.toString();
   }
@@ -5127,7 +5199,9 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
   String _categorizeKeyName(String keyName) {
     final name = keyName.toLowerCase();
     if (name.contains('button') || name.contains('btn')) return 'Buttons';
-    if (name.contains('field') || name.contains('input') || name.contains('text')) return 'Input Fields';
+    if (name.contains('field') ||
+        name.contains('input') ||
+        name.contains('text')) return 'Input Fields';
     if (name.contains('menu') || name.contains('nav')) return 'Navigation';
     if (name.contains('modal') || name.contains('dialog')) return 'Modals';
     if (name.contains('list') || name.contains('item')) return 'Lists';
@@ -5136,9 +5210,13 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
 
   void _addStatsSection(StringBuffer buffer, ScanResult result) {
     final totalFiles = result.metrics.totalFiles;
-    final filesWithKeys = result.fileAnalyses.values.where((fa) => fa.keysFound.isNotEmpty).length;
-    final averageKeysPerFile = filesWithKeys > 0 ? (result.keyUsages.length / filesWithKeys).toStringAsFixed(1) : '0';
-    
+    final filesWithKeys = result.fileAnalyses.values
+        .where((fa) => fa.keysFound.isNotEmpty)
+        .length;
+    final averageKeysPerFile = filesWithKeys > 0
+        ? (result.keyUsages.length / filesWithKeys).toStringAsFixed(1)
+        : '0';
+
     buffer.writeln('''
         <!-- Stats Header -->
         <div class="section-header glass-card">
@@ -5294,8 +5372,6 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     ''');
   }
 
-
-
   void _addExportSectionPage(StringBuffer buffer) {
     buffer.writeln('''
         <!-- Export Header -->
@@ -5440,9 +5516,9 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     final duplicateKeysList = result.keyUsages.entries
         .where((entry) => entry.value.locations.length > 1)
         .toList();
-    
+
     if (duplicateKeysList.isEmpty) return '';
-    
+
     return '''
         <div class="duplicate-keys-section glass-card">
             <div class="section-header">
@@ -5473,9 +5549,17 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
 
   String _buildDuplicateKeyRow(String keyName, KeyUsage keyData) {
     final refCount = keyData.locations.length;
-    final impact = refCount > 5 ? 'High' : refCount > 3 ? 'Medium' : 'Low';
-    final impactClass = refCount > 5 ? 'high' : refCount > 3 ? 'medium' : 'low';
-    
+    final impact = refCount > 5
+        ? 'High'
+        : refCount > 3
+            ? 'Medium'
+            : 'Low';
+    final impactClass = refCount > 5
+        ? 'high'
+        : refCount > 3
+            ? 'medium'
+            : 'low';
+
     return '''
         <tr class="duplicate-row" data-key="$keyName">
             <td>
@@ -5511,10 +5595,13 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
   }
 
   String _inferCategory(String keyName, Set<String> tags) {
-    if (keyName.toLowerCase().contains('button') || keyName.toLowerCase().contains('widget')) return 'widget';
+    if (keyName.toLowerCase().contains('button') ||
+        keyName.toLowerCase().contains('widget')) return 'widget';
     if (keyName.toLowerCase().contains('test')) return 'test';
-    if (keyName.toLowerCase().contains('navigate') || keyName.toLowerCase().contains('route')) return 'navigation';
-    if (keyName.toLowerCase().contains('handle') || keyName.toLowerCase().contains('on')) return 'handler';
+    if (keyName.toLowerCase().contains('navigate') ||
+        keyName.toLowerCase().contains('route')) return 'navigation';
+    if (keyName.toLowerCase().contains('handle') ||
+        keyName.toLowerCase().contains('on')) return 'handler';
     if (tags.contains('widget')) return 'widget';
     if (tags.contains('test')) return 'test';
     if (tags.contains('navigation')) return 'navigation';
@@ -5538,7 +5625,8 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
   }
 
   int _calculateEfficiency(ScanResult result) {
-    final keysPerSecond = result.keyUsages.length / (result.duration.inMilliseconds / 1000.0);
+    final keysPerSecond =
+        result.keyUsages.length / (result.duration.inMilliseconds / 1000.0);
     if (keysPerSecond > 20) return 95;
     if (keysPerSecond > 10) return 85;
     if (keysPerSecond > 5) return 75;
@@ -5563,82 +5651,86 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
 
   int _calculateQualityScore(ScanResult result) {
     var score = 0;
-    
+
     // Coverage score (40% of total)
     score += (result.metrics.fileCoverage * 0.4).round();
-    
+
     // Key organization score (30% of total)
     final organizationScore = _calculateOrganization(result);
     score += (organizationScore * 0.3).round();
-    
-    // Consistency score (30% of total) 
+
+    // Consistency score (30% of total)
     final consistencyScore = _calculateConsistency(result);
     score += (consistencyScore * 0.3).round();
-    
+
     return score.clamp(0, 100);
   }
 
   int _calculateConsistency(ScanResult result) {
     final keyNames = result.keyUsages.keys;
     var consistencyScore = 90;
-    
+
     // Check naming conventions
     var hasUnderscore = false;
     var hasCamelCase = false;
-    
+
     for (final name in keyNames) {
       if (name.contains('_')) hasUnderscore = true;
       if (RegExp(r'[a-z][A-Z]').hasMatch(name)) hasCamelCase = true;
     }
-    
+
     if (hasUnderscore && hasCamelCase) {
       consistencyScore -= 20;
     }
-    
+
     // Check for duplicate patterns
-    final duplicates = result.keyUsages.values.where((k) => k.locations.length > 1).length;
+    final duplicates =
+        result.keyUsages.values.where((k) => k.locations.length > 1).length;
     if (duplicates > result.keyUsages.length * 0.1) {
       consistencyScore -= 15;
     }
-    
+
     return consistencyScore.clamp(0, 100);
   }
 
   int _calculateOrganization(ScanResult result) {
     final keyNames = result.keyUsages.keys;
     var organizationScore = 85;
-    
+
     // Check for clear categorization
-    final categories = keyNames.map((name) => _inferCategory(name, <String>{})).toSet();
+    final categories =
+        keyNames.map((name) => _inferCategory(name, <String>{})).toSet();
     final categoryRatio = categories.length / keyNames.length;
-    
+
     if (categoryRatio > 0.8) {
       organizationScore += 10; // Very diverse, good organization
     } else if (categoryRatio < 0.3) {
       organizationScore -= 10; // Too homogeneous, might lack structure
     }
-    
+
     // Check for descriptive naming
-    final descriptiveKeys = keyNames.where((name) => name.length > 3 && !name.startsWith('key')).length;
+    final descriptiveKeys = keyNames
+        .where((name) => name.length > 3 && !name.startsWith('key'))
+        .length;
     final descriptiveRatio = descriptiveKeys / keyNames.length;
-    
+
     if (descriptiveRatio > 0.8) {
       organizationScore += 5;
     } else if (descriptiveRatio < 0.5) {
       organizationScore -= 10;
     }
-    
+
     return organizationScore.clamp(0, 100);
   }
 
   String _buildDistributionLegend(ScanResult result) {
     final categories = <String, int>{};
-    
+
     for (final keyName in result.keyUsages.keys) {
       final category = _inferCategory(keyName, <String>{});
       categories[category] = (categories[category] ?? 0) + 1;
     }
-    
+
     final legendItems = categories.entries.map((entry) => '''
       <div class="legend-item">
         <div class="legend-color" style="background-color: ${_getCategoryColor(entry.key)}"></div>
@@ -5646,18 +5738,24 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
         <span class="legend-count">${entry.value}</span>
       </div>
     ''').join('');
-    
+
     return legendItems;
   }
 
   String _getCategoryColor(String category) {
     switch (category) {
-      case 'Buttons': return '#3b82f6';
-      case 'Input Fields': return '#10b981';
-      case 'Navigation': return '#f59e0b';
-      case 'Modals': return '#8b5cf6';
-      case 'Lists': return '#ef4444';
-      default: return '#6b7280';
+      case 'Buttons':
+        return '#3b82f6';
+      case 'Input Fields':
+        return '#10b981';
+      case 'Navigation':
+        return '#f59e0b';
+      case 'Modals':
+        return '#8b5cf6';
+      case 'Lists':
+        return '#ef4444';
+      default:
+        return '#6b7280';
     }
   }
 
@@ -5666,8 +5764,9 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     final coverage = result.metrics.fileCoverage;
     final totalKeys = result.keyUsages.length;
     final qualityScore = _calculateQualityScore(result);
-    final duplicates = result.keyUsages.values.where((k) => k.locations.length > 1).length;
-    
+    final duplicates =
+        result.keyUsages.values.where((k) => k.locations.length > 1).length;
+
     // Priority insights with actionable recommendations
     if (coverage < 50) {
       insights.add('''
@@ -5700,7 +5799,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
         </div>
       ''');
     }
-    
+
     if (qualityScore < 70) {
       insights.add('''
         <div class="insight warning">
@@ -5717,7 +5816,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
         </div>
       ''');
     }
-    
+
     if (duplicates > 5) {
       insights.add('''
         <div class="insight warning">
@@ -5734,7 +5833,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
         </div>
       ''');
     }
-    
+
     if (totalKeys > 100) {
       insights.add('''
         <div class="insight info">
@@ -5751,7 +5850,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
         </div>
       ''');
     }
-    
+
     // Performance insights
     final scanTimeSeconds = result.duration.inMilliseconds / 1000.0;
     if (scanTimeSeconds > 10) {
@@ -5770,7 +5869,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
         </div>
       ''');
     }
-    
+
     if (insights.isEmpty) {
       insights.add('''
         <div class="insight success">
@@ -5787,7 +5886,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
         </div>
       ''');
     }
-    
+
     return insights.join('\n');
   }
 }

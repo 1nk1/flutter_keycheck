@@ -97,7 +97,7 @@ class ScanMetrics {
   bool incrementalScan = false;
   String? incrementalBase;
   Map<String, dynamic>? dependencyTree;
-  
+
   // Performance optimization metrics
   int parallelFilesProcessed = 0;
   int cacheHits = 0;
@@ -125,7 +125,7 @@ class ScanMetrics {
       'parallel_files_processed': parallelFilesProcessed,
       'cache_hits': cacheHits,
       'cache_misses': cacheMisses,
-      'cache_hit_rate': cacheHits + cacheMisses > 0 
+      'cache_hit_rate': cacheHits + cacheMisses > 0
           ? '${(cacheHits / (cacheHits + cacheMisses) * 100).toStringAsFixed(1)}%'
           : '0%',
       'large_files_processed': largeFilesProcessed,
@@ -155,7 +155,8 @@ class ScanMetrics {
     metrics.cacheMisses = map['cache_misses'] ?? 0;
     metrics.largeFilesProcessed = map['large_files_processed'] ?? 0;
     metrics.avgFileSizeKB = (map['avg_file_size_kb'] ?? 0).toDouble();
-    metrics.totalScanTime = Duration(milliseconds: map['total_scan_time_ms'] ?? 0);
+    metrics.totalScanTime =
+        Duration(milliseconds: map['total_scan_time_ms'] ?? 0);
     metrics.dependencyTree = map['dependency_tree'];
     return metrics;
   }

@@ -660,13 +660,13 @@ class AstScannerV3 {
           // Add location info (approximate)
           final lineNumber =
               content.substring(0, match.start).split('\n').length;
-          
+
           // Extract code context around the found key
           final lines = content.split('\n');
           final currentLineIndex = lineNumber - 1;
           final startLine = (currentLineIndex - 2).clamp(0, lines.length - 1);
           final endLine = (currentLineIndex + 2).clamp(0, lines.length - 1);
-          
+
           final contextLines = <String>[];
           for (int i = startLine; i <= endLine; i++) {
             if (i < lines.length) {
@@ -674,7 +674,7 @@ class AstScannerV3 {
             }
           }
           final codeContext = contextLines.join('\n');
-          
+
           usage.locations.add(KeyLocation(
             file: analysis.path,
             line: lineNumber,

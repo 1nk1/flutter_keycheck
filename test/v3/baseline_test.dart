@@ -11,11 +11,11 @@ void main() {
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('baseline_test_');
     projectRoot = tempDir.path;
-    
+
     // Create a simple Flutter project structure
     final libDir = Directory(path.join(projectRoot, 'lib'));
     await libDir.create(recursive: true);
-    
+
     // Create a sample Flutter file with keys
     final mainFile = File(path.join(libDir.path, 'main.dart'));
     await mainFile.writeAsString('''
@@ -75,18 +75,18 @@ version: 3
       );
 
       expect(result.exitCode, equals(0));
-      
+
       // Check baseline file was created
       final baselineFile = File(path.join(tempDir.path, 'baseline.json'));
       expect(await baselineFile.exists(), isTrue);
-      
+
       // Parse and validate baseline structure
       final baselineContent = await baselineFile.readAsString();
       final baseline = jsonDecode(baselineContent) as Map<String, dynamic>;
-      
+
       expect(baseline, contains('metadata'));
       expect(baseline, contains('keys'));
-      
+
       // Validate metadata
       final metadata = baseline['metadata'] as Map<String, dynamic>;
       expect(metadata, contains('created_at'));
@@ -94,11 +94,11 @@ version: 3
       expect(metadata, contains('total_keys'));
       expect(metadata, contains('dependencies_scanned'));
       expect(metadata, contains('schema_version'));
-      
+
       // Validate keys array
       final keys = baseline['keys'] as List<dynamic>;
       expect(keys.length, greaterThan(0));
-      
+
       // Check key structure
       for (final key in keys) {
         expect(key, contains('key'));
@@ -108,7 +108,7 @@ version: 3
         expect(key, contains('package'));
         expect(key, contains('dependency_level'));
       }
-      
+
       // Verify specific keys are found
       final keyNames = keys.map((k) => k['key']).toSet();
       expect(keyNames, contains('login_button'));
@@ -134,11 +134,13 @@ version: 3
       );
 
       expect(result.exitCode, equals(0));
-      
-      final baselineFile = File(path.join(tempDir.path, 'baseline-no-deps.json'));
-      final baseline = jsonDecode(await baselineFile.readAsString()) as Map<String, dynamic>;
+
+      final baselineFile =
+          File(path.join(tempDir.path, 'baseline-no-deps.json'));
+      final baseline =
+          jsonDecode(await baselineFile.readAsString()) as Map<String, dynamic>;
       final keys = baseline['keys'] as List<dynamic>;
-      
+
       // All keys should be from direct dependencies only
       for (final key in keys) {
         expect(key['dependency_level'], equals('direct'));
@@ -176,7 +178,7 @@ version: 3
           },
         ],
       }));
-      
+
       // Create second baseline with changes
       final baseline2File = File(path.join(tempDir.path, 'baseline2.json'));
       await baseline2File.writeAsString(jsonEncode({
@@ -205,7 +207,7 @@ version: 3
           },
         ],
       }));
-      
+
       // Run diff command with multiple report formats
       final result = await Process.run(
         'dart',
@@ -226,32 +228,36 @@ version: 3
         ],
         workingDirectory: Directory.current.path,
       );
-      
+
       expect(result.exitCode, equals(1)); // Exit 1 when changes detected
       expect(result.stdout, contains('Added: 1'));
       expect(result.stdout, contains('Removed: 1'));
-      
+
       // Check JSON report was created
-      final jsonReport = File(path.join(projectRoot, 'reports', 'diff-report.json'));
+      final jsonReport =
+          File(path.join(projectRoot, 'reports', 'diff-report.json'));
       if (await jsonReport.exists()) {
-        final report = jsonDecode(await jsonReport.readAsString()) as Map<String, dynamic>;
+        final report =
+            jsonDecode(await jsonReport.readAsString()) as Map<String, dynamic>;
         expect(report['summary']['added'], equals(1));
         expect(report['summary']['removed'], equals(1));
         expect(report['changes']['added'], contains('new_key'));
         expect(report['changes']['removed'], contains('old_key'));
       }
-      
+
       // Check Markdown report was created
-      final mdReport = File(path.join(projectRoot, 'reports', 'diff-report.md'));
+      final mdReport =
+          File(path.join(projectRoot, 'reports', 'diff-report.md'));
       if (await mdReport.exists()) {
         final content = await mdReport.readAsString();
         expect(content, contains('## 🔑 Flutter Keys Report'));
         expect(content, contains('| Added | +1 |'));
         expect(content, contains('| Removed | -1 |'));
       }
-      
+
       // Check HTML report was created
-      final htmlReport = File(path.join(projectRoot, 'reports', 'diff-report.html'));
+      final htmlReport =
+          File(path.join(projectRoot, 'reports', 'diff-report.html'));
       if (await htmlReport.exists()) {
         final content = await htmlReport.readAsString();
         expect(content, contains('<h1>🔑 Flutter KeyCheck Diff Report</h1>'));
@@ -288,13 +294,13 @@ version: 3
           },
         ],
       });
-      
+
       final baseline1File = File(path.join(tempDir.path, 'baseline1.json'));
       await baseline1File.writeAsString(baselineContent);
-      
+
       final baseline2File = File(path.join(tempDir.path, 'baseline2.json'));
       await baseline2File.writeAsString(baselineContent);
-      
+
       final result = await Process.run(
         'dart',
         [
@@ -308,7 +314,7 @@ version: 3
         ],
         workingDirectory: Directory.current.path,
       );
-      
+
       expect(result.exitCode, equals(0)); // Exit 0 when no changes
       expect(result.stdout, contains('No changes detected'));
     });
@@ -352,7 +358,7 @@ version: 3
           },
         ],
       }));
-      
+
       final result = await Process.run(
         'dart',
         [
@@ -370,21 +376,24 @@ version: 3
         ],
         workingDirectory: Directory.current.path,
       );
-      
+
       // Should pass if current state matches baseline
       if (result.stdout.contains('All validation checks passed')) {
         expect(result.exitCode, equals(0));
       }
-      
+
       // Check reports were generated
-      final jsonReport = File(path.join(projectRoot, 'reports', 'validation-report.json'));
+      final jsonReport =
+          File(path.join(projectRoot, 'reports', 'validation-report.json'));
       if (await jsonReport.exists()) {
-        final report = jsonDecode(await jsonReport.readAsString()) as Map<String, dynamic>;
+        final report =
+            jsonDecode(await jsonReport.readAsString()) as Map<String, dynamic>;
         expect(report, contains('summary'));
         expect(report, contains('violations'));
       }
-      
-      final junitReport = File(path.join(projectRoot, 'reports', 'validation-report.xml'));
+
+      final junitReport =
+          File(path.join(projectRoot, 'reports', 'validation-report.xml'));
       if (await junitReport.exists()) {
         final content = await junitReport.readAsString();
         expect(content, contains('<?xml version="1.0"'));

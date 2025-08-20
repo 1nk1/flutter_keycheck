@@ -90,7 +90,7 @@ jobs:
           if [ ! -f "test/golden_workspace/expected_keycheck.json" ]; then
             echo "::error::Golden baseline missing! Cannot release without baseline."
             exit 1
-          }
+          fi
           
           # Run v3 scan instead of legacy test
           START_TIME=$(date +%s%3N)

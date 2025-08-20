@@ -50,16 +50,8 @@ jobs:
         run: |
           echo "🔑 Running Flutter KeyCheck baseline validation..."
           
-          # Debug: Check workspace structure  
-          echo "📁 Checking workspace structure..."
-          ls -la test/golden_workspace/
-          ls -la test/golden_workspace/lib/
-          
-          # Run v3 scan against golden workspace with debug output
+          # Run v3 scan against golden workspace
           START_TIME=$(date +%s%3N)
-          echo "🚀 Starting scan with command:"
-          echo "dart run bin/flutter_keycheck.dart scan --scope workspace-only --project-root test/golden_workspace --report json --out-dir /tmp"
-          
           timeout 30s dart run bin/flutter_keycheck.dart scan \
             --scope workspace-only \
             --project-root test/golden_workspace \
@@ -68,29 +60,12 @@ jobs:
           END_TIME=$(date +%s%3N)
           SCAN_DURATION=$((END_TIME - START_TIME))
           
-          # Debug: Show scan output and files created
-          echo "📋 Scan output:"
-          cat keycheck_output.log || echo "No output log found"
-          echo ""
-          echo "📁 Files created in /tmp:"
-          ls -la /tmp/key-snapshot.* 2>/dev/null || echo "No key-snapshot files found"
-          
           # Parse results from JSON output without jq dependency
           if [ -f "/tmp/key-snapshot.json" ]; then
-            echo "✅ Found JSON output file"
-            # Show first few lines for debugging
-            echo "📊 JSON content preview:"
-            head -n 5 /tmp/key-snapshot.json
-            
             # Count keys in the keys array instead of looking for total_keys field
             TOTAL_KEYS=$(grep -o '"key":"[^"]*"' /tmp/key-snapshot.json | wc -l || echo "0")
-            
-            # Try to get scanned_files from nested structure
             SCANNED_FILES=$(grep -o '"scanned_files":[0-9]*' /tmp/key-snapshot.json | grep -o '[0-9]*' || echo "1")
-            
-            echo "🔢 Parsed counts: TOTAL_KEYS=$TOTAL_KEYS, SCANNED_FILES=$SCANNED_FILES"
           else
-            echo "❌ JSON output file not found"
             TOTAL_KEYS=0
             SCANNED_FILES=0
           fi

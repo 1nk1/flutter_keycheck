@@ -5,6 +5,18 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.10] - 2025-08-20
+
+### Fixed
+- **CRITICAL**: Fix CLI crash due to duplicate 'project-root' option in commands
+- **Runtime**: Resolve "Invalid argument(s): Duplicate option or alias" error
+- **Command System**: Remove duplicate option definitions from scan and validate commands
+
+### Technical Details
+- Fixed inheritance issue where BaseCommandV3 and subcommands both defined 'project-root'
+- CLI now properly initializes without argument parser conflicts
+- All commands (scan, validate) now work correctly with --project-root flag
+
 ## [3.1.9] - 2025-08-20
 
 ### Added

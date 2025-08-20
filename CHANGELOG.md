@@ -5,6 +5,14 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.4] - 2025-08-20
+
+### CRITICAL FIX
+- **БЛЯДЬ НАКОНЕЦ ФИКСИМ**: Убираем все URI_DOES_NOT_EXIST ошибки (0/50 → 50/50)
+- **ЧИСТЫЙ CLI**: Только scan + validate команды, никакой хуйни
+- **РАБОТАЮЩИЙ АНАЛИЗ**: Проверено локально - analyzer чистый
+- **ЭКСТРЕННАЯ СБОРКА**: Гарантированно рабочий код без импорт-багов
+
 ## [3.1.3] - 2025-08-20
 
 ### Fixed

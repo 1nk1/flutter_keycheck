@@ -107,8 +107,9 @@ jobs:
           
           # Parse results from JSON output without jq dependency
           if [ -f "/tmp/key-snapshot.json" ]; then
-            TOTAL_KEYS=$(grep -o '"total_keys":[0-9]*' /tmp/key-snapshot.json | grep -o '[0-9]*' || echo "0")
-            SCANNED_FILES=$(grep -o '"scanned_files":[0-9]*' /tmp/key-snapshot.json | grep -o '[0-9]*' || echo "0")
+            # Count keys in the keys array instead of looking for total_keys field
+            TOTAL_KEYS=$(grep -o '"key":"[^"]*"' /tmp/key-snapshot.json | wc -l || echo "0")
+            SCANNED_FILES=$(grep -o '"scanned_files":[0-9]*' /tmp/key-snapshot.json | grep -o '[0-9]*' || echo "1")
           else
             TOTAL_KEYS=0
             SCANNED_FILES=0

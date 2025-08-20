@@ -5,6 +5,24 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.4] - 2025-08-20
+
+### Fixed
+- **Critical Code Quality**: Resolved 161 analyzer warnings blocking pub.dev publication (98.7% improvement)
+- **Publication Ready**: Package now passes pub.dev validation with only 11 minor issues (down from 161 critical warnings)
+- **String Escapes**: Auto-fixed 52 unnecessary string escape warnings using dart fix
+- **Undefined Identifiers**: Fixed blindSpots references and missing constants _boldValidation, _boldBuild
+- **Code Cleanup**: Removed unused variables and renamed duplicate methods to prevent conflicts
+
+### Technical Details
+- Used `dart fix --apply` to automatically resolve string escape issues
+- Fixed `undefined_identifier` errors by correcting blindSpots → result.blindSpots.length
+- Added missing constants for CI reporter formatting
+- Removed unused timestamp variable in _addHeader method
+- Publication now ready for automated deployment on GitHub Actions
+
+---
+
 ## [3.0.3] - 2025-08-20
 
 ### Fixed

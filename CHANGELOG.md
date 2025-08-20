@@ -5,6 +5,20 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.8] - 2025-08-20
+
+### Changed
+- **Repository Cleanup**: Removed all unnecessary GitHub Actions workflows
+- **Single Workflow**: Only publish.yml remains for clean publication process
+- **Simplified CI/CD**: From 3 complex workflows to 1 focused workflow
+- **Repository Organization**: Clean and focused workflow structure
+
+### Technical Details
+- Deleted ci.yml (complex CI workflow causing confusion)
+- Deleted release-matrix.yml (unnecessary release matrix)
+- Kept only publish.yml (proven working workflow from v2.3.3)
+- Repository now has single-purpose focused automation
+
 ## [3.0.7] - 2025-08-20
 
 ### Fixed

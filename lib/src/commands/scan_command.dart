@@ -53,7 +53,7 @@ class ScanCommand extends BaseCommand {
   Future<int> run() async {
     try {
       final config = await loadConfig();
-      
+
       // Use project-root if specified, otherwise current directory
       String projectRoot;
       if (argResults!.wasParsed('project-root')) {
@@ -63,7 +63,7 @@ class ScanCommand extends BaseCommand {
       } else {
         projectRoot = Directory.current.path;
       }
-      
+
       final scanner = AstScannerV3(
         projectPath: projectRoot,
         includeTests: argResults!['include-tests'] as bool,

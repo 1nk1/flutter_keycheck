@@ -7,7 +7,7 @@ class ValidationResult {
   final List<String> warnings;
   final DateTime timestamp;
   final bool hasViolations;
-  
+
   // Direct access properties for backward compatibility
   final List<KeyInfo> lostKeys;
   final List<RenamedKey> renamedKeys;
@@ -150,13 +150,13 @@ class RenamedKey {
   final String oldId;
   final String newId;
   final double confidence;
-  
+
   RenamedKey({
     required this.oldId,
     required this.newId,
     this.confidence = 1.0,
   });
-  
+
   Map<String, dynamic> toMap() {
     return {
       'old_id': oldId,
@@ -164,7 +164,7 @@ class RenamedKey {
       'confidence': confidence,
     };
   }
-  
+
   factory RenamedKey.fromMap(Map<String, dynamic> map) {
     return RenamedKey(
       oldId: map['old_id'],

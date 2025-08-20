@@ -5,6 +5,14 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.8] - 2025-08-20
+
+### Fixed
+- **CRITICAL**: Fix code formatting blocking GitHub Actions CI/CD
+- **Formatting**: All 86 Dart files properly formatted (11 files changed)
+- **CI/CD Pipeline**: Formatting check now passes with exit code 0
+- **Publication**: Complete working pipeline - dependencies + formatting
+
 ## [3.1.7] - 2025-08-20
 
 ### Fixed

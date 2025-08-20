@@ -85,7 +85,7 @@ class DiffCommand extends BaseCommandV3 {
       // Check for new baseline-old/baseline-new pattern
       final baselineOldPath = argResults!['baseline-old'] as String?;
       final baselineNewPath = argResults!['baseline-new'] as String?;
-      
+
       // Check if using left/right pattern (for package comparison)
       final leftPath = argResults!['left'] as String?;
       final rightPath = argResults!['right'] as String?;
@@ -156,7 +156,7 @@ class DiffCommand extends BaseCommandV3 {
       // Generate reports in requested formats
       final formats = argResults!['report'] as List<String>;
       final outputPath = argResults!['output'] as String?;
-      
+
       for (final format in formats) {
         await _generateReport(diff, format, outputPath, outDir);
       }
@@ -346,7 +346,7 @@ class DiffCommand extends BaseCommandV3 {
     try {
       final content = await file.readAsString();
       final json = jsonDecode(content) as Map<String, dynamic>;
-      
+
       // Check if it's the new baseline format
       if (json.containsKey('metadata') && json.containsKey('keys')) {
         return _convertBaselineToScanResult(json);
@@ -364,7 +364,7 @@ class DiffCommand extends BaseCommandV3 {
     final metrics = ScanMetrics();
     final fileAnalyses = <String, FileAnalysis>{};
     final keyUsages = <String, KeyUsage>{};
-    
+
     // Process keys from baseline
     final keys = baseline['keys'] as List<dynamic>;
     for (final keyData in keys) {
@@ -374,14 +374,16 @@ class DiffCommand extends BaseCommandV3 {
       final package = keyData['package'] as String? ?? 'my_app';
       final type = keyData['type'] as String? ?? 'Key';
       final depLevel = keyData['dependency_level'] as String? ?? 'direct';
-      
+
       // Create or update key usage
-      final usage = keyUsages.putIfAbsent(key, () => KeyUsage(
-        id: key,
-        source: depLevel == 'direct' ? 'workspace' : 'package',
-        package: package,
-      ));
-      
+      final usage = keyUsages.putIfAbsent(
+          key,
+          () => KeyUsage(
+                id: key,
+                source: depLevel == 'direct' ? 'workspace' : 'package',
+                package: package,
+              ));
+
       usage.locations.add(KeyLocation(
         file: file,
         line: line,
@@ -389,29 +391,31 @@ class DiffCommand extends BaseCommandV3 {
         detector: 'baseline',
         context: '$type(\'$key\')',
       ));
-      
+
       // Add tags if present
       if (keyData['tags'] != null) {
         usage.tags.addAll((keyData['tags'] as List).cast<String>());
       }
-      
+
       // Set status if present
       if (keyData['status'] != null) {
         usage.status = keyData['status'] as String;
       }
-      
+
       // Track file analysis
-      final analysis = fileAnalyses.putIfAbsent(file, () => FileAnalysis(
-        path: file,
-        relativePath: file,
-      ));
+      final analysis = fileAnalyses.putIfAbsent(
+          file,
+          () => FileAnalysis(
+                path: file,
+                relativePath: file,
+              ));
       analysis.keysFound.add(key);
     }
-    
+
     // Update metrics
     metrics.totalFiles = fileAnalyses.length;
     metrics.scannedFiles = fileAnalyses.length;
-    
+
     return ScanResult(
       metrics: metrics,
       fileAnalyses: fileAnalyses,
@@ -428,7 +432,7 @@ class DiffCommand extends BaseCommandV3 {
     Directory outDir,
   ) async {
     final buffer = StringBuffer();
-    
+
     switch (format) {
       case 'json':
         await _generateJsonReport(diff, outputPath, outDir);
@@ -472,11 +476,11 @@ class DiffCommand extends BaseCommandV3 {
         'modified': <String>[], // For future enhancement
       },
     };
-    
+
     final filePath = outputPath ?? path.join(outDir.path, 'diff-report.json');
     final file = File(filePath);
     await file.parent.create(recursive: true);
-    
+
     final encoder = const JsonEncoder.withIndent('  ');
     await file.writeAsString(encoder.convert(report));
     logInfo('📊 JSON report saved to: $filePath');
@@ -488,7 +492,7 @@ class DiffCommand extends BaseCommandV3 {
     Directory outDir,
   ) async {
     final buffer = StringBuffer();
-    
+
     buffer.writeln('<!DOCTYPE html>');
     buffer.writeln('<html lang="en">');
     buffer.writeln('<head>');
@@ -499,8 +503,9 @@ class DiffCommand extends BaseCommandV3 {
     buffer.writeln('<body>');
     buffer.writeln('  <div class="container">');
     buffer.writeln('    <h1>🔑 Flutter KeyCheck Diff Report</h1>');
-    buffer.writeln('    <div class="timestamp">Generated: ${DateTime.now().toIso8601String()}</div>');
-    
+    buffer.writeln(
+        '    <div class="timestamp">Generated: ${DateTime.now().toIso8601String()}</div>');
+
     // Summary
     buffer.writeln('    <div class="summary">');
     buffer.writeln('      <h2>Summary</h2>');
@@ -511,19 +516,22 @@ class DiffCommand extends BaseCommandV3 {
     buffer.writeln('        </div>');
     buffer.writeln('        <div class="stat removed">');
     buffer.writeln('          <div class="label">Removed</div>');
-    buffer.writeln('          <div class="value">-${diff.removed.length}</div>');
+    buffer
+        .writeln('          <div class="value">-${diff.removed.length}</div>');
     buffer.writeln('        </div>');
     buffer.writeln('        <div class="stat renamed">');
     buffer.writeln('          <div class="label">Renamed</div>');
-    buffer.writeln('          <div class="value">~${diff.renamed.length}</div>');
+    buffer
+        .writeln('          <div class="value">~${diff.renamed.length}</div>');
     buffer.writeln('        </div>');
     buffer.writeln('        <div class="stat unchanged">');
     buffer.writeln('          <div class="label">Unchanged</div>');
-    buffer.writeln('          <div class="value">${diff.unchanged.length}</div>');
+    buffer
+        .writeln('          <div class="value">${diff.unchanged.length}</div>');
     buffer.writeln('        </div>');
     buffer.writeln('      </div>');
     buffer.writeln('    </div>');
-    
+
     // Changes details
     if (diff.added.isNotEmpty) {
       buffer.writeln('    <div class="section added">');
@@ -535,7 +543,7 @@ class DiffCommand extends BaseCommandV3 {
       buffer.writeln('      </ul>');
       buffer.writeln('    </div>');
     }
-    
+
     if (diff.removed.isNotEmpty) {
       buffer.writeln('    <div class="section removed">');
       buffer.writeln('      <h2>❌ Removed Keys</h2>');
@@ -546,22 +554,23 @@ class DiffCommand extends BaseCommandV3 {
       buffer.writeln('      </ul>');
       buffer.writeln('    </div>');
     }
-    
+
     if (diff.renamed.isNotEmpty) {
       buffer.writeln('    <div class="section renamed">');
       buffer.writeln('      <h2>🔄 Renamed Keys</h2>');
       buffer.writeln('      <ul>');
       for (final entry in diff.renamed.entries) {
-        buffer.writeln('        <li><code>${entry.key}</code> → <code>${entry.value}</code></li>');
+        buffer.writeln(
+            '        <li><code>${entry.key}</code> → <code>${entry.value}</code></li>');
       }
       buffer.writeln('      </ul>');
       buffer.writeln('    </div>');
     }
-    
+
     buffer.writeln('  </div>');
     buffer.writeln('</body>');
     buffer.writeln('</html>');
-    
+
     final filePath = outputPath ?? path.join(outDir.path, 'diff-report.html');
     final file = File(filePath);
     await file.parent.create(recursive: true);
@@ -575,33 +584,37 @@ class DiffCommand extends BaseCommandV3 {
     Directory outDir,
   ) async {
     final buffer = StringBuffer();
-    
+
     // GitHub PR-friendly markdown
     buffer.writeln('## 🔑 Flutter Keys Report');
     buffer.writeln();
     buffer.writeln('| Metric | Value |');
     buffer.writeln('|--------|-------|');
     buffer.writeln('| Total Keys | ${diff.current.keyUsages.length} |');
-    
+
     final totalChanges = diff.added.length + diff.removed.length;
     final changeIndicator = totalChanges > 0
-        ? totalChanges > 5 ? '⚠️' : '✅'
+        ? totalChanges > 5
+            ? '⚠️'
+            : '✅'
         : '✅';
-    
+
     buffer.writeln('| Added | +${diff.added.length} |');
     buffer.writeln('| Removed | -${diff.removed.length} |');
     buffer.writeln('| Renamed | ~${diff.renamed.length} |');
-    buffer.writeln('| Status | ${diff.hasChanges ? "$changeIndicator Changes detected" : "✅ No changes"} |');
+    buffer.writeln(
+        '| Status | ${diff.hasChanges ? "$changeIndicator Changes detected" : "✅ No changes"} |');
     buffer.writeln();
-    
+
     // Details section
     if (diff.hasChanges) {
       buffer.writeln('### Changes Details');
       buffer.writeln();
-      
+
       if (diff.added.isNotEmpty) {
         buffer.writeln('<details>');
-        buffer.writeln('<summary>✅ Added Keys (${diff.added.length})</summary>');
+        buffer
+            .writeln('<summary>✅ Added Keys (${diff.added.length})</summary>');
         buffer.writeln();
         for (final key in diff.added.toList()..sort()) {
           buffer.writeln('- `$key`');
@@ -610,10 +623,11 @@ class DiffCommand extends BaseCommandV3 {
         buffer.writeln('</details>');
         buffer.writeln();
       }
-      
+
       if (diff.removed.isNotEmpty) {
         buffer.writeln('<details>');
-        buffer.writeln('<summary>❌ Removed Keys (${diff.removed.length})</summary>');
+        buffer.writeln(
+            '<summary>❌ Removed Keys (${diff.removed.length})</summary>');
         buffer.writeln();
         for (final key in diff.removed.toList()..sort()) {
           buffer.writeln('- `$key`');
@@ -622,10 +636,11 @@ class DiffCommand extends BaseCommandV3 {
         buffer.writeln('</details>');
         buffer.writeln();
       }
-      
+
       if (diff.renamed.isNotEmpty) {
         buffer.writeln('<details>');
-        buffer.writeln('<summary>🔄 Renamed Keys (${diff.renamed.length})</summary>');
+        buffer.writeln(
+            '<summary>🔄 Renamed Keys (${diff.renamed.length})</summary>');
         buffer.writeln();
         for (final entry in diff.renamed.entries) {
           buffer.writeln('- `${entry.key}` → `${entry.value}`');
@@ -634,11 +649,11 @@ class DiffCommand extends BaseCommandV3 {
         buffer.writeln('</details>');
       }
     }
-    
+
     buffer.writeln();
     buffer.writeln('---');
     buffer.writeln('_Generated by Flutter KeyCheck v3.0.0_');
-    
+
     final filePath = outputPath ?? path.join(outDir.path, 'diff-report.md');
     final file = File(filePath);
     await file.parent.create(recursive: true);
@@ -652,7 +667,7 @@ class DiffCommand extends BaseCommandV3 {
     Directory outDir,
   ) async {
     final buffer = StringBuffer();
-    
+
     buffer.writeln('Flutter KeyCheck Diff Report');
     buffer.writeln('=' * 50);
     buffer.writeln('Generated: ${DateTime.now().toIso8601String()}');
@@ -664,7 +679,7 @@ class DiffCommand extends BaseCommandV3 {
     buffer.writeln('  Renamed: ${diff.renamed.length}');
     buffer.writeln('  Unchanged: ${diff.unchanged.length}');
     buffer.writeln();
-    
+
     if (diff.added.isNotEmpty) {
       buffer.writeln('Added Keys:');
       for (final key in diff.added.toList()..sort()) {
@@ -672,7 +687,7 @@ class DiffCommand extends BaseCommandV3 {
       }
       buffer.writeln();
     }
-    
+
     if (diff.removed.isNotEmpty) {
       buffer.writeln('Removed Keys:');
       for (final key in diff.removed.toList()..sort()) {
@@ -680,7 +695,7 @@ class DiffCommand extends BaseCommandV3 {
       }
       buffer.writeln();
     }
-    
+
     if (diff.renamed.isNotEmpty) {
       buffer.writeln('Renamed Keys:');
       for (final entry in diff.renamed.entries) {
@@ -688,7 +703,7 @@ class DiffCommand extends BaseCommandV3 {
       }
       buffer.writeln();
     }
-    
+
     final filePath = outputPath ?? path.join(outDir.path, 'diff-report.txt');
     final file = File(filePath);
     await file.parent.create(recursive: true);

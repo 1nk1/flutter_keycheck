@@ -103,7 +103,7 @@ class ValidateCommandV3 extends BaseCommandV3 {
       } else {
         projectRoot = Directory.current.path;
       }
-      
+
       final scanner = AstScannerV3(
         projectPath: projectRoot,
         config: config,

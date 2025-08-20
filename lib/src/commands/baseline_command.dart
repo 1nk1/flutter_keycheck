@@ -125,7 +125,8 @@ class BaselineCommand extends BaseCommandV3 {
     final excludeDeps = argResults!.command!['exclude-deps'] as bool? ?? false;
     final baselineData = _generateBaselineJson(
       scanResult,
-      projectRoot: argResults!['project-root'] as String? ?? Directory.current.path,
+      projectRoot:
+          argResults!['project-root'] as String? ?? Directory.current.path,
       includeDeps: !excludeDeps,
     );
 
@@ -136,34 +137,32 @@ class BaselineCommand extends BaseCommandV3 {
     logInfo('✅ Baseline created with ${scanResult.keyUsages.length} keys');
 
     // Save enhanced baseline format
-    final outputPath = argResults!.command!['output'] as String? ?? 'baseline.json';
-    final baselineFile = File(
-      path.isAbsolute(outputPath) 
+    final outputPath =
+        argResults!.command!['output'] as String? ?? 'baseline.json';
+    final baselineFile = File(path.isAbsolute(outputPath)
         ? outputPath
-        : path.join(outDir.path, outputPath)
-    );
-    
+        : path.join(outDir.path, outputPath));
+
     // Ensure directory exists
     await baselineFile.parent.create(recursive: true);
-    
+
     // Write formatted JSON
     final encoder = const JsonEncoder.withIndent('  ');
     await baselineFile.writeAsString(encoder.convert(baselineData));
     logInfo('📄 Baseline saved to: ${baselineFile.path}');
-    
+
     // Log statistics
     final workspaceKeys = scanResult.keyUsages.values
         .where((u) => u.source == 'workspace')
         .length;
-    final packageKeys = scanResult.keyUsages.values
-        .where((u) => u.source == 'package')
-        .length;
-    
+    final packageKeys =
+        scanResult.keyUsages.values.where((u) => u.source == 'package').length;
+
     logInfo('  • Workspace keys: $workspaceKeys');
     if (packageKeys > 0) {
       logInfo('  • Package keys: $packageKeys');
     }
-    
+
     // Count dependencies scanned
     final uniquePackages = <String>{};
     for (final usage in scanResult.keyUsages.values) {
@@ -295,7 +294,7 @@ class BaselineCommand extends BaseCommandV3 {
     for (final entry in scanResult.keyUsages.entries) {
       final keyId = entry.key;
       final usage = entry.value;
-      
+
       // Skip dependency keys if exclude-deps is set
       if (!includeDeps && usage.source == 'package') {
         continue;
@@ -308,7 +307,8 @@ class BaselineCommand extends BaseCommandV3 {
           'file': location.file,
           'line': location.line,
           'package': usage.package ?? 'my_app',
-          'dependency_level': usage.source == 'package' ? 'transitive' : 'direct',
+          'dependency_level':
+              usage.source == 'package' ? 'transitive' : 'direct',
           if (usage.tags.isNotEmpty) 'tags': usage.tags.toList(),
           if (usage.status != 'active') 'status': usage.status,
         });

@@ -9,6 +9,8 @@ import 'dart:io';
 import 'html_reporter.dart' as html;
 import 'ci_reporter.dart' as ci;
 
+export 'html_reporter.dart' show HtmlReporter;
+
 /// Result data for report generation
 class ReportData {
   final Set<String> expectedKeys;

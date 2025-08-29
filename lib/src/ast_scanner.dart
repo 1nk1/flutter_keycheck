@@ -50,8 +50,9 @@ class KeyDetectorVisitor extends RecursiveAstVisitor<void> {
   final Map<String, List<KeyLocation>> keyLocations = {};
   final Map<String, int> keyUsageCounts = {};
   final String filePath;
+  final CompilationUnit unit;
 
-  KeyDetectorVisitor(this.filePath);
+  KeyDetectorVisitor(this.filePath, this.unit);
 
   @override
   void visitMethodInvocation(MethodInvocation node) {
@@ -77,7 +78,7 @@ class KeyDetectorVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    final typeName = node.constructorName.type.name;
+    final typeName = node.constructorName.type;
     
     // Check for Key constructors
     if (typeName is NamedType) {
@@ -114,7 +115,7 @@ class KeyDetectorVisitor extends RecursiveAstVisitor<void> {
       foundKeys.add(keyValue);
       
       // Track location
-      final lineInfo = node.root.lineInfo;
+      final lineInfo = unit.lineInfo;
       final location = lineInfo.getLocation(node.offset);
       
       keyLocations.putIfAbsent(keyValue, () => []).add(
@@ -192,7 +193,7 @@ class AstScanner {
         final result = await context.currentSession.getResolvedUnit(filePath);
         
         if (result is ResolvedUnitResult) {
-          final visitor = KeyDetectorVisitor(filePath);
+          final visitor = KeyDetectorVisitor(filePath, result.unit);
           result.unit.accept(visitor);
           
           // Merge results

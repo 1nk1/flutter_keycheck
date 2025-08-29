@@ -136,7 +136,7 @@ class AstScanner {
         );
 
         // Visit AST
-        result.unit.visitChildren(visitor);
+        result.unit.accept(visitor);
 
         // Store analysis
         fileAnalyses[filePath] = analysis;
@@ -304,20 +304,21 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
         analysis.widgetCount++;
 
         // Check for key parameter
-        final keyArg =
-            node.argumentList.arguments.whereType<NamedExpression>().firstWhere(
-                  (arg) => arg.name.label.name == 'key',
-                  orElse: () => null as NamedExpression,
-                );
+        final keyArgs = node.argumentList.arguments.whereType<NamedExpression>()
+            .where((arg) => arg.name.label.name == 'key').toList();
+        final keyArg = keyArgs.isNotEmpty ? keyArgs.first : null;
 
-        analysis.widgetsWithKeys++;
+        if (keyArg != null) {
+          analysis.widgetsWithKeys++;
 
-        // Extract key value
-        for (final detector in detectors) {
-          if (detector.matchesExpression(keyArg.expression)) {
-            final key = detector.extractFromExpression(keyArg.expression);
-            if (key != null) {
-              _recordKey(key, node, detector);
+          // Extract key value
+          for (final detector in detectors) {
+            if (detector.matchesExpression(keyArg.expression)) {
+              final key = detector.extractFromExpression(keyArg.expression);
+              if (key != null) {
+                _recordKey(key, node, detector);
+                break;
+              }
             }
           }
         }
@@ -348,7 +349,7 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
         (analysis.detectorHits[detector.name] ?? 0) + 1;
 
     // Get location info
-    final lineInfo = node.root.lineInfo;
+    final lineInfo = (node.root as CompilationUnit?)?.lineInfo;
     final location = lineInfo?.getLocation(node.offset);
 
     // Create or update key usage
@@ -378,26 +379,28 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
         final widget = parent.parent;
         if (widget is InstanceCreationExpression) {
           // Look for key in same widget
-          final keyArg = widget.argumentList.arguments
+          final keyArgs = widget.argumentList.arguments
               .whereType<NamedExpression>()
-              .firstWhere(
-                (arg) => arg.name.label.name == 'key',
-                orElse: () => null as NamedExpression,
-              );
+              .where((arg) => arg.name.label.name == 'key')
+              .toList();
+          final keyArg = keyArgs.isNotEmpty ? keyArgs.first : null;
 
-          // Extract key and link to handler
-          for (final detector in detectors) {
-            if (detector.matchesExpression(keyArg.expression)) {
-              final key = detector.extractFromExpression(keyArg.expression);
-              if (key != null) {
-                final usage = keyUsages[key];
-                if (usage != null) {
-                  usage.handlers.add(HandlerInfo(
-                    type: methodName,
-                    method: _extractHandlerMethod(node),
-                    file: filePath,
-                    line: node.offset,
-                  ));
+          if (keyArg != null) {
+            // Extract key and link to handler
+            for (final detector in detectors) {
+              if (detector.matchesExpression(keyArg.expression)) {
+                final key = detector.extractFromExpression(keyArg.expression);
+                if (key != null) {
+                  final usage = keyUsages[key];
+                  if (usage != null) {
+                    usage.handlers.add(HandlerInfo(
+                      type: methodName,
+                      method: _extractHandlerMethod(node),
+                      file: filePath,
+                      line: node.offset,
+                    ));
+                  }
+                  break;
                 }
               }
             }

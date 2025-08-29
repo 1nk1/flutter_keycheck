@@ -218,9 +218,9 @@ class FindByKeyDetector extends KeyDetector {
         // Handle Key/ValueKey creation
         if (firstArg is InstanceCreationExpression) {
           final innerArgs = firstArg.argumentList.arguments;
-          if (innerArgs.isNotEmpty && innerArgs.first is SimpleStringLiteral) {
+          if (innerArgs.isNotEmpty && innerArgs.first is StringLiteral) {
             extractCount++;
-            final key = (innerArgs.first as SimpleStringLiteral).value;
+            final key = (innerArgs.first as StringLiteral).value;
             matchedPatterns.add('find.byKey(Key("$key"))');
             return key;
           }
@@ -321,15 +321,15 @@ class SemanticsDetector extends KeyDetector {
   @override
   String? extractKey(AstNode node) {
     if (node is InstanceCreationExpression) {
-      final labelArg =
-          node.argumentList.arguments.whereType<NamedExpression>().firstWhere(
-                (arg) => arg.name.label.name == 'label',
-                orElse: () => null as NamedExpression,
-              );
+      final labelArgs = node.argumentList.arguments
+          .whereType<NamedExpression>()
+          .where((arg) => arg.name.label.name == 'label')
+          .toList();
+      final labelArg = labelArgs.isNotEmpty ? labelArgs.first : null;
 
-      if (labelArg.expression is SimpleStringLiteral) {
+      if (labelArg?.expression is StringLiteral) {
         extractCount++;
-        final label = (labelArg.expression as SimpleStringLiteral).value;
+        final label = (labelArg!.expression as StringLiteral).value;
         matchedPatterns.add('Semantics(label: "$label")');
         return 'semantics:$label';
       }

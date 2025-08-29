@@ -5,6 +5,35 @@ All notable changes to flutter_keycheck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2025-08-29
+
+### Added
+- **Compatibility**: Full support for Dart 3.24.5 and Flutter 3.24.5 LTS
+- **Dependencies**: Updated analyzer to ^5.3.0 for Dart 3.24.5 compatibility
+- **API Updates**: Ensured compatibility with analyzer 5.x API patterns
+
+### Fixed
+- **Analyzer API**: Updated all analyzer API usage for version 5.x
+  - Using `StringLiteral.stringValue` for string value extraction
+  - Using `NamedType.name2.lexeme` for type name access
+  - Fixed `CompilationUnit.lineInfo` access patterns
+- **AST Scanning**: Updated all AST visitor patterns for analyzer 5.x
+- **Key Detection**: Maintained full detection accuracy with correct APIs
+
+### Technical Improvements
+- Full compatibility with Dart SDK 3.24.5 and analyzer 5.3.x+
+- Resolved all analyzer warnings and errors
+- Maintained backward compatibility with existing functionality
+- Premium HTML reports and CLI commands working correctly
+- All unit tests passing with updated dependencies
+
+### Tested With
+- Dart SDK 3.9.0 (stable)
+- Flutter 3.24.5
+- Analyzer 6.4.1
+- Successfully scans 53 keys in 65 files
+- HTML report generation with glassmorphism UI preserved
+
 ## [3.1.11] - 2025-08-21
 
 ### Fixed

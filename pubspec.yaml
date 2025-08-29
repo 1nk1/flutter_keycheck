@@ -1,6 +1,6 @@
 name: flutter_keycheck
 description: Enterprise-grade Flutter widget key analyzer with premium HTML reports, advanced analytics, and glassmorphism UI. Perfect for QA automation teams.
-version: 3.1.11
+version: 3.2.0
 repository: https://github.com/1nk1/flutter_keycheck
 homepage: https://github.com/1nk1/flutter_keycheck
 documentation: https://pub.dev/packages/flutter_keycheck
@@ -14,20 +14,20 @@ topics:
   - static-analysis
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.2.0 <4.0.0"
 
 dependencies:
   args: ">=2.4.2 <3.0.0"
-  analyzer: ^7.7.1  # AST support for enhanced scanning
+  analyzer: "^5.3.0"  # AST support for enhanced scanning - compatible with Dart 3.24.5
   ansicolor: ^2.0.2  # For colored console output
   crypto: ">=3.0.3 <4.0.0"  # For caching and checksums
   path: ">=1.9.0 <2.0.0"
   yaml: ">=3.1.2 <4.0.0"
 
 dev_dependencies:
-  test: ^1.25.0
+  test: ^1.25.8
   collection: ^1.18.0
-  lints: ^5.1.1
+  lints: ^4.0.0
 
 executables:
   flutter_keycheck: flutter_keycheck

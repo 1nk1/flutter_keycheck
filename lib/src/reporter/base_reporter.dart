@@ -1,5 +1,5 @@
 /// Base reporter interface for generating reports
-/// 
+///
 /// This provides the foundation for multiple report formats
 /// including human-readable, JSON, HTML, Markdown, and JUnit.
 library;
@@ -127,21 +127,21 @@ class HumanReporter extends BaseReporter {
   @override
   String generate(ReportData data) {
     final buffer = StringBuffer();
-    
+
     buffer.writeln('\n${'=' * 60}');
     buffer.writeln('Flutter KeyCheck Report');
     buffer.writeln('=' * 60);
     buffer.writeln('Project: ${data.projectPath}');
     buffer.writeln('Timestamp: ${data.timestamp.toIso8601String()}');
-    
+
     if (data.scanDuration != null) {
       buffer.writeln('Scan Duration: ${data.scanDuration!.inMilliseconds}ms');
     }
-    
+
     if (data.scannedFiles != null) {
       buffer.writeln('Files Scanned: ${data.scannedFiles!.length}');
     }
-    
+
     buffer.writeln('\n--- Summary ---');
     buffer.writeln('Expected Keys: ${data.expectedKeys.length}');
     buffer.writeln('Found Keys: ${data.foundKeys.length}');
@@ -149,37 +149,37 @@ class HumanReporter extends BaseReporter {
     buffer.writeln('Extra Keys: ${data.extraKeys.length}');
     buffer.writeln('Coverage: ${data.coverage.toStringAsFixed(1)}%');
     buffer.writeln('Status: ${data.passed ? "✅ PASSED" : "❌ FAILED"}');
-    
+
     if (data.missingKeys.isNotEmpty) {
       buffer.writeln('\n--- Missing Keys ---');
       for (final key in data.missingKeys) {
         buffer.writeln('  ❌ $key');
       }
     }
-    
+
     if (data.extraKeys.isNotEmpty) {
       buffer.writeln('\n--- Extra Keys ---');
       for (final key in data.extraKeys) {
         buffer.writeln('  ⚠️ $key');
       }
     }
-    
+
     if (data.keyUsageCounts != null && data.keyUsageCounts!.isNotEmpty) {
       buffer.writeln('\n--- Key Usage Counts ---');
       final sortedKeys = data.keyUsageCounts!.entries.toList()
         ..sort((a, b) => b.value.compareTo(a.value));
-      
+
       for (final entry in sortedKeys.take(10)) {
         buffer.writeln('  ${entry.key}: ${entry.value} usage(s)');
       }
-      
+
       if (sortedKeys.length > 10) {
         buffer.writeln('  ... and ${sortedKeys.length - 10} more');
       }
     }
-    
+
     buffer.writeln('\n${'=' * 60}');
-    
+
     return buffer.toString();
   }
 
@@ -203,31 +203,31 @@ class JsonReporter extends BaseReporter {
       'missingKeys': data.missingKeys.toList()..sort(),
       'extraKeys': data.extraKeys.toList()..sort(),
     };
-    
+
     if (data.scanDuration != null) {
       report['scanDuration'] = data.scanDuration!.inMilliseconds;
     }
-    
+
     if (data.scannedFiles != null) {
       report['scannedFiles'] = data.scannedFiles!;
     }
-    
+
     if (data.keyUsageCounts != null) {
       report['keyUsageCounts'] = data.keyUsageCounts!;
     }
-    
+
     if (data.keyLocations != null) {
       report['keyLocations'] = data.keyLocations!;
     }
-    
+
     if (data.metrics != null) {
       report['metrics'] = data.metrics!;
     }
-    
+
     // Use custom JSON encoder for pretty printing
     return _prettyJsonEncode(report);
   }
-  
+
   String _prettyJsonEncode(Map<String, dynamic> object) {
     final encoder = JsonEncoder.withIndent('  ');
     return encoder.convert(object);
@@ -245,13 +245,13 @@ class MarkdownReporter extends BaseReporter {
   @override
   String generate(ReportData data) {
     final buffer = StringBuffer();
-    
+
     buffer.writeln('# Flutter KeyCheck Report\n');
     buffer.writeln('**Project:** `${data.projectPath}`  ');
     buffer.writeln('**Timestamp:** ${data.timestamp.toIso8601String()}  ');
     buffer.writeln('**Coverage:** ${data.coverage.toStringAsFixed(1)}%  ');
     buffer.writeln('**Status:** ${data.passed ? "✅ PASSED" : "❌ FAILED"}\n');
-    
+
     buffer.writeln('## Summary\n');
     buffer.writeln('| Metric | Count |');
     buffer.writeln('|--------|-------|');
@@ -259,21 +259,21 @@ class MarkdownReporter extends BaseReporter {
     buffer.writeln('| Found Keys | ${data.foundKeys.length} |');
     buffer.writeln('| Missing Keys | ${data.missingKeys.length} |');
     buffer.writeln('| Extra Keys | ${data.extraKeys.length} |');
-    
+
     if (data.missingKeys.isNotEmpty) {
       buffer.writeln('\n## Missing Keys\n');
       for (final key in data.missingKeys) {
         buffer.writeln('- ❌ `$key`');
       }
     }
-    
+
     if (data.extraKeys.isNotEmpty) {
       buffer.writeln('\n## Extra Keys\n');
       for (final key in data.extraKeys) {
         buffer.writeln('- ⚠️ `$key`');
       }
     }
-    
+
     return buffer.toString();
   }
 
@@ -291,24 +291,27 @@ class JUnitReporter extends BaseReporter {
     final testTime = (data.scanDuration?.inMilliseconds ?? 0) / 1000.0;
     final failures = data.missingKeys.length;
     final tests = data.expectedKeys.length;
-    
+
     final buffer = StringBuffer();
     buffer.writeln('<?xml version="1.0" encoding="UTF-8"?>');
-    buffer.writeln('<testsuites name="Flutter KeyCheck" tests="$tests" failures="$failures">');
-    buffer.writeln('  <testsuite name="Key Validation" tests="$tests" failures="$failures" time="$testTime">');
-    
+    buffer.writeln(
+        '<testsuites name="Flutter KeyCheck" tests="$tests" failures="$failures">');
+    buffer.writeln(
+        '  <testsuite name="Key Validation" tests="$tests" failures="$failures" time="$testTime">');
+
     for (final key in data.expectedKeys) {
       final passed = !data.missingKeys.contains(key);
       buffer.writeln('    <testcase name="$key" classname="KeyValidation">');
       if (!passed) {
-        buffer.writeln('      <failure message="Key not found in project">Missing key: $key</failure>');
+        buffer.writeln(
+            '      <failure message="Key not found in project">Missing key: $key</failure>');
       }
       buffer.writeln('    </testcase>');
     }
-    
+
     buffer.writeln('  </testsuite>');
     buffer.writeln('</testsuites>');
-    
+
     return buffer.toString();
   }
 

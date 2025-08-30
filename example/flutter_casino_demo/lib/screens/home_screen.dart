@@ -53,7 +53,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => StatisticsScreen(),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            StatisticsScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
@@ -100,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildHeader() {
     final theme = Theme.of(context);
-    
+
     return PremiumGlassPanel(
       height: 120,
       title: 'Premium Casino',
@@ -147,25 +148,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 onPressed: _toggleDemoMode,
                 icon: _isDemoMode ? Icons.casino : Icons.monetization_on,
                 label: _isDemoMode ? 'Demo' : 'Live',
-                style: _isDemoMode ? GlassButtonStyle.glass : GlassButtonStyle.filled,
+                style: _isDemoMode
+                    ? GlassButtonStyle.glass
+                    : GlassButtonStyle.primary,
               ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: _isDemoMode 
+                  color: _isDemoMode
                       ? CasinoColors.emerald.withOpacity(0.2)
                       : CasinoColors.ruby.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: _isDemoMode ? CasinoColors.emerald : CasinoColors.ruby,
+                    color:
+                        _isDemoMode ? CasinoColors.emerald : CasinoColors.ruby,
                     width: 1,
                   ),
                 ),
                 child: Text(
                   _isDemoMode ? 'DEMO MODE' : 'LIVE MODE',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: _isDemoMode ? CasinoColors.emerald : CasinoColors.ruby,
+                    color:
+                        _isDemoMode ? CasinoColors.emerald : CasinoColors.ruby,
                     fontWeight: FontWeight.bold,
                     fontSize: 10,
                   ),
@@ -223,9 +228,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Text(
           'Featured Games',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            color: CasinoColors.gold,
-            fontWeight: FontWeight.bold,
-          ),
+                color: CasinoColors.gold,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 16),
         SizedBox(
@@ -280,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               _GameCard(
                 title: 'Blackjack VIP',
                 subtitle: 'Classic 21',
-                icon: FontAwesomeIcons.spade,
+                icon: FontAwesomeIcons.diamondTurnRight,
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -312,9 +317,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Text(
           'Quick Actions',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            color: CasinoColors.gold,
-            fontWeight: FontWeight.bold,
-          ),
+                color: CasinoColors.gold,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 16),
         Row(
@@ -389,14 +394,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Text(
             'Premium Casino Experience',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).casinoColors.textSecondary,
-            ),
+                  color: Theme.of(context).casinoColors.textSecondary,
+                ),
           ),
           Text(
             'Glassmorphism UI • Vegas Luxury Theme',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).casinoColors.textSecondary.withOpacity(0.7),
-            ),
+                  color: Theme.of(context)
+                      .casinoColors
+                      .textSecondary
+                      .withOpacity(0.7),
+                ),
           ),
         ],
       ),
@@ -424,17 +432,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Text(
                 'Coming Soon',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Theme.of(context).casinoColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: Theme.of(context).casinoColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 8),
               Text(
                 '$feature feature is coming soon!\nStay tuned for updates.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).casinoColors.textSecondary,
-                ),
+                      color: Theme.of(context).casinoColors.textSecondary,
+                    ),
               ),
               const SizedBox(height: 24),
               GlassButton(
@@ -552,17 +560,17 @@ class _QuickActionCard extends StatelessWidget {
             Text(
               title,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).casinoColors.textPrimary,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: Theme.of(context).casinoColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 4),
             Text(
               subtitle,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).casinoColors.textSecondary,
-              ),
+                    color: Theme.of(context).casinoColors.textSecondary,
+                  ),
             ),
           ],
         ),

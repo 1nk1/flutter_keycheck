@@ -57,7 +57,7 @@ class _GlassButtonState extends State<GlassButton>
   late Animation<double> _scaleAnimation;
   late Animation<double> _elevationAnimation;
   late Animation<double> _glowAnimation;
-  
+
   bool _isPressed = false;
   bool _isHovered = false;
 
@@ -106,13 +106,13 @@ class _GlassButtonState extends State<GlassButton>
 
   void _handleTapDown(TapDownDetails details) {
     if (widget.onPressed == null) return;
-    
+
     setState(() {
       _isPressed = true;
     });
-    
+
     _controller.forward();
-    
+
     if (widget.hapticFeedback) {
       HapticFeedback.lightImpact();
     }
@@ -128,16 +128,16 @@ class _GlassButtonState extends State<GlassButton>
 
   void _handleTapEnd() {
     if (!mounted) return;
-    
+
     setState(() {
       _isPressed = false;
     });
-    
+
     _controller.reverse();
-    
+
     if (widget.onPressed != null) {
       widget.onPressed!();
-      
+
       if (widget.hapticFeedback) {
         HapticFeedback.mediumImpact();
       }
@@ -155,7 +155,7 @@ class _GlassButtonState extends State<GlassButton>
     final theme = Theme.of(context);
     final casinoColors = theme.casinoColors;
     final isEnabled = widget.onPressed != null;
-    
+
     final buttonColors = _getButtonColors(theme, casinoColors, isEnabled);
 
     return MouseRegion(
@@ -187,11 +187,13 @@ class _GlassButtonState extends State<GlassButton>
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: _buildGradient(buttonColors),
-                        border: widget.border ?? Border.all(
-                          color: buttonColors.borderColor,
-                          width: 1.5,
-                        ),
-                        borderRadius: BorderRadius.circular(widget.borderRadius),
+                        border: widget.border ??
+                            Border.all(
+                              color: buttonColors.borderColor,
+                              width: 1.5,
+                            ),
+                        borderRadius:
+                            BorderRadius.circular(widget.borderRadius),
                       ),
                       child: Material(
                         color: Colors.transparent,
@@ -229,21 +231,25 @@ class _GlassButtonState extends State<GlassButton>
         return ButtonColors(
           backgroundColor: widget.backgroundColor ?? casinoColors.primaryGold,
           glowColor: widget.glowColor ?? casinoColors.primaryGold,
-          borderColor: (widget.glowColor ?? casinoColors.primaryGold).withOpacity(0.5),
+          borderColor:
+              (widget.glowColor ?? casinoColors.primaryGold).withOpacity(0.5),
           textColor: Colors.black,
         );
       case GlassButtonStyle.secondary:
         return ButtonColors(
-          backgroundColor: widget.backgroundColor ?? casinoColors.primaryEmerald,
+          backgroundColor:
+              widget.backgroundColor ?? casinoColors.primaryEmerald,
           glowColor: widget.glowColor ?? casinoColors.primaryEmerald,
-          borderColor: (widget.glowColor ?? casinoColors.primaryEmerald).withOpacity(0.5),
+          borderColor: (widget.glowColor ?? casinoColors.primaryEmerald)
+              .withOpacity(0.5),
           textColor: Colors.white,
         );
       case GlassButtonStyle.danger:
         return ButtonColors(
           backgroundColor: widget.backgroundColor ?? casinoColors.primaryRuby,
           glowColor: widget.glowColor ?? casinoColors.primaryRuby,
-          borderColor: (widget.glowColor ?? casinoColors.primaryRuby).withOpacity(0.5),
+          borderColor:
+              (widget.glowColor ?? casinoColors.primaryRuby).withOpacity(0.5),
           textColor: Colors.white,
         );
       case GlassButtonStyle.outline:
@@ -265,7 +271,7 @@ class _GlassButtonState extends State<GlassButton>
 
   Gradient _buildGradient(ButtonColors colors) {
     if (widget.gradient != null) return widget.gradient!;
-    
+
     switch (widget.style) {
       case GlassButtonStyle.primary:
         return LinearGradient(
@@ -362,13 +368,14 @@ class CasinoBetButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return GlassButton(
       onPressed: onPressed,
       width: width,
       height: 48,
       style: isSelected ? GlassButtonStyle.primary : GlassButtonStyle.outline,
-      glowColor: isSelected ? CasinoColors.gold : CasinoColors.gold.withOpacity(0.7),
+      glowColor:
+          isSelected ? CasinoColors.gold : CasinoColors.gold.withOpacity(0.7),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -410,7 +417,7 @@ class PlayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return GlassButton(
       onPressed: isLoading ? null : onPressed,
       width: width,
@@ -473,7 +480,7 @@ class ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -554,9 +561,9 @@ class ButtonColors {
 
 /// Glass button style variants
 enum GlassButtonStyle {
-  primary,    // Gold gradient with dark text
-  secondary,  // Emerald gradient with white text
-  danger,     // Ruby gradient with white text
-  outline,    // Transparent with colored border
-  glass,      // Full glassmorphic effect
+  primary, // Gold gradient with dark text
+  secondary, // Emerald gradient with white text
+  danger, // Ruby gradient with white text
+  outline, // Transparent with colored border
+  glass, // Full glassmorphic effect
 }

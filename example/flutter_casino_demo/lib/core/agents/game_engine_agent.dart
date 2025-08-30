@@ -5,22 +5,22 @@ import 'base_agent.dart';
 /// Agent responsible for game logic, randomization, and ensuring fairness
 class GameEngineAgent extends BaseAgentImpl {
   static const String _agentTypeId = 'GameEngine';
-  
+
   // Random number generation
   late final math.Random _secureRandom;
   final List<int> _seedHistory = [];
-  
+
   // Game state tracking
   final Map<String, GameInstance> _activeGames = {};
   final Map<String, GameTemplate> _gameTemplates = {};
-  
+
   // Fairness tracking
   final Map<String, FairnessMetrics> _fairnessMetrics = {};
   int _totalSpins = 0;
   double _totalRTP = 0.0;
-  
+
   // Stream controllers
-  final StreamController<GameEngineUpdate> _gameUpdateController = 
+  final StreamController<GameEngineUpdate> _gameUpdateController =
       StreamController<GameEngineUpdate>.broadcast();
 
   @override
@@ -33,7 +33,8 @@ class GameEngineAgent extends BaseAgentImpl {
   List<GameInstance> get activeGames => List.unmodifiable(_activeGames.values);
 
   /// Available game templates
-  List<GameTemplate> get availableGameTemplates => List.unmodifiable(_gameTemplates.values);
+  List<GameTemplate> get availableGameTemplates =>
+      List.unmodifiable(_gameTemplates.values);
 
   /// Total spins across all games
   int get totalSpins => _totalSpins;
@@ -48,7 +49,7 @@ class GameEngineAgent extends BaseAgentImpl {
     final seed = now.microsecondsSinceEpoch;
     _secureRandom = math.Random(seed);
     _seedHistory.add(seed);
-    
+
     await _loadGameTemplates();
   }
 
@@ -58,23 +59,24 @@ class GameEngineAgent extends BaseAgentImpl {
     for (final gameInstance in _activeGames.values) {
       await endGame(gameInstance.id, forced: true);
     }
-    
+
     await _gameUpdateController.close();
   }
 
   /// Create a new game instance
-  Future<String> createGame(String templateId, {
+  Future<String> createGame(
+    String templateId, {
     double? betAmount,
     Map<String, dynamic>? gameConfig,
   }) async {
     validateActive();
-    
+
     final template = _gameTemplates[templateId];
     if (template == null) {
-      throw AgentException('Game template not found: $templateId', 
+      throw AgentException('Game template not found: $templateId',
           agentType: agentType, agentId: agentId);
     }
-    
+
     final gameId = _generateGameId();
     final gameInstance = GameInstance(
       id: gameId,
@@ -87,68 +89,72 @@ class GameEngineAgent extends BaseAgentImpl {
       createdAt: DateTime.now(),
       rng: _createGameRNG(),
     );
-    
+
     _activeGames[gameId] = gameInstance;
-    
+
     // Initialize fairness tracking for this game type
-    if (!_fairnessMetrics.containsKey(template.type)) {
-      _fairnessMetrics[template.type] = FairnessMetrics(gameType: template.type);
+    final gameTypeKey = template.type.toString().split('.').last;
+    if (!_fairnessMetrics.containsKey(gameTypeKey)) {
+      _fairnessMetrics[gameTypeKey] = FairnessMetrics(gameType: gameTypeKey);
     }
-    
+
     _emitGameUpdate(GameEngineUpdateType.gameCreated, {
       'gameId': gameId,
       'templateId': templateId,
       'gameType': template.type,
     });
-    
+
     return gameId;
   }
 
   /// Start a game instance
   Future<bool> startGame(String gameId) async {
     validateActive();
-    
+
     final game = _activeGames[gameId];
     if (game == null) {
       return false;
     }
-    
+
     if (game.state != GameInstanceState.created) {
-      throw AgentException('Game cannot be started in current state: ${game.state}', 
-          agentType: agentType, agentId: agentId);
+      throw AgentException(
+          'Game cannot be started in current state: ${game.state}',
+          agentType: agentType,
+          agentId: agentId);
     }
-    
+
     _activeGames[gameId] = game.copyWith(
       state: GameInstanceState.active,
       startedAt: DateTime.now(),
     );
-    
+
     _emitGameUpdate(GameEngineUpdateType.gameStarted, {
       'gameId': gameId,
       'gameType': game.gameType,
     });
-    
+
     return true;
   }
 
   /// Execute a game round (spin, deal, etc.)
-  Future<GameResult> executeRound(String gameId, {Map<String, dynamic>? roundParameters}) async {
+  Future<GameResult> executeRound(String gameId,
+      {Map<String, dynamic>? roundParameters}) async {
     validateActive();
-    
+
     final game = _activeGames[gameId];
     if (game == null) {
-      throw AgentException('Game not found: $gameId', 
+      throw AgentException('Game not found: $gameId',
           agentType: agentType, agentId: agentId);
     }
-    
+
     if (game.state != GameInstanceState.active) {
-      throw AgentException('Game not active: $gameId', 
+      throw AgentException('Game not active: $gameId',
           agentType: agentType, agentId: agentId);
     }
-    
+
     final template = _gameTemplates[game.templateId]!;
     GameResult result;
-    
+
     switch (template.type) {
       case GameType.slotMachine:
         result = await _executeSlotSpin(game, template, roundParameters);
@@ -166,7 +172,7 @@ class GameEngineAgent extends BaseAgentImpl {
         result = await _executeCustomGame(game, template, roundParameters);
         break;
     }
-    
+
     // Update game instance with result
     final updatedGame = game.copyWith(
       lastResult: result,
@@ -174,56 +180,62 @@ class GameEngineAgent extends BaseAgentImpl {
       totalBets: game.totalBets + game.betAmount,
       roundsPlayed: game.roundsPlayed + 1,
     );
-    
+
     _activeGames[gameId] = updatedGame;
-    
+
     // Update global statistics
     _totalSpins++;
     _totalRTP += result.winAmount / game.betAmount;
-    
+
     // Update fairness metrics
-    final metrics = _fairnessMetrics[game.gameType]!;
-    _fairnessMetrics[game.gameType] = metrics.addResult(result.winAmount, game.betAmount);
-    
+    final gameTypeKey = game.gameType.toString().split('.').last;
+    final metrics = _fairnessMetrics[gameTypeKey]!;
+    _fairnessMetrics[gameTypeKey] =
+        metrics.addResult(result.winAmount, game.betAmount);
+
     _emitGameUpdate(GameEngineUpdateType.roundExecuted, {
       'gameId': gameId,
       'result': result.toJson(),
       'gameType': game.gameType,
     });
-    
+
     return result;
   }
 
   /// End a game instance
   Future<void> endGame(String gameId, {bool forced = false}) async {
     validateActive();
-    
+
     final game = _activeGames[gameId];
     if (game == null) {
       return;
     }
-    
+
     if (!forced && game.state != GameInstanceState.active) {
-      throw AgentException('Game cannot be ended in current state: ${game.state}', 
-          agentType: agentType, agentId: agentId);
+      throw AgentException(
+          'Game cannot be ended in current state: ${game.state}',
+          agentType: agentType,
+          agentId: agentId);
     }
-    
+
     final endedGame = game.copyWith(
       state: GameInstanceState.completed,
       endedAt: DateTime.now(),
     );
-    
+
     _activeGames[gameId] = endedGame;
-    
+
     _emitGameUpdate(GameEngineUpdateType.gameEnded, {
       'gameId': gameId,
       'gameType': game.gameType,
       'totalWinnings': endedGame.totalWinnings,
       'totalBets': endedGame.totalBets,
       'roundsPlayed': endedGame.roundsPlayed,
-      'rtp': endedGame.totalBets == 0 ? 0.0 : endedGame.totalWinnings / endedGame.totalBets,
+      'rtp': endedGame.totalBets == 0
+          ? 0.0
+          : endedGame.totalWinnings / endedGame.totalBets,
     });
-    
+
     // Remove from active games after a delay to allow for result processing
     Timer(const Duration(seconds: 30), () {
       _activeGames.remove(gameId);
@@ -250,9 +262,9 @@ class GameEngineAgent extends BaseAgentImpl {
   /// Register a custom game template
   void registerGameTemplate(GameTemplate template) {
     validateActive();
-    
+
     _gameTemplates[template.id] = template;
-    
+
     _emitGameUpdate(GameEngineUpdateType.templateRegistered, {
       'templateId': template.id,
       'gameType': template.type.name,
@@ -261,27 +273,27 @@ class GameEngineAgent extends BaseAgentImpl {
   }
 
   Future<GameResult> _executeSlotSpin(
-    GameInstance game, 
-    GameTemplate template, 
+    GameInstance game,
+    GameTemplate template,
     Map<String, dynamic>? parameters,
   ) async {
     final reels = template.config['reels'] as int? ?? 5;
-    final symbols = template.config['symbols'] as List<String>? ?? 
+    final symbols = template.config['symbols'] as List<String>? ??
         ['🍒', '🍋', '🍊', '🍇', '💎', '⭐', '🔔', '💰'];
     final paylines = template.config['paylines'] as int? ?? 20;
-    
+
     // Generate reel results
-    final reelResults = List.generate(reels, (index) => 
-        symbols[game.rng.nextInt(symbols.length)]);
-    
+    final reelResults = List.generate(
+        reels, (index) => symbols[game.rng.nextInt(symbols.length)]);
+
     // Calculate winnings based on payline matches
     double winMultiplier = 0.0;
     final matchingSymbols = <String, int>{};
-    
+
     for (final symbol in reelResults) {
       matchingSymbols[symbol] = (matchingSymbols[symbol] ?? 0) + 1;
     }
-    
+
     // Simple matching logic - can be made more complex
     for (final entry in matchingSymbols.entries) {
       if (entry.value >= 3) {
@@ -289,12 +301,12 @@ class GameEngineAgent extends BaseAgentImpl {
         winMultiplier += symbolMultiplier * (entry.value - 2);
       }
     }
-    
+
     // Apply RTP adjustment to maintain fairness
     winMultiplier = _adjustForRTP(winMultiplier, template.targetRTP);
-    
+
     final winAmount = game.betAmount * winMultiplier;
-    
+
     return GameResult(
       gameId: game.id,
       roundNumber: game.roundsPlayed + 1,
@@ -311,18 +323,21 @@ class GameEngineAgent extends BaseAgentImpl {
   }
 
   Future<GameResult> _executeRouletteSpin(
-    GameInstance game, 
-    GameTemplate template, 
+    GameInstance game,
+    GameTemplate template,
     Map<String, dynamic>? parameters,
   ) async {
     final wheelType = template.config['wheelType'] as String? ?? 'european';
-    final maxNumber = wheelType == 'american' ? 37 : 36; // 0-36 for european, 0-37 for american
-    
+    final maxNumber = wheelType == 'american'
+        ? 37
+        : 36; // 0-36 for european, 0-37 for american
+
     final winningNumber = game.rng.nextInt(maxNumber + 1);
-    final bet = parameters?['bet'] as Map<String, dynamic>? ?? {'type': 'number', 'value': 7};
-    
+    final bet = parameters?['bet'] as Map<String, dynamic>? ??
+        {'type': 'number', 'value': 7};
+
     double winMultiplier = 0.0;
-    
+
     switch (bet['type']) {
       case 'number':
         if (winningNumber == bet['value']) {
@@ -350,10 +365,10 @@ class GameEngineAgent extends BaseAgentImpl {
         }
         break;
     }
-    
+
     winMultiplier = _adjustForRTP(winMultiplier, template.targetRTP);
     final winAmount = game.betAmount * winMultiplier;
-    
+
     return GameResult(
       gameId: game.id,
       roundNumber: game.roundsPlayed + 1,
@@ -371,19 +386,19 @@ class GameEngineAgent extends BaseAgentImpl {
   }
 
   Future<GameResult> _executeBlackjackRound(
-    GameInstance game, 
-    GameTemplate template, 
+    GameInstance game,
+    GameTemplate template,
     Map<String, dynamic>? parameters,
   ) async {
     // Simplified blackjack implementation
     final playerCards = _drawCards(game.rng, 2);
     final dealerCards = _drawCards(game.rng, 2);
-    
+
     final playerValue = _calculateBlackjackValue(playerCards);
     final dealerValue = _calculateBlackjackValue(dealerCards);
-    
+
     double winMultiplier = 0.0;
-    
+
     if (playerValue == 21 && playerCards.length == 2) {
       // Blackjack
       winMultiplier = 2.5;
@@ -397,10 +412,10 @@ class GameEngineAgent extends BaseAgentImpl {
       // Push
       winMultiplier = 1.0;
     }
-    
+
     winMultiplier = _adjustForRTP(winMultiplier, template.targetRTP);
     final winAmount = game.betAmount * winMultiplier;
-    
+
     return GameResult(
       gameId: game.id,
       roundNumber: game.roundsPlayed + 1,
@@ -418,18 +433,18 @@ class GameEngineAgent extends BaseAgentImpl {
   }
 
   Future<GameResult> _executePokerRound(
-    GameInstance game, 
-    GameTemplate template, 
+    GameInstance game,
+    GameTemplate template,
     Map<String, dynamic>? parameters,
   ) async {
     // Simplified poker implementation (5-card draw)
     final hand = _drawCards(game.rng, 5);
     final handRank = _evaluatePokerHand(hand);
-    
+
     final winMultiplier = _getPokerPayoutMultiplier(handRank);
     final adjustedMultiplier = _adjustForRTP(winMultiplier, template.targetRTP);
     final winAmount = game.betAmount * adjustedMultiplier;
-    
+
     return GameResult(
       gameId: game.id,
       roundNumber: game.roundsPlayed + 1,
@@ -446,24 +461,24 @@ class GameEngineAgent extends BaseAgentImpl {
   }
 
   Future<GameResult> _executeCustomGame(
-    GameInstance game, 
-    GameTemplate template, 
+    GameInstance game,
+    GameTemplate template,
     Map<String, dynamic>? parameters,
   ) async {
     // Default implementation for custom games
     final winProbability = template.config['winProbability'] as double? ?? 0.45;
     final maxMultiplier = template.config['maxMultiplier'] as double? ?? 5.0;
-    
+
     final isWin = game.rng.nextDouble() < winProbability;
     double winMultiplier = 0.0;
-    
+
     if (isWin) {
       winMultiplier = 1.0 + (game.rng.nextDouble() * maxMultiplier);
     }
-    
+
     winMultiplier = _adjustForRTP(winMultiplier, template.targetRTP);
     final winAmount = game.betAmount * winMultiplier;
-    
+
     return GameResult(
       gameId: game.id,
       roundNumber: game.roundsPlayed + 1,
@@ -481,7 +496,7 @@ class GameEngineAgent extends BaseAgentImpl {
   double _adjustForRTP(double winMultiplier, double targetRTP) {
     // Simple RTP adjustment - in reality this would be more sophisticated
     final currentRTP = this.currentRTP;
-    
+
     if (currentRTP < targetRTP - 0.05) {
       // If we're below target, slightly increase wins
       return winMultiplier * 1.1;
@@ -489,7 +504,7 @@ class GameEngineAgent extends BaseAgentImpl {
       // If we're above target, slightly decrease wins
       return winMultiplier * 0.9;
     }
-    
+
     return winMultiplier;
   }
 
@@ -500,28 +515,61 @@ class GameEngineAgent extends BaseAgentImpl {
   }
 
   bool _isRedNumber(int number) {
-    const redNumbers = {1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36};
+    const redNumbers = {
+      1,
+      3,
+      5,
+      7,
+      9,
+      12,
+      14,
+      16,
+      18,
+      19,
+      21,
+      23,
+      25,
+      27,
+      30,
+      32,
+      34,
+      36
+    };
     return redNumbers.contains(number);
   }
 
   List<PlayingCard> _drawCards(math.Random rng, int count) {
     const suits = ['♠', '♥', '♦', '♣'];
-    const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-    
+    const ranks = [
+      'A',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      'J',
+      'Q',
+      'K'
+    ];
+
     final cards = <PlayingCard>[];
     for (int i = 0; i < count; i++) {
       final suit = suits[rng.nextInt(suits.length)];
       final rank = ranks[rng.nextInt(ranks.length)];
       cards.add(PlayingCard(suit: suit, rank: rank));
     }
-    
+
     return cards;
   }
 
   int _calculateBlackjackValue(List<PlayingCard> cards) {
     int value = 0;
     int aces = 0;
-    
+
     for (final card in cards) {
       if (card.rank == 'A') {
         aces++;
@@ -532,13 +580,13 @@ class GameEngineAgent extends BaseAgentImpl {
         value += int.parse(card.rank);
       }
     }
-    
+
     // Adjust for aces
     while (value > 21 && aces > 0) {
       value -= 10;
       aces--;
     }
-    
+
     return value;
   }
 
@@ -546,57 +594,78 @@ class GameEngineAgent extends BaseAgentImpl {
     // Simplified poker hand evaluation
     final rankCounts = <String, int>{};
     final suitCounts = <String, int>{};
-    
+
     for (final card in cards) {
       rankCounts[card.rank] = (rankCounts[card.rank] ?? 0) + 1;
       suitCounts[card.suit] = (suitCounts[card.suit] ?? 0) + 1;
     }
-    
+
     final counts = rankCounts.values.toList()..sort((a, b) => b.compareTo(a));
     final isFlush = suitCounts.values.any((count) => count >= 5);
-    
+
     if (counts[0] == 4) return PokerHandRank.fourOfAKind;
     if (counts[0] == 3 && counts[1] == 2) return PokerHandRank.fullHouse;
     if (isFlush) return PokerHandRank.flush;
     if (counts[0] == 3) return PokerHandRank.threeOfAKind;
     if (counts[0] == 2 && counts[1] == 2) return PokerHandRank.twoPair;
     if (counts[0] == 2) return PokerHandRank.onePair;
-    
+
     return PokerHandRank.highCard;
   }
 
   double _getPokerPayoutMultiplier(PokerHandRank rank) {
     switch (rank) {
-      case PokerHandRank.royalFlush: return 250.0;
-      case PokerHandRank.straightFlush: return 50.0;
-      case PokerHandRank.fourOfAKind: return 25.0;
-      case PokerHandRank.fullHouse: return 9.0;
-      case PokerHandRank.flush: return 6.0;
-      case PokerHandRank.straight: return 4.0;
-      case PokerHandRank.threeOfAKind: return 3.0;
-      case PokerHandRank.twoPair: return 2.0;
-      case PokerHandRank.onePair: return 1.0;
-      case PokerHandRank.highCard: return 0.0;
+      case PokerHandRank.royalFlush:
+        return 250.0;
+      case PokerHandRank.straightFlush:
+        return 50.0;
+      case PokerHandRank.fourOfAKind:
+        return 25.0;
+      case PokerHandRank.fullHouse:
+        return 9.0;
+      case PokerHandRank.flush:
+        return 6.0;
+      case PokerHandRank.straight:
+        return 4.0;
+      case PokerHandRank.threeOfAKind:
+        return 3.0;
+      case PokerHandRank.twoPair:
+        return 2.0;
+      case PokerHandRank.onePair:
+        return 1.0;
+      case PokerHandRank.highCard:
+        return 0.0;
     }
   }
 
   String _getPokerHandName(PokerHandRank rank) {
     switch (rank) {
-      case PokerHandRank.royalFlush: return 'Royal Flush';
-      case PokerHandRank.straightFlush: return 'Straight Flush';
-      case PokerHandRank.fourOfAKind: return 'Four of a Kind';
-      case PokerHandRank.fullHouse: return 'Full House';
-      case PokerHandRank.flush: return 'Flush';
-      case PokerHandRank.straight: return 'Straight';
-      case PokerHandRank.threeOfAKind: return 'Three of a Kind';
-      case PokerHandRank.twoPair: return 'Two Pair';
-      case PokerHandRank.onePair: return 'One Pair';
-      case PokerHandRank.highCard: return 'High Card';
+      case PokerHandRank.royalFlush:
+        return 'Royal Flush';
+      case PokerHandRank.straightFlush:
+        return 'Straight Flush';
+      case PokerHandRank.fourOfAKind:
+        return 'Four of a Kind';
+      case PokerHandRank.fullHouse:
+        return 'Full House';
+      case PokerHandRank.flush:
+        return 'Flush';
+      case PokerHandRank.straight:
+        return 'Straight';
+      case PokerHandRank.threeOfAKind:
+        return 'Three of a Kind';
+      case PokerHandRank.twoPair:
+        return 'Two Pair';
+      case PokerHandRank.onePair:
+        return 'One Pair';
+      case PokerHandRank.highCard:
+        return 'High Card';
     }
   }
 
   math.Random _createGameRNG() {
-    final seed = DateTime.now().microsecondsSinceEpoch + _secureRandom.nextInt(1000000);
+    final seed =
+        DateTime.now().microsecondsSinceEpoch + _secureRandom.nextInt(1000000);
     _seedHistory.add(seed);
     return math.Random(seed);
   }
@@ -639,7 +708,7 @@ class GameEngineAgent extends BaseAgentImpl {
         },
       ),
     ];
-    
+
     for (final template in templates) {
       _gameTemplates[template.id] = template;
     }
@@ -715,6 +784,15 @@ class GameEngineUpdate {
     required this.timestamp,
     required this.agentId,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type.toString().split('.').last,
+      'data': data,
+      'timestamp': timestamp.toIso8601String(),
+      'agentId': agentId,
+    };
+  }
 
   @override
   String toString() {
@@ -934,7 +1012,8 @@ class FairnessMetrics {
   }) : actualRTP = totalBets == 0 ? 0.0 : totalWinnings / totalBets;
 
   FairnessMetrics addResult(double winAmount, double betAmount) {
-    final newResults = List<double>.from(recentResults)..add(winAmount - betAmount);
+    final newResults = List<double>.from(recentResults)
+      ..add(winAmount - betAmount);
     if (newResults.length > 1000) {
       newResults.removeAt(0); // Keep only last 1000 results
     }

@@ -12,7 +12,7 @@ class ReelWidget extends StatefulWidget {
   final bool isWinningReel;
   final List<bool> winningPositions;
   final VoidCallback? onSpinComplete;
-  
+
   const ReelWidget({
     super.key,
     required this.reelIndex,
@@ -28,16 +28,15 @@ class ReelWidget extends StatefulWidget {
   State<ReelWidget> createState() => _ReelWidgetState();
 }
 
-class _ReelWidgetState extends State<ReelWidget>
-    with TickerProviderStateMixin {
+class _ReelWidgetState extends State<ReelWidget> with TickerProviderStateMixin {
   late AnimationController _spinController;
   late AnimationController _stopController;
   late AnimationController _winController;
-  
+
   late Animation<double> _spinAnimation;
   late Animation<double> _stopAnimation;
   late Animation<double> _winGlowAnimation;
-  
+
   bool _wasPreviouslySpinning = false;
 
   @override
@@ -52,7 +51,7 @@ class _ReelWidgetState extends State<ReelWidget>
       duration: Duration(milliseconds: (1000 / widget.spinSpeed).round()),
       vsync: this,
     );
-    
+
     _spinAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -60,13 +59,13 @@ class _ReelWidgetState extends State<ReelWidget>
       parent: _spinController,
       curve: Curves.linear,
     ));
-    
+
     // Stop animation with bounce effect
     _stopController = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    
+
     _stopAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -74,13 +73,13 @@ class _ReelWidgetState extends State<ReelWidget>
       parent: _stopController,
       curve: Curves.elasticOut,
     ));
-    
+
     // Win glow animation
     _winController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _winGlowAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -93,7 +92,7 @@ class _ReelWidgetState extends State<ReelWidget>
   @override
   void didUpdateWidget(ReelWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Handle spin state changes
     if (widget.isSpinning != oldWidget.isSpinning) {
       if (widget.isSpinning) {
@@ -102,7 +101,7 @@ class _ReelWidgetState extends State<ReelWidget>
         _stopSpinning();
       }
     }
-    
+
     // Handle win state changes
     if (widget.isWinningReel != oldWidget.isWinningReel) {
       if (widget.isWinningReel) {
@@ -111,7 +110,7 @@ class _ReelWidgetState extends State<ReelWidget>
         _winController.reset();
       }
     }
-    
+
     // Update spin speed
     if (widget.spinSpeed != oldWidget.spinSpeed && widget.isSpinning) {
       _updateSpinSpeed();
@@ -150,7 +149,7 @@ class _ReelWidgetState extends State<ReelWidget>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       width: 80,
       height: 240,
@@ -186,13 +185,13 @@ class _ReelWidgetState extends State<ReelWidget>
               children: [
                 // Background pattern
                 _buildReelBackground(),
-                
+
                 // Symbol column
                 _buildSymbolColumn(),
-                
+
                 // Win glow overlay
                 if (widget.isWinningReel) _buildWinGlow(),
-                
+
                 // Reel frame overlay
                 _buildReelFrame(),
               ],
@@ -229,11 +228,11 @@ class _ReelWidgetState extends State<ReelWidget>
         children: [
           // Extra symbols above for smooth spinning effect
           if (widget.isSpinning) ..._buildSpinningSymbols(),
-          
+
           // Actual visible symbols
           for (int i = 0; i < widget.symbols.length; i++)
             _buildSymbolCell(widget.symbols[i], i),
-          
+
           // Extra symbols below for smooth spinning effect
           if (widget.isSpinning) ..._buildSpinningSymbols(),
         ],
@@ -253,29 +252,31 @@ class _ReelWidgetState extends State<ReelWidget>
   List<Widget> _buildSpinningSymbols() {
     // Generate random symbols for spinning effect
     final spinSymbols = SlotSymbol.values.toList()..shuffle();
-    return spinSymbols.take(6).map((symbol) => 
-        _buildSymbolCell(symbol, -1, isSpinning: true)).toList();
+    return spinSymbols
+        .take(6)
+        .map((symbol) => _buildSymbolCell(symbol, -1, isSpinning: true))
+        .toList();
   }
 
-  Widget _buildSymbolCell(SlotSymbol symbol, int position, {bool isSpinning = false}) {
-    final isWinning = !isSpinning && 
-        position >= 0 && 
-        position < widget.winningPositions.length && 
+  Widget _buildSymbolCell(SlotSymbol symbol, int position,
+      {bool isSpinning = false}) {
+    final isWinning = !isSpinning &&
+        position >= 0 &&
+        position < widget.winningPositions.length &&
         widget.winningPositions[position];
-    
+
     return Container(
       width: 76,
       height: 76,
       margin: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        color: isWinning 
+        color: isWinning
             ? CasinoColors.gold.withOpacity(0.2)
             : Colors.white.withOpacity(0.05),
-        border: isWinning 
-            ? Border.all(color: CasinoColors.gold, width: 2)
-            : null,
-        boxShadow: isWinning 
+        border:
+            isWinning ? Border.all(color: CasinoColors.gold, width: 2) : null,
+        boxShadow: isWinning
             ? CasinoColors.getNeonGlow(CasinoColors.gold, intensity: 0.5)
             : null,
       ),
@@ -286,12 +287,11 @@ class _ReelWidgetState extends State<ReelWidget>
             fontSize: isWinning ? 32 : 28,
             fontWeight: isWinning ? FontWeight.bold : FontWeight.normal,
           ),
-        ).animate(target: isWinning ? 1 : 0)
-         .scale(
-           duration: const Duration(milliseconds: 300),
-           begin: const Offset(1.0, 1.0),
-           end: const Offset(1.1, 1.1),
-         ),
+        ).animate(target: isWinning ? 1 : 0).scale(
+              duration: const Duration(milliseconds: 300),
+              begin: const Offset(1.0, 1.0),
+              end: const Offset(1.1, 1.1),
+            ),
       ),
     );
   }
@@ -321,7 +321,7 @@ class _ReelWidgetState extends State<ReelWidget>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: widget.isWinningReel 
+            color: widget.isWinningReel
                 ? CasinoColors.gold.withOpacity(0.8)
                 : Colors.white.withOpacity(0.2),
             width: widget.isWinningReel ? 3 : 1,
@@ -345,7 +345,7 @@ class SymbolInfo extends StatelessWidget {
   final SlotSymbol symbol;
   final int baseMultiplier;
   final bool showMultipliers;
-  
+
   const SymbolInfo({
     super.key,
     required this.symbol,
@@ -356,7 +356,7 @@ class SymbolInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -385,9 +385,9 @@ class SymbolInfo extends StatelessWidget {
               ),
             ),
           ),
-          
+
           const SizedBox(width: 16),
-          
+
           // Symbol name and description
           Expanded(
             child: Column(

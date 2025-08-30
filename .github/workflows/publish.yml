@@ -1,29 +1,248 @@
-name: Release to pub.dev
+name: Publish to pub.dev
 
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'
+      - 'v[0-9]+.[0-9]+.[0-9]+*'  # Matches v3.2.0, v3.2.1-rc.1, etc.
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Perform a dry run without publishing'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  DART_SDK: stable
 
 jobs:
-  publish:
+  # Pre-publish validation
+  validate:
+    name: Pre-publish Validation
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write # Required for authentication using OIDC
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup Dart
+        with:
+          fetch-depth: 0  # Need full history for tag validation
+      
+      - name: Setup Dart SDK
         uses: dart-lang/setup-dart@v1
         with:
-          sdk: stable
-
+          sdk: ${{ env.DART_SDK }}
+      
+      - name: Cache pub dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: ${{ runner.os }}-dart-stable-publish-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-dart-stable-
+      
       - name: Install dependencies
         run: dart pub get
-
-      - name: Verify package
+      
+      - name: Extract and validate version
+        id: version
+        run: |
+          # Extract version from pubspec.yaml
+          PUBSPEC_VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
+          echo "version=$PUBSPEC_VERSION" >> $GITHUB_OUTPUT
+          
+          # Extract tag if triggered by tag push
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG=${GITHUB_REF#refs/tags/}
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+            
+            # Validate tag matches version
+            EXPECTED_TAG="v$PUBSPEC_VERSION"
+            if [ "$TAG" != "$EXPECTED_TAG" ]; then
+              echo "❌ Tag $TAG does not match expected version tag $EXPECTED_TAG"
+              exit 1
+            fi
+            echo "✅ Tag $TAG matches version $PUBSPEC_VERSION"
+          else
+            echo "ℹ️ Manual workflow run - no tag validation"
+          fi
+      
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+      
+      - name: Analyze code (strict)
+        run: dart analyze --fatal-infos --fatal-warnings
+      
+      - name: Run tests
+        run: dart test --reporter expanded
+      
+      - name: Validate v3 CLI
+        run: |
+          # Ensure CLI works correctly
+          dart run bin/flutter_keycheck.dart --version
+          dart run bin/flutter_keycheck.dart scan --help
+          dart run bin/flutter_keycheck.dart validate --help
+          
+          # Test compilation
+          dart compile exe bin/flutter_keycheck.dart -o flutter_keycheck
+          ./flutter_keycheck --version
+      
+      - name: Check CHANGELOG entry
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if ! grep -q "## $VERSION" CHANGELOG.md && ! grep -q "## \[$VERSION\]" CHANGELOG.md; then
+            echo "❌ No CHANGELOG entry found for version $VERSION"
+            exit 1
+          fi
+          echo "✅ CHANGELOG entry exists for version $VERSION"
+      
+      - name: Verify package score
+        run: |
+          dart pub global activate pana
+          dart pub global run pana --no-warning --exit-code-threshold 120 || true
+      
+      - name: Dry run publish
         run: dart pub publish --dry-run
 
+  # Publish to pub.dev
+  publish:
+    name: Publish Package
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'push' || github.event.inputs.dry_run == 'false'
+    permissions:
+      id-token: write  # Required for OIDC authentication
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_SDK }}
+      
+      - name: Cache pub dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: ${{ runner.os }}-dart-stable-publish-${{ hashFiles('**/pubspec.yaml') }}
+      
+      - name: Install dependencies
+        run: dart pub get
+      
       - name: Publish to pub.dev
-        run: dart pub publish --force
+        if: github.event_name == 'push' || github.event.inputs.dry_run == 'false'
+        run: |
+          echo "Publishing version ${{ needs.validate.outputs.version }} to pub.dev..."
+          dart pub publish --force
+      
+      - name: Verify publication
+        if: github.event_name == 'push' || github.event.inputs.dry_run == 'false'
+        run: |
+          echo "Waiting for package to be available on pub.dev..."
+          sleep 30
+          
+          # Try to activate the published version
+          dart pub global activate flutter_keycheck
+          flutter_keycheck --version
+
+  # Create GitHub release
+  github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate, publish]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_SDK }}
+      
+      - name: Install dependencies
+        run: dart pub get
+      
+      - name: Build executables
+        run: |
+          # Build executable for Linux
+          dart compile exe bin/flutter_keycheck.dart -o flutter_keycheck-linux
+          
+          # Create archives
+          tar -czf flutter_keycheck-linux.tar.gz flutter_keycheck-linux
+      
+      - name: Extract changelog section
+        id: changelog
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          
+          # Extract the changelog section for this version
+          awk "/## $VERSION/,/^## [0-9]/" CHANGELOG.md | head -n -2 > release_notes.md
+          
+          if [ ! -s release_notes.md ]; then
+            echo "No specific changelog found, using generic message"
+            echo "Release $VERSION" > release_notes.md
+          fi
+      
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ needs.validate.outputs.tag }}
+          name: Flutter KeyCheck ${{ needs.validate.outputs.version }}
+          bodyFile: release_notes.md
+          artifacts: flutter_keycheck-linux.tar.gz
+          draft: false
+          prerelease: ${{ contains(needs.validate.outputs.version, '-') }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Post-publish verification
+  verify-publication:
+    name: Verify Publication
+    runs-on: ubuntu-latest
+    needs: [validate, publish]
+    if: github.event_name == 'push' || github.event.inputs.dry_run == 'false'
+    
+    steps:
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_SDK }}
+      
+      - name: Wait for pub.dev propagation
+        run: sleep 60
+      
+      - name: Verify package on pub.dev
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          
+          echo "Verifying flutter_keycheck@$VERSION is available..."
+          
+          # Try to get package info
+          dart pub global activate flutter_keycheck
+          
+          # Verify the version
+          INSTALLED_VERSION=$(flutter_keycheck --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          
+          if [ "$INSTALLED_VERSION" == "$VERSION" ]; then
+            echo "✅ Successfully published and verified flutter_keycheck@$VERSION"
+          else
+            echo "⚠️ Version mismatch: expected $VERSION, got $INSTALLED_VERSION"
+          fi
+      
+      - name: Test published package
+        run: |
+          # Test the globally activated package
+          flutter_keycheck --help
+          flutter_keycheck scan --help
+          flutter_keycheck validate --help

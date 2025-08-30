@@ -8,12 +8,12 @@ import 'dart:io';
 void main() async {
   print('🎯 Generating Triple HTML Reports for Visual Comparison\n');
   print('=' * 60);
-  
+
   // Generate all three reports
   await generateV2Report();
   await generateOptimizedReport();
   await generateEmbeddedReport();
-  
+
   print('\n✅ All reports generated successfully!');
   print('📁 Check /reports/ directory for:');
   print('   - html_reporter_v2.html (original with full glassmorphism)');
@@ -26,7 +26,7 @@ void main() async {
 Future<void> generateV2Report() async {
   print('\n1️⃣ Generating V2 HTML Report (Original)...');
   print('   🎨 Features: Full glassmorphism, Canvas charts, Dark theme');
-  
+
   final html = '''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -452,10 +452,11 @@ Future<void> generateV2Report() async {
   </div>
 </body>
 </html>''';
-  
-  final outputFile = File('/home/adj/projects/flutter_keycheck/reports/html_reporter_v2.html');
+
+  final outputFile =
+      File('/home/adj/projects/flutter_keycheck/reports/html_reporter_v2.html');
   await outputFile.writeAsString(html);
-  
+
   print('   ✅ Generated: reports/html_reporter_v2.html');
   print('   📊 Size: ${(html.length / 1024).toStringAsFixed(1)} KB');
   print('   🎨 Features: Full glassmorphism, animations, Canvas charts');
@@ -465,7 +466,7 @@ Future<void> generateV2Report() async {
 Future<void> generateOptimizedReport() async {
   print('\n2️⃣ Generating Optimized HTML Report...');
   print('   ⚡ Features: Reduced effects, pagination, performance focus');
-  
+
   final html = '''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -773,10 +774,11 @@ Future<void> generateOptimizedReport() async {
   </div>
 </body>
 </html>''';
-  
-  final outputFile = File('/home/adj/projects/flutter_keycheck/reports/html_reporter_optimized.html');
+
+  final outputFile = File(
+      '/home/adj/projects/flutter_keycheck/reports/html_reporter_optimized.html');
   await outputFile.writeAsString(html);
-  
+
   print('   ✅ Generated: reports/html_reporter_optimized.html');
   print('   📊 Size: ${(html.length / 1024).toStringAsFixed(1)} KB');
   print('   ⚡ Features: Pagination, reduced effects, fast rendering');
@@ -786,7 +788,7 @@ Future<void> generateOptimizedReport() async {
 Future<void> generateEmbeddedReport() async {
   print('\n3️⃣ Generating Embedded HTML Report...');
   print('   📝 Features: Minimal design, no effects, basic styling');
-  
+
   final html = '''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1044,10 +1046,11 @@ Future<void> generateEmbeddedReport() async {
   </div>
 </body>
 </html>''';
-  
-  final outputFile = File('/home/adj/projects/flutter_keycheck/reports/html_reporter_embedded.html');
+
+  final outputFile = File(
+      '/home/adj/projects/flutter_keycheck/reports/html_reporter_embedded.html');
   await outputFile.writeAsString(html);
-  
+
   print('   ✅ Generated: reports/html_reporter_embedded.html');
   print('   📊 Size: ${(html.length / 1024).toStringAsFixed(1)} KB');
   print('   📝 Features: Minimal design, no effects, embedded in V3');

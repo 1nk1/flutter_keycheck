@@ -119,15 +119,15 @@ class _GlassmorphicCardState extends State<GlassmorphicCard>
                 child: Stack(
                   children: [
                     // Background image layer
-                    if (widget.backgroundImage != null)
-                      _buildBackgroundImage(),
-                    
+                    if (widget.backgroundImage != null) _buildBackgroundImage(),
+
                     // Main glass container
-                    _buildMainContainer(theme, casinoColors, effectiveGlowColor),
-                    
+                    _buildMainContainer(
+                        theme, casinoColors, effectiveGlowColor),
+
                     // Content overlay
                     _buildContentOverlay(theme, casinoColors),
-                    
+
                     // Interactive glow effect
                     if (widget.interactive && _isPressed)
                       _buildPressedGlowEffect(effectiveGlowColor),
@@ -138,13 +138,16 @@ class _GlassmorphicCardState extends State<GlassmorphicCard>
           ),
         );
       },
-    ).animate(delay: widget.animationDelay).slideY(
-      begin: 0.3,
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.easeOutBack,
-    ).fadeIn(
-      duration: const Duration(milliseconds: 400),
-    );
+    )
+        .animate(delay: widget.animationDelay)
+        .slideY(
+          begin: 0.3,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOutBack,
+        )
+        .fadeIn(
+          duration: const Duration(milliseconds: 400),
+        );
   }
 
   Widget _buildBackgroundImage() {
@@ -174,36 +177,37 @@ class _GlassmorphicCardState extends State<GlassmorphicCard>
   ) {
     return Positioned.fill(
       child: Container(
-        decoration: widget.customDecoration ?? BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withOpacity(0.15),
-              Colors.white.withOpacity(0.05),
-              Colors.white.withOpacity(0.02),
-            ],
-          ),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.3),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 20,
-              spreadRadius: 0,
-              offset: const Offset(0, 8),
+        decoration: widget.customDecoration ??
+            BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.15),
+                  Colors.white.withOpacity(0.05),
+                  Colors.white.withOpacity(0.02),
+                ],
+              ),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 20,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: glowColor.withOpacity(_isPressed ? 0.4 : 0.2),
+                  blurRadius: _isPressed ? 30 : 20,
+                  spreadRadius: _isPressed ? 3 : 1,
+                  offset: Offset.zero,
+                ),
+              ],
             ),
-            BoxShadow(
-              color: glowColor.withOpacity(_isPressed ? 0.4 : 0.2),
-              blurRadius: _isPressed ? 30 : 20,
-              spreadRadius: _isPressed ? 3 : 1,
-              offset: Offset.zero,
-            ),
-          ],
-        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(23),
           child: BackdropFilter(
@@ -234,9 +238,11 @@ class _GlassmorphicCardState extends State<GlassmorphicCard>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header section
-            if (widget.title != null || widget.subtitle != null || widget.headerImage != null)
+            if (widget.title != null ||
+                widget.subtitle != null ||
+                widget.headerImage != null)
               _buildHeader(theme, casinoColors),
-            
+
             // Content section
             Expanded(child: widget.child),
           ],
@@ -259,7 +265,7 @@ class _GlassmorphicCardState extends State<GlassmorphicCard>
             ),
             const SizedBox(width: 12),
           ],
-          
+
           // Title and subtitle
           Expanded(
             child: Column(
@@ -355,14 +361,13 @@ class GameTileCard extends StatelessWidget {
                 _buildLockIndicator(theme)
               else
                 _buildDifficultyIndicator(theme, casinoColors),
-              
               if (playersCount != null)
                 _buildPlayersIndicator(theme, casinoColors),
             ],
           ),
-          
+
           const Spacer(),
-          
+
           // Game info section
           Container(
             padding: const EdgeInsets.all(16),
@@ -446,7 +451,7 @@ class GameTileCard extends StatelessWidget {
 
   Widget _buildDifficultyIndicator(ThemeData theme, CasinoColorScheme colors) {
     if (difficulty == null) return const SizedBox.shrink();
-    
+
     Color difficultyColor;
     switch (difficulty!.toLowerCase()) {
       case 'easy':

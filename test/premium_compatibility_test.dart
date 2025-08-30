@@ -13,14 +13,14 @@ void main() async {
   print('  Analyzer: 5.13.0 (compatible with Dart 3.24.5)');
   print('  Premium Features: Testing all implementations');
   print('=' * 70);
-  
+
   // Test all three implementations
   final results = <String, Map<String, dynamic>>{};
-  
+
   results['V2 Original'] = await testV2Reporter();
   results['V3 Optimized'] = await testOptimizedReporter();
   results['V3 Embedded'] = await testEmbeddedReporter();
-  
+
   // Generate compatibility matrix
   generateCompatibilityMatrix(results);
 }
@@ -29,13 +29,14 @@ void main() async {
 Future<Map<String, dynamic>> testV2Reporter() async {
   print('\n1️⃣ Testing V2 Original Reporter (html_reporter.dart.old)');
   print('   📁 File: lib/src/reporter/html_reporter.dart.old');
-  
+
   final features = <String, bool>{};
   final compatibility = <String, String>{};
-  
+
   // Check premium features
   features['QualityScorer'] = true; // Uses QualityScorer.calculateQuality()
-  features['StatsCalculator'] = true; // Uses StatsCalculator.calculateStatistics()
+  features['StatsCalculator'] =
+      true; // Uses StatsCalculator.calculateStatistics()
   features['Glassmorphism'] = true; // Full glassmorphism effects
   features['Canvas Charts'] = true; // Canvas-based charts
   features['Dark Theme'] = true; // Dark/light theme support
@@ -44,22 +45,24 @@ Future<Map<String, dynamic>> testV2Reporter() async {
   features['Quality Metrics'] = true; // Quality scoring system
   features['Interactive'] = true; // Interactive elements
   features['Animations'] = true; // CSS animations
-  
+
   // Check compatibility
   compatibility['analyzer 5.x.x'] = '✅ Full - Designed for 5.x.x';
   compatibility['Dart 3.24.5'] = '✅ Full - Original design';
   compatibility['AST Support'] = '✅ Full - Native AST parsing';
   compatibility['Premium Reports'] = '✅ Full - All features';
-  
+
   // Generate actual report
   final html = generateV2PremiumReport();
-  final outputFile = File('/home/adj/projects/flutter_keycheck/reports/html_reporter_v2_premium.html');
+  final outputFile = File(
+      '/home/adj/projects/flutter_keycheck/reports/html_reporter_v2_premium.html');
   await outputFile.writeAsString(html);
-  
-  print('   ✅ Premium Features: ${features.values.where((v) => v).length}/${features.length}');
+
+  print(
+      '   ✅ Premium Features: ${features.values.where((v) => v).length}/${features.length}');
   print('   ✅ Analyzer 5.x.x: Fully compatible');
   print('   ✅ Generated: reports/html_reporter_v2_premium.html');
-  
+
   return {
     'features': features,
     'compatibility': compatibility,
@@ -72,11 +75,11 @@ Future<Map<String, dynamic>> testV2Reporter() async {
 Future<Map<String, dynamic>> testOptimizedReporter() async {
   print('\n2️⃣ Testing V3 Optimized Reporter (html_reporter_optimized.dart)');
   print('   📁 File: lib/src/reporter/html_reporter_optimized.dart');
-  
+
   final features = <String, bool>{};
   final compatibility = <String, String>{};
   final errors = <String>[];
-  
+
   // Check premium features
   features['QualityScorer'] = false; // ❌ Not using QualityScorer
   features['StatsCalculator'] = false; // ❌ Not using StatsCalculator
@@ -88,30 +91,32 @@ Future<Map<String, dynamic>> testOptimizedReporter() async {
   features['Quality Metrics'] = false; // ❌ No quality scoring
   features['Interactive'] = true; // ⚠️ Limited interactions
   features['Animations'] = false; // ❌ Removed for performance
-  
+
   // Check compatibility
   compatibility['analyzer 5.x.x'] = '⚠️ Partial - May work with adapter';
   compatibility['Dart 3.24.5'] = '✅ Works - No specific issues';
   compatibility['AST Support'] = '⚠️ Different model (ScanResult)';
   compatibility['Premium Reports'] = '❌ Limited - Missing key features';
-  
+
   // Note errors/limitations
   errors.add('Missing QualityScorer integration');
   errors.add('No StatsCalculator support');
   errors.add('Canvas charts removed');
   errors.add('Requires ScanResult instead of ReportData');
   errors.add('Extends ReporterV3, not BaseReporter');
-  
+
   // Generate actual report
   final html = generateOptimizedPremiumReport();
-  final outputFile = File('/home/adj/projects/flutter_keycheck/reports/html_reporter_optimized_premium.html');
+  final outputFile = File(
+      '/home/adj/projects/flutter_keycheck/reports/html_reporter_optimized_premium.html');
   await outputFile.writeAsString(html);
-  
-  print('   ⚠️ Premium Features: ${features.values.where((v) => v).length}/${features.length} (limited)');
+
+  print(
+      '   ⚠️ Premium Features: ${features.values.where((v) => v).length}/${features.length} (limited)');
   print('   ⚠️ Analyzer 5.x.x: Partial compatibility');
   print('   ❌ Issues: ${errors.length} compatibility problems');
   print('   ✅ Generated: reports/html_reporter_optimized_premium.html');
-  
+
   return {
     'features': features,
     'compatibility': compatibility,
@@ -124,11 +129,11 @@ Future<Map<String, dynamic>> testOptimizedReporter() async {
 Future<Map<String, dynamic>> testEmbeddedReporter() async {
   print('\n3️⃣ Testing V3 Embedded Reporter (reporter_v3.dart:HtmlReporter)');
   print('   📁 File: lib/src/reporter/reporter_v3.dart (lines 447+)');
-  
+
   final features = <String, bool>{};
   final compatibility = <String, String>{};
   final errors = <String>[];
-  
+
   // Check premium features
   features['QualityScorer'] = false; // ❌ Not implemented
   features['StatsCalculator'] = false; // ❌ Not implemented
@@ -140,30 +145,32 @@ Future<Map<String, dynamic>> testEmbeddedReporter() async {
   features['Quality Metrics'] = false; // ❌ Not included
   features['Interactive'] = false; // ❌ Static HTML
   features['Animations'] = false; // ❌ No animations
-  
+
   // Check compatibility
   compatibility['analyzer 5.x.x'] = '⚠️ Unknown - Not tested';
   compatibility['Dart 3.24.5'] = '✅ Works - Basic implementation';
   compatibility['AST Support'] = '❌ No - Different architecture';
   compatibility['Premium Reports'] = '❌ None - Minimal only';
-  
+
   // Note errors/limitations
   errors.add('No premium feature support');
   errors.add('Embedded in 5000+ line file');
   errors.add('No quality metrics');
   errors.add('No visualization features');
   errors.add('Minimal HTML only');
-  
+
   // Generate actual report
   final html = generateEmbeddedMinimalReport();
-  final outputFile = File('/home/adj/projects/flutter_keycheck/reports/html_reporter_embedded_premium.html');
+  final outputFile = File(
+      '/home/adj/projects/flutter_keycheck/reports/html_reporter_embedded_premium.html');
   await outputFile.writeAsString(html);
-  
-  print('   ❌ Premium Features: ${features.values.where((v) => v).length}/${features.length} (none)');
+
+  print(
+      '   ❌ Premium Features: ${features.values.where((v) => v).length}/${features.length} (none)');
   print('   ⚠️ Analyzer 5.x.x: Unknown compatibility');
   print('   ❌ Issues: ${errors.length} missing features');
   print('   ✅ Generated: reports/html_reporter_embedded_premium.html');
-  
+
   return {
     'features': features,
     'compatibility': compatibility,
@@ -526,35 +533,43 @@ void generateCompatibilityMatrix(Map<String, Map<String, dynamic>> results) {
   print('\n' + '=' * 70);
   print('📊 COMPATIBILITY MATRIX SUMMARY');
   print('=' * 70);
-  
+
   // Print header
-  print('\n| Implementation        | Premium Reports | analyzer 5.x.x | Failures/Issues |');
-  print('|----------------------|-----------------|----------------|-----------------|');
-  
+  print(
+      '\n| Implementation        | Premium Reports | analyzer 5.x.x | Failures/Issues |');
+  print(
+      '|----------------------|-----------------|----------------|-----------------|');
+
   // V2 Original
   final v2 = results['V2 Original']!;
-  final v2Features = (v2['features'] as Map<String, bool>).values.where((v) => v).length;
+  final v2Features =
+      (v2['features'] as Map<String, bool>).values.where((v) => v).length;
   final v2Errors = (v2['errors'] as List).length;
-  print('| HtmlReporter V2      | ✅ Full (${v2Features}/10) | ✅ Full        | $v2Errors issues |');
-  
+  print(
+      '| HtmlReporter V2      | ✅ Full (${v2Features}/10) | ✅ Full        | $v2Errors issues |');
+
   // V3 Optimized
   final opt = results['V3 Optimized']!;
-  final optFeatures = (opt['features'] as Map<String, bool>).values.where((v) => v).length;
+  final optFeatures =
+      (opt['features'] as Map<String, bool>).values.where((v) => v).length;
   final optErrors = (opt['errors'] as List).length;
-  print('| OptimizedReporter    | ⚠️ Partial ($optFeatures/10) | ⚠️ Partial     | $optErrors issues |');
-  
+  print(
+      '| OptimizedReporter    | ⚠️ Partial ($optFeatures/10) | ⚠️ Partial     | $optErrors issues |');
+
   // V3 Embedded
   final emb = results['V3 Embedded']!;
-  final embFeatures = (emb['features'] as Map<String, bool>).values.where((v) => v).length;
+  final embFeatures =
+      (emb['features'] as Map<String, bool>).values.where((v) => v).length;
   final embErrors = (emb['errors'] as List).length;
-  print('| Embedded Reporter    | ❌ None ($embFeatures/10) | ⚠️ Unknown     | $embErrors issues |');
-  
+  print(
+      '| Embedded Reporter    | ❌ None ($embFeatures/10) | ⚠️ Unknown     | $embErrors issues |');
+
   print('\n📋 DETAILED PREMIUM FEATURES BREAKDOWN:');
   print('=' * 70);
-  
+
   final allFeatures = [
     'QualityScorer',
-    'StatsCalculator', 
+    'StatsCalculator',
     'Glassmorphism',
     'Canvas Charts',
     'Dark Theme',
@@ -564,32 +579,36 @@ void generateCompatibilityMatrix(Map<String, Map<String, dynamic>> results) {
     'Interactive',
     'Animations'
   ];
-  
+
   print('\n| Feature            | V2 Original | V3 Optimized | V3 Embedded |');
   print('|-------------------|-------------|--------------|-------------|');
-  
+
   for (final feature in allFeatures) {
     final v2Has = (v2['features'] as Map)[feature] == true ? '✅' : '❌';
-    final optHas = (opt['features'] as Map)[feature] == true ? '✅' : 
-                   (opt['features'] as Map)[feature] == null ? '❌' : '❌';
+    final optHas = (opt['features'] as Map)[feature] == true
+        ? '✅'
+        : (opt['features'] as Map)[feature] == null
+            ? '❌'
+            : '❌';
     final embHas = (emb['features'] as Map)[feature] == true ? '✅' : '❌';
-    
-    print('| ${feature.padRight(17)} | $v2Has          | $optHas           | $embHas          |');
+
+    print(
+        '| ${feature.padRight(17)} | $v2Has          | $optHas           | $embHas          |');
   }
-  
+
   print('\n🔴 CRITICAL ISSUES FOR PREMIUM SUPPORT:');
   print('=' * 70);
-  
+
   print('\nV3 Optimized Issues:');
   for (final error in opt['errors'] as List) {
     print('  • $error');
   }
-  
+
   print('\nV3 Embedded Issues:');
   for (final error in emb['errors'] as List) {
     print('  • $error');
   }
-  
+
   print('\n💡 MIGRATION RECOMMENDATIONS:');
   print('=' * 70);
   print('''
@@ -621,7 +640,7 @@ void generateCompatibilityMatrix(Map<String, Map<String, dynamic>> results) {
      final bool legacyAnalyzer; // 5.x.x support
    }
 ''');
-  
+
   print('\n✅ Reports generated in /reports/');
   print('  • html_reporter_v2_premium.html');
   print('  • html_reporter_optimized_premium.html');

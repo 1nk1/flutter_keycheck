@@ -49,9 +49,9 @@ class GlassContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final casinoColors = theme.casinoColors;
-    
+
     final effectiveGlowColor = glowColor ?? casinoColors.primaryGold;
-    final backgroundGradient = gradient ?? 
+    final backgroundGradient = gradient ??
         LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -68,10 +68,11 @@ class GlassContainer extends StatelessWidget {
       margin: margin,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
-        border: border ?? Border.all(
-          color: Colors.white.withOpacity(borderOpacity),
-          width: borderWidth,
-        ),
+        border: border ??
+            Border.all(
+              color: Colors.white.withOpacity(borderOpacity),
+              width: borderWidth,
+            ),
         gradient: backgroundGradient,
         boxShadow: _buildBoxShadows(effectiveGlowColor, casinoColors),
       ),
@@ -366,7 +367,7 @@ class _FloatingGlassContainerState extends State<FloatingGlassContainer>
 
   void _handleHover(bool isHovered) {
     if (!widget.hoverEffect) return;
-    
+
     setState(() {
       _isHovered = isHovered;
     });

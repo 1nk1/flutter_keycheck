@@ -5,19 +5,19 @@ import 'base_agent.dart';
 /// Agent responsible for managing player profiles and game configuration
 class ConfigManagerAgent extends BaseAgentImpl {
   static const String _agentTypeId = 'ConfigManager';
-  
+
   // Player profiles
   final Map<String, PlayerProfile> _profiles = {};
   PlayerProfile? _currentProfile;
-  
+
   // Game configurations
   final Map<String, GameConfig> _gameConfigs = {};
-  
+
   // Global settings
   final Map<String, dynamic> _globalSettings = {};
-  
+
   // Stream controllers
-  final StreamController<ConfigUpdate> _configUpdateController = 
+  final StreamController<ConfigUpdate> _configUpdateController =
       StreamController<ConfigUpdate>.broadcast();
 
   @override
@@ -56,7 +56,7 @@ class ConfigManagerAgent extends BaseAgentImpl {
     Map<String, dynamic>? gameSettings,
   }) async {
     validateActive();
-    
+
     final profileId = _generateProfileId();
     final profile = PlayerProfile(
       id: profileId,
@@ -68,34 +68,34 @@ class ConfigManagerAgent extends BaseAgentImpl {
       gameSettings: gameSettings ?? {},
       statistics: PlayerStatistics(),
     );
-    
+
     _profiles[profileId] = profile;
-    
+
     _emitConfigUpdate(ConfigUpdateType.profileCreated, {
       'profileId': profileId,
       'displayName': displayName,
     });
-    
+
     return profileId;
   }
 
   /// Load and activate a player profile
   Future<bool> loadPlayerProfile(String profileId) async {
     validateActive();
-    
+
     final profile = _profiles[profileId];
     if (profile == null) {
       return false;
     }
-    
+
     _currentProfile = profile.copyWith(lastActiveAt: DateTime.now());
     _profiles[profileId] = _currentProfile!;
-    
+
     _emitConfigUpdate(ConfigUpdateType.profileLoaded, {
       'profileId': profileId,
       'displayName': profile.displayName,
     });
-    
+
     return true;
   }
 
@@ -107,12 +107,12 @@ class ConfigManagerAgent extends BaseAgentImpl {
     Map<String, dynamic>? gameSettings,
   }) {
     validateActive();
-    
+
     if (_currentProfile == null) {
-      throw AgentException('No active profile to update', 
+      throw AgentException('No active profile to update',
           agentType: agentType, agentId: agentId);
     }
-    
+
     _currentProfile = _currentProfile!.copyWith(
       displayName: displayName,
       email: email,
@@ -120,9 +120,9 @@ class ConfigManagerAgent extends BaseAgentImpl {
       gameSettings: gameSettings,
       lastActiveAt: DateTime.now(),
     );
-    
+
     _profiles[_currentProfile!.id] = _currentProfile!;
-    
+
     _emitConfigUpdate(ConfigUpdateType.profileUpdated, {
       'profileId': _currentProfile!.id,
       'displayName': _currentProfile!.displayName,
@@ -132,38 +132,38 @@ class ConfigManagerAgent extends BaseAgentImpl {
   /// Delete a player profile
   bool deletePlayerProfile(String profileId) {
     validateActive();
-    
+
     if (_currentProfile?.id == profileId) {
       _currentProfile = null;
     }
-    
+
     final existed = _profiles.remove(profileId) != null;
-    
+
     if (existed) {
       _emitConfigUpdate(ConfigUpdateType.profileDeleted, {
         'profileId': profileId,
       });
     }
-    
+
     return existed;
   }
 
   /// Update player statistics
   void updatePlayerStatistics(PlayerStatistics statistics) {
     validateActive();
-    
+
     if (_currentProfile == null) {
-      throw AgentException('No active profile for statistics update', 
+      throw AgentException('No active profile for statistics update',
           agentType: agentType, agentId: agentId);
     }
-    
+
     _currentProfile = _currentProfile!.copyWith(
       statistics: statistics,
       lastActiveAt: DateTime.now(),
     );
-    
+
     _profiles[_currentProfile!.id] = _currentProfile!;
-    
+
     _emitConfigUpdate(ConfigUpdateType.statisticsUpdated, {
       'profileId': _currentProfile!.id,
       'statistics': statistics.toJson(),
@@ -173,22 +173,23 @@ class ConfigManagerAgent extends BaseAgentImpl {
   /// Set player preference
   void setPlayerPreference(String key, dynamic value) {
     validateActive();
-    
+
     if (_currentProfile == null) {
-      throw AgentException('No active profile for preference update', 
+      throw AgentException('No active profile for preference update',
           agentType: agentType, agentId: agentId);
     }
-    
-    final updatedPreferences = Map<String, dynamic>.from(_currentProfile!.preferences);
+
+    final updatedPreferences =
+        Map<String, dynamic>.from(_currentProfile!.preferences);
     updatedPreferences[key] = value;
-    
+
     updateCurrentProfile(preferences: updatedPreferences);
   }
 
   /// Get player preference
   T? getPlayerPreference<T>(String key) {
     if (_currentProfile == null) return null;
-    
+
     final value = _currentProfile!.preferences[key];
     return value is T ? value : null;
   }
@@ -196,22 +197,23 @@ class ConfigManagerAgent extends BaseAgentImpl {
   /// Set player game setting
   void setPlayerGameSetting(String key, dynamic value) {
     validateActive();
-    
+
     if (_currentProfile == null) {
-      throw AgentException('No active profile for game setting update', 
+      throw AgentException('No active profile for game setting update',
           agentType: agentType, agentId: agentId);
     }
-    
-    final updatedSettings = Map<String, dynamic>.from(_currentProfile!.gameSettings);
+
+    final updatedSettings =
+        Map<String, dynamic>.from(_currentProfile!.gameSettings);
     updatedSettings[key] = value;
-    
+
     updateCurrentProfile(gameSettings: updatedSettings);
   }
 
   /// Get player game setting
   T? getPlayerGameSetting<T>(String key) {
     if (_currentProfile == null) return null;
-    
+
     final value = _currentProfile!.gameSettings[key];
     return value is T ? value : null;
   }
@@ -219,9 +221,9 @@ class ConfigManagerAgent extends BaseAgentImpl {
   /// Register a game configuration
   void registerGameConfig(GameConfig config) {
     validateActive();
-    
+
     _gameConfigs[config.id] = config;
-    
+
     _emitConfigUpdate(ConfigUpdateType.gameConfigRegistered, {
       'gameId': config.id,
       'gameName': config.name,
@@ -236,14 +238,14 @@ class ConfigManagerAgent extends BaseAgentImpl {
   /// Update game configuration
   void updateGameConfig(String gameId, GameConfig config) {
     validateActive();
-    
+
     if (!_gameConfigs.containsKey(gameId)) {
-      throw AgentException('Game configuration not found: $gameId', 
+      throw AgentException('Game configuration not found: $gameId',
           agentType: agentType, agentId: agentId);
     }
-    
+
     _gameConfigs[gameId] = config;
-    
+
     _emitConfigUpdate(ConfigUpdateType.gameConfigUpdated, {
       'gameId': gameId,
       'gameName': config.name,
@@ -253,9 +255,9 @@ class ConfigManagerAgent extends BaseAgentImpl {
   /// Set global setting
   void setGlobalSetting(String key, dynamic value) {
     validateActive();
-    
+
     _globalSettings[key] = value;
-    
+
     _emitConfigUpdate(ConfigUpdateType.globalSettingChanged, {
       'key': key,
       'value': value,
@@ -271,57 +273,61 @@ class ConfigManagerAgent extends BaseAgentImpl {
   /// Export all configurations as JSON
   String exportConfigurations() {
     final data = {
-      'profiles': _profiles.map((id, profile) => MapEntry(id, profile.toJson())),
-      'gameConfigs': _gameConfigs.map((id, config) => MapEntry(id, config.toJson())),
+      'profiles':
+          _profiles.map((id, profile) => MapEntry(id, profile.toJson())),
+      'gameConfigs':
+          _gameConfigs.map((id, config) => MapEntry(id, config.toJson())),
       'globalSettings': _globalSettings,
       'currentProfileId': _currentProfile?.id,
       'exportTime': DateTime.now().toIso8601String(),
     };
-    
+
     return jsonEncode(data);
   }
 
   /// Import configurations from JSON
   Future<bool> importConfigurations(String jsonData) async {
     validateActive();
-    
+
     try {
       final data = jsonDecode(jsonData) as Map<String, dynamic>;
-      
+
       // Import profiles
       if (data['profiles'] is Map) {
         final profilesData = data['profiles'] as Map<String, dynamic>;
         for (final entry in profilesData.entries) {
-          final profile = PlayerProfile.fromJson(entry.value as Map<String, dynamic>);
+          final profile =
+              PlayerProfile.fromJson(entry.value as Map<String, dynamic>);
           _profiles[entry.key] = profile;
         }
       }
-      
+
       // Import game configs
       if (data['gameConfigs'] is Map) {
         final configsData = data['gameConfigs'] as Map<String, dynamic>;
         for (final entry in configsData.entries) {
-          final config = GameConfig.fromJson(entry.value as Map<String, dynamic>);
+          final config =
+              GameConfig.fromJson(entry.value as Map<String, dynamic>);
           _gameConfigs[entry.key] = config;
         }
       }
-      
+
       // Import global settings
       if (data['globalSettings'] is Map) {
         _globalSettings.addAll(data['globalSettings'] as Map<String, dynamic>);
       }
-      
+
       // Set current profile
       final currentProfileId = data['currentProfileId'] as String?;
       if (currentProfileId != null && _profiles.containsKey(currentProfileId)) {
         _currentProfile = _profiles[currentProfileId];
       }
-      
+
       _emitConfigUpdate(ConfigUpdateType.configurationsImported, {
         'profileCount': _profiles.length,
         'gameConfigCount': _gameConfigs.length,
       });
-      
+
       return true;
     } catch (error, stackTrace) {
       handleError(error, stackTrace);
@@ -340,7 +346,7 @@ class ConfigManagerAgent extends BaseAgentImpl {
       'language': 'en',
       'currency': 'USD',
     });
-    
+
     // Register default game configurations
     registerGameConfig(GameConfig(
       id: 'slot_machine',
@@ -356,7 +362,7 @@ class ConfigManagerAgent extends BaseAgentImpl {
         'soundEffects': true,
       },
     ));
-    
+
     registerGameConfig(GameConfig(
       id: 'roulette',
       name: 'Roulette',
@@ -484,7 +490,8 @@ class PlayerProfile {
       lastActiveAt: DateTime.parse(json['lastActiveAt'] as String),
       preferences: Map<String, dynamic>.from(json['preferences'] as Map),
       gameSettings: Map<String, dynamic>.from(json['gameSettings'] as Map),
-      statistics: PlayerStatistics.fromJson(json['statistics'] as Map<String, dynamic>),
+      statistics:
+          PlayerStatistics.fromJson(json['statistics'] as Map<String, dynamic>),
     );
   }
 
@@ -522,7 +529,8 @@ class PlayerStatistics {
     this.gameTypeStats = const {},
   });
 
-  double get winRate => totalGamesPlayed == 0 ? 0.0 : totalWins / totalGamesPlayed;
+  double get winRate =>
+      totalGamesPlayed == 0 ? 0.0 : totalWins / totalGamesPlayed;
   double get returnToPlayer => totalBets == 0 ? 0.0 : totalWinnings / totalBets;
 
   PlayerStatistics copyWith({
@@ -590,8 +598,8 @@ class PlayerStatistics {
   @override
   String toString() {
     return 'PlayerStatistics(games: $totalGamesPlayed, wins: $totalWins, '
-           'winRate: ${(winRate * 100).toStringAsFixed(1)}%, '
-           'totalWinnings: $totalWinnings)';
+        'winRate: ${(winRate * 100).toStringAsFixed(1)}%, '
+        'totalWinnings: $totalWinnings)';
   }
 }
 

@@ -32,64 +32,88 @@ class CasinoViewModel extends ChangeNotifier {
   double _balance = 1000.0;
   double _currentBet = 10.0;
   final Random _random = Random();
-  
+
   double get balance => _balance;
   double get currentBet => _currentBet;
-  
+
   void setBet(double bet) {
     if (bet <= _balance && bet > 0) {
       _currentBet = bet;
       notifyListeners();
     }
   }
-  
+
   void addWinnings(double amount) {
     _balance += amount;
     notifyListeners();
   }
-  
+
   void placeBet() {
     if (_currentBet <= _balance) {
       _balance -= _currentBet;
       notifyListeners();
     }
   }
-  
+
   bool canBet() => _balance >= _currentBet;
-  
+
   // Slots logic
   List<String> spinSlots() {
     if (!canBet()) return [];
     placeBet();
-    
+
     final symbols = ['🍒', '🍋', '🍊', '🍇', '💎', '7️⃣'];
-    final result = List.generate(3, (_) => symbols[_random.nextInt(symbols.length)]);
-    
+    final result =
+        List.generate(3, (_) => symbols[_random.nextInt(symbols.length)]);
+
     // Check win
     if (result[0] == result[1] && result[1] == result[2]) {
-      double multiplier = result[0] == '7️⃣' ? 10 : 
-                          result[0] == '💎' ? 5 : 3;
+      double multiplier = result[0] == '7️⃣'
+          ? 10
+          : result[0] == '💎'
+              ? 5
+              : 3;
       addWinnings(_currentBet * multiplier);
     }
-    
+
     return result;
   }
-  
+
   // Roulette logic
   int spinRoulette(String betType, dynamic betValue) {
     if (!canBet()) return -1;
     placeBet();
-    
+
     int result = _random.nextInt(37); // 0-36
     bool won = false;
     double multiplier = 0;
-    
+
     if (betType == 'number' && betValue == result) {
       won = true;
       multiplier = 35;
     } else if (betType == 'color') {
-      bool isRed = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].contains(result);
-      if ((betValue == 'red' && isRed) || (betValue == 'black' && !isRed && result != 0)) {
+      bool isRed = [
+        1,
+        3,
+        5,
+        7,
+        9,
+        12,
+        14,
+        16,
+        18,
+        19,
+        21,
+        23,
+        25,
+        27,
+        30,
+        32,
+        34,
+        36
+      ].contains(result);
+      if ((betValue == 'red' && isRed) ||
+          (betValue == 'black' && !isRed && result != 0)) {
         won = true;
         multiplier = 2;
       }
@@ -100,23 +124,37 @@ class CasinoViewModel extends ChangeNotifier {
       won = true;
       multiplier = 2;
     }
-    
+
     if (won) {
       addWinnings(_currentBet * multiplier);
     }
-    
+
     return result;
   }
-  
+
   // Blackjack logic
   int getCardValue(String card) {
     if (card == 'A') return 11;
     if (['K', 'Q', 'J'].contains(card)) return 10;
     return int.tryParse(card) ?? 0;
   }
-  
+
   List<String> dealCards(int count) {
-    final cards = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    final cards = [
+      'A',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      'J',
+      'Q',
+      'K'
+    ];
     return List.generate(count, (_) => cards[_random.nextInt(cards.length)]);
   }
 }
@@ -132,14 +170,14 @@ class HomeScreen extends StatelessWidget {
         children: [
           // Animated background
           const AnimatedBackground(),
-          
+
           // Content
           SafeArea(
             child: Column(
               children: [
                 // Header with balance
                 const BalanceHeader(),
-                
+
                 // Game selection
                 Expanded(
                   child: Center(
@@ -154,7 +192,8 @@ class HomeScreen extends StatelessWidget {
                           color: Colors.purple,
                           onTap: () => Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const SlotsScreen()),
+                            MaterialPageRoute(
+                                builder: (_) => const SlotsScreen()),
                           ),
                         ),
                         GameCard(
@@ -164,7 +203,8 @@ class HomeScreen extends StatelessWidget {
                           color: Colors.red,
                           onTap: () => Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const RouletteScreen()),
+                            MaterialPageRoute(
+                                builder: (_) => const RouletteScreen()),
                           ),
                         ),
                         GameCard(
@@ -174,7 +214,8 @@ class HomeScreen extends StatelessWidget {
                           color: Colors.green,
                           onTap: () => Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const BlackjackScreen()),
+                            MaterialPageRoute(
+                                builder: (_) => const BlackjackScreen()),
                           ),
                         ),
                         GameCard(
@@ -184,7 +225,8 @@ class HomeScreen extends StatelessWidget {
                           color: Colors.blue,
                           onTap: () => Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const DemoModeScreen()),
+                            MaterialPageRoute(
+                                builder: (_) => const DemoModeScreen()),
                           ),
                         ),
                       ],
@@ -389,7 +431,7 @@ class _SlotsScreenState extends State<SlotsScreen> {
 
   void spin() async {
     if (isSpinning) return;
-    
+
     final vm = context.read<CasinoViewModel>();
     if (!vm.canBet()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -431,7 +473,7 @@ class _SlotsScreenState extends State<SlotsScreen> {
           Column(
             children: [
               const BalanceHeader(),
-              
+
               // Slot Machine
               Expanded(
                 child: Center(
@@ -456,31 +498,33 @@ class _SlotsScreenState extends State<SlotsScreen> {
                         // Reels
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: reels.map((symbol) => Container(
-                            margin: const EdgeInsets.all(10),
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.5),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: Colors.amber,
-                                width: 2,
-                              ),
-                            ),
-                            child: Text(
-                              symbol,
-                              style: const TextStyle(fontSize: 48),
-                            ),
-                          )).toList(),
+                          children: reels
+                              .map((symbol) => Container(
+                                    margin: const EdgeInsets.all(10),
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.5),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: Colors.amber,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      symbol,
+                                      style: const TextStyle(fontSize: 48),
+                                    ),
+                                  ))
+                              .toList(),
                         ),
-                        
+
                         const SizedBox(height: 30),
-                        
+
                         // Bet controls
                         BetControls(),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // Spin button
                         ElevatedButton(
                           key: const Key('spinButton'),
@@ -525,7 +569,7 @@ class RouletteScreen extends StatefulWidget {
   State<RouletteScreen> createState() => _RouletteScreenState();
 }
 
-class _RouletteScreenState extends State<RouletteScreen> 
+class _RouletteScreenState extends State<RouletteScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   int? result;
@@ -549,7 +593,7 @@ class _RouletteScreenState extends State<RouletteScreen>
 
   void spin() async {
     if (isSpinning) return;
-    
+
     final vm = context.read<CasinoViewModel>();
     if (!vm.canBet()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -563,11 +607,11 @@ class _RouletteScreenState extends State<RouletteScreen>
     });
 
     _controller.forward(from: 0);
-    
+
     await Future.delayed(const Duration(seconds: 3));
-    
+
     final newResult = vm.spinRoulette('color', selectedBet);
-    
+
     setState(() {
       result = newResult;
       isSpinning = false;
@@ -587,7 +631,6 @@ class _RouletteScreenState extends State<RouletteScreen>
           Column(
             children: [
               const BalanceHeader(),
-              
               Expanded(
                 child: Center(
                   child: Column(
@@ -633,9 +676,9 @@ class _RouletteScreenState extends State<RouletteScreen>
                           );
                         },
                       ),
-                      
+
                       const SizedBox(height: 40),
-                      
+
                       // Betting options
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -645,7 +688,8 @@ class _RouletteScreenState extends State<RouletteScreen>
                             label: const Text('RED'),
                             selected: selectedBet == 'red',
                             selectedColor: Colors.red,
-                            onSelected: (_) => setState(() => selectedBet = 'red'),
+                            onSelected: (_) =>
+                                setState(() => selectedBet = 'red'),
                           ),
                           const SizedBox(width: 20),
                           ChoiceChip(
@@ -653,18 +697,19 @@ class _RouletteScreenState extends State<RouletteScreen>
                             label: const Text('BLACK'),
                             selected: selectedBet == 'black',
                             selectedColor: Colors.black,
-                            onSelected: (_) => setState(() => selectedBet = 'black'),
+                            onSelected: (_) =>
+                                setState(() => selectedBet = 'black'),
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 20),
-                      
+
                       // Bet controls
                       BetControls(),
-                      
+
                       const SizedBox(height: 20),
-                      
+
                       // Spin button
                       ElevatedButton(
                         key: const Key('spinRouletteButton'),
@@ -723,9 +768,9 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
       );
       return;
     }
-    
+
     vm.placeBet();
-    
+
     setState(() {
       playerCards = vm.dealCards(2);
       dealerCards = vm.dealCards(2);
@@ -733,7 +778,7 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
       gameOver = false;
       result = null;
     });
-    
+
     checkBlackjack();
   }
 
@@ -742,7 +787,7 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
     setState(() {
       playerCards.add(vm.dealCards(1).first);
     });
-    
+
     if (getHandValue(playerCards) > 21) {
       endGame('BUST! You lose!');
     }
@@ -750,17 +795,17 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
 
   void stand() {
     final vm = context.read<CasinoViewModel>();
-    
+
     // Dealer draws cards
     while (getHandValue(dealerCards) < 17) {
       setState(() {
         dealerCards.add(vm.dealCards(1).first);
       });
     }
-    
+
     final playerValue = getHandValue(playerCards);
     final dealerValue = getHandValue(dealerCards);
-    
+
     if (dealerValue > 21) {
       endGame('Dealer bust! You win!');
       vm.addWinnings(vm.currentBet * 2);
@@ -778,18 +823,18 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
   void checkBlackjack() {
     final playerValue = getHandValue(playerCards);
     final dealerValue = getHandValue(dealerCards);
-    
+
     if (playerValue == 21 && playerCards.length == 2) {
       if (dealerValue == 21 && dealerCards.length == 2) {
         endGame('Both have Blackjack! Push!');
-        context.read<CasinoViewModel>().addWinnings(
-          context.read<CasinoViewModel>().currentBet
-        );
+        context
+            .read<CasinoViewModel>()
+            .addWinnings(context.read<CasinoViewModel>().currentBet);
       } else {
         endGame('BLACKJACK! You win!');
-        context.read<CasinoViewModel>().addWinnings(
-          context.read<CasinoViewModel>().currentBet * 2.5
-        );
+        context
+            .read<CasinoViewModel>()
+            .addWinnings(context.read<CasinoViewModel>().currentBet * 2.5);
       }
     }
   }
@@ -805,18 +850,18 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
     final vm = context.read<CasinoViewModel>();
     int value = 0;
     int aces = 0;
-    
+
     for (final card in cards) {
       final cardValue = vm.getCardValue(card);
       value += cardValue;
       if (card == 'A') aces++;
     }
-    
+
     while (value > 21 && aces > 0) {
       value -= 10;
       aces--;
     }
-    
+
     return value;
   }
 
@@ -833,7 +878,6 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
           Column(
             children: [
               const BalanceHeader(),
-              
               Expanded(
                 child: Center(
                   child: Container(
@@ -854,20 +898,22 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                             const SizedBox(height: 10),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: dealerCards.map((card) => Card(
-                                margin: const EdgeInsets.all(5),
-                                color: Colors.black.withOpacity(0.7),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(15),
-                                  child: Text(
-                                    card,
-                                    style: const TextStyle(
-                                      fontSize: 32,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              )).toList(),
+                              children: dealerCards
+                                  .map((card) => Card(
+                                        margin: const EdgeInsets.all(5),
+                                        color: Colors.black.withOpacity(0.7),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(15),
+                                          child: Text(
+                                            card,
+                                            style: const TextStyle(
+                                              fontSize: 32,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
                             ),
                             if (gameOver)
                               Text(
@@ -876,15 +922,15 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                               ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 40),
-                        
+
                         // Result
                         if (result != null)
                           Container(
                             padding: const EdgeInsets.all(15),
                             decoration: BoxDecoration(
-                              color: result!.contains('win') 
+                              color: result!.contains('win')
                                   ? Colors.green.withOpacity(0.3)
                                   : Colors.red.withOpacity(0.3),
                               borderRadius: BorderRadius.circular(10),
@@ -897,9 +943,9 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                               ),
                             ),
                           ),
-                        
+
                         const SizedBox(height: 40),
-                        
+
                         // Player cards
                         Column(
                           children: [
@@ -913,20 +959,22 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                             const SizedBox(height: 10),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: playerCards.map((card) => Card(
-                                margin: const EdgeInsets.all(5),
-                                color: Colors.black.withOpacity(0.7),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(15),
-                                  child: Text(
-                                    card,
-                                    style: const TextStyle(
-                                      fontSize: 32,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              )).toList(),
+                              children: playerCards
+                                  .map((card) => Card(
+                                        margin: const EdgeInsets.all(5),
+                                        color: Colors.black.withOpacity(0.7),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(15),
+                                          child: Text(
+                                            card,
+                                            style: const TextStyle(
+                                              fontSize: 32,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
                             ),
                             if (gameStarted)
                               Text(
@@ -935,14 +983,14 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                               ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 30),
-                        
+
                         // Bet controls
                         if (!gameStarted) BetControls(),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // Game controls
                         if (!gameStarted)
                           ElevatedButton(
@@ -963,7 +1011,7 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                               ),
                             ),
                           ),
-                        
+
                         if (gameStarted && !gameOver)
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -995,7 +1043,7 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                               ),
                             ],
                           ),
-                        
+
                         if (gameOver)
                           ElevatedButton(
                             key: const Key('newGameButton'),
@@ -1044,39 +1092,40 @@ class _DemoModeScreenState extends State<DemoModeScreen> {
 
   void runDemo() async {
     if (isRunning) return;
-    
+
     setState(() {
       isRunning = true;
       log = ['Starting demo mode...'];
     });
 
     final vm = context.read<CasinoViewModel>();
-    
+
     // Run 10 rounds of each game
     for (int i = 0; i < 10; i++) {
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Slots
       final slotsResult = vm.spinSlots();
       setState(() {
         log.add('Slots: ${slotsResult.join(" ")}');
       });
-      
+
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Roulette
-      final rouletteResult = vm.spinRoulette('color', i % 2 == 0 ? 'red' : 'black');
+      final rouletteResult =
+          vm.spinRoulette('color', i % 2 == 0 ? 'red' : 'black');
       setState(() {
         log.add('Roulette: $rouletteResult');
       });
-      
+
       if (log.length > 10) {
         setState(() {
           log.removeAt(0);
         });
       }
     }
-    
+
     setState(() {
       isRunning = false;
       log.add('Demo complete! Balance: \$${vm.balance.toStringAsFixed(2)}');
@@ -1096,7 +1145,6 @@ class _DemoModeScreenState extends State<DemoModeScreen> {
           Column(
             children: [
               const BalanceHeader(),
-              
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.all(20),
@@ -1119,7 +1167,6 @@ class _DemoModeScreenState extends State<DemoModeScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      
                       Expanded(
                         child: ListView.builder(
                           itemCount: log.length,
@@ -1137,9 +1184,7 @@ class _DemoModeScreenState extends State<DemoModeScreen> {
                           },
                         ),
                       ),
-                      
                       const SizedBox(height: 20),
-                      
                       ElevatedButton(
                         key: const Key('runDemoButton'),
                         onPressed: isRunning ? null : runDemo,

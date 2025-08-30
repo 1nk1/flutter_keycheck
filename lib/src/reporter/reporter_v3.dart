@@ -18,7 +18,8 @@ abstract class ReporterV3 {
         return MarkdownReporter();
       case 'html':
         // HTML reporter uses premium implementation in html_reporter.dart
-        throw UnsupportedError('HTML reporter should use HtmlReporter from html_reporter.dart');
+        throw UnsupportedError(
+            'HTML reporter should use HtmlReporter from html_reporter.dart');
       case 'text':
         return TextReporter();
       case 'ci':

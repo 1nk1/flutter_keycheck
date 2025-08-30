@@ -13,7 +13,7 @@ import '../../core/agents/agents.dart';
 class SlotsScreen extends StatelessWidget {
   final bool demoMode;
   final int startingBalance;
-  
+
   const SlotsScreen({
     super.key,
     this.demoMode = false,
@@ -31,10 +31,10 @@ class SlotsScreen extends StatelessWidget {
             name: 'Slots Game Engine',
           ),
         );
-        
+
         final viewModel = SlotsViewModel(engine: engine);
         viewModel.initialize(startingBalance, demoMode: demoMode);
-        
+
         return viewModel;
       },
       child: const _SlotsScreenContent(),
@@ -58,14 +58,15 @@ class _SlotsScreenContent extends StatelessWidget {
             Consumer<SlotsViewModel>(
               builder: (context, viewModel, child) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: viewModel.isDemoMode 
+                    color: viewModel.isDemoMode
                         ? CasinoColors.emerald.withOpacity(0.2)
                         : CasinoColors.gold.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: viewModel.isDemoMode 
+                      color: viewModel.isDemoMode
                           ? CasinoColors.emerald
                           : CasinoColors.gold,
                       width: 1,
@@ -74,11 +75,11 @@ class _SlotsScreenContent extends StatelessWidget {
                   child: Text(
                     viewModel.isDemoMode ? 'DEMO' : 'LIVE',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: viewModel.isDemoMode 
-                          ? CasinoColors.emerald
-                          : CasinoColors.gold,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: viewModel.isDemoMode
+                              ? CasinoColors.emerald
+                              : CasinoColors.gold,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 );
               },
@@ -147,7 +148,7 @@ class _SlotsScreenContent extends StatelessWidget {
           child: Stack(
             children: [
               const _GameContent(),
-              
+
               // Overlays
               Consumer<SlotsViewModel>(
                 builder: (context, viewModel, child) {
@@ -155,7 +156,7 @@ class _SlotsScreenContent extends StatelessWidget {
                     children: [
                       // Paytable overlay
                       if (viewModel.showPaytable) _PaytableOverlay(),
-                      
+
                       // Settings overlay
                       if (viewModel.showSettings) _SettingsOverlay(),
                     ],
@@ -190,17 +191,17 @@ class _SlotsScreenContent extends StatelessWidget {
               Text(
                 'Reset Statistics',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Theme.of(context).casinoColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: Theme.of(context).casinoColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 8),
               Text(
                 'This will reset all game statistics.\nAre you sure?',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).casinoColors.textSecondary,
-                ),
+                      color: Theme.of(context).casinoColors.textSecondary,
+                    ),
               ),
               const SizedBox(height: 24),
               Row(
@@ -216,7 +217,7 @@ class _SlotsScreenContent extends StatelessWidget {
                       viewModel.resetStats();
                       Navigator.pop(context);
                     },
-                    style: GlassButtonStyle.filled,
+                    style: GlassButtonStyle.primary,
                     child: const Text('Reset'),
                   ),
                 ],
@@ -238,22 +239,22 @@ class _GameContent extends StatelessWidget {
       children: [
         // Game header with balance and status
         const _GameHeader(),
-        
+
         const SizedBox(height: 16),
-        
+
         // Slot machine
         const Expanded(child: _SlotMachine()),
-        
+
         const SizedBox(height: 16),
-        
+
         // Betting controls
         const _BettingControls(),
-        
+
         const SizedBox(height: 16),
-        
+
         // Action buttons
         const _ActionButtons(),
-        
+
         const SizedBox(height: 16),
       ],
     );
@@ -305,7 +306,7 @@ class _StatCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
-  
+
   const _StatCard({
     required this.title,
     required this.value,
@@ -316,7 +317,7 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Column(
       children: [
         FaIcon(icon, color: color, size: 20),
@@ -355,12 +356,12 @@ class _SlotMachine extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: List.generate(5, (reelIndex) {
-                  final symbols = List.generate(3, (row) => 
-                      viewModel.getSymbolAt(reelIndex, row));
-                  
-                  final winningPositions = List.generate(3, (row) =>
-                      viewModel.isWinningPosition(reelIndex, row));
-                  
+                  final symbols = List.generate(
+                      3, (row) => viewModel.getSymbolAt(reelIndex, row));
+
+                  final winningPositions = List.generate(
+                      3, (row) => viewModel.isWinningPosition(reelIndex, row));
+
                   return ReelWidget(
                     reelIndex: reelIndex,
                     symbols: symbols,
@@ -371,9 +372,9 @@ class _SlotMachine extends StatelessWidget {
                   );
                 }),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Paylines indicator
               if (viewModel.lastResult != null && viewModel.lastResult!.hasWin)
                 _PaylineIndicator(winLines: viewModel.flashingWinLines),
@@ -387,13 +388,13 @@ class _SlotMachine extends StatelessWidget {
 
 class _PaylineIndicator extends StatelessWidget {
   final List<WinLine> winLines;
-  
+
   const _PaylineIndicator({required this.winLines});
 
   @override
   Widget build(BuildContext context) {
     if (winLines.isEmpty) return const SizedBox.shrink();
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -404,9 +405,9 @@ class _PaylineIndicator extends StatelessWidget {
       child: Text(
         'Winning Lines: ${winLines.map((line) => line.payLine.name).join(', ')}',
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: CasinoColors.gold,
-          fontWeight: FontWeight.bold,
-        ),
+              color: CasinoColors.gold,
+              fontWeight: FontWeight.bold,
+            ),
       ),
     );
   }
@@ -426,15 +427,16 @@ class _BettingControls extends StatelessWidget {
               Text(
                 'Bet Amount',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: CasinoColors.gold,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: CasinoColors.gold,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
                   GlassButton(
-                    onPressed: viewModel.isSpinning ? null : viewModel.decreaseBet,
+                    onPressed:
+                        viewModel.isSpinning ? null : viewModel.decreaseBet,
                     style: GlassButtonStyle.outline,
                     width: 50,
                     child: const FaIcon(FontAwesomeIcons.minus, size: 16),
@@ -451,16 +453,18 @@ class _BettingControls extends StatelessWidget {
                       child: Text(
                         '\$${viewModel.currentBet}',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: CasinoColors.gold,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  color: CasinoColors.gold,
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   GlassButton(
-                    onPressed: viewModel.isSpinning ? null : viewModel.increaseBet,
+                    onPressed:
+                        viewModel.isSpinning ? null : viewModel.increaseBet,
                     style: GlassButtonStyle.outline,
                     width: 50,
                     child: const FaIcon(FontAwesomeIcons.plus, size: 16),
@@ -468,7 +472,7 @@ class _BettingControls extends StatelessWidget {
                   const SizedBox(width: 16),
                   GlassButton(
                     onPressed: viewModel.isSpinning ? null : viewModel.maxBet,
-                    style: GlassButtonStyle.filled,
+                    style: GlassButtonStyle.primary,
                     child: const Text('MAX'),
                   ),
                 ],
@@ -493,36 +497,36 @@ class _ActionButtons extends StatelessWidget {
             // Auto play button
             Expanded(
               child: GlassButton(
-                onPressed: viewModel.isAutoPlay 
+                onPressed: viewModel.isAutoPlay
                     ? viewModel.stopAutoPlay
                     : () => _showAutoPlayDialog(context, viewModel),
-                style: viewModel.isAutoPlay 
-                    ? GlassButtonStyle.filled
+                style: viewModel.isAutoPlay
+                    ? GlassButtonStyle.primary
                     : GlassButtonStyle.outline,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     FaIcon(
-                      viewModel.isAutoPlay 
+                      viewModel.isAutoPlay
                           ? FontAwesomeIcons.stop
                           : FontAwesomeIcons.play,
                       size: 16,
                     ),
                     const SizedBox(width: 8),
-                    Text(viewModel.isAutoPlay 
+                    Text(viewModel.isAutoPlay
                         ? 'STOP (${viewModel.autoPlayRemaining})'
                         : 'AUTO PLAY'),
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(width: 16),
-            
+
             // Main spin button
             PlayButton(
-              onPressed: viewModel.canSpin && !viewModel.isAutoPlay 
-                  ? viewModel.spin 
+              onPressed: viewModel.canSpin && !viewModel.isAutoPlay
+                  ? viewModel.spin
                   : null,
               text: viewModel.isSpinning ? 'SPINNING...' : 'SPIN',
               icon: FontAwesomeIcons.dice,
@@ -548,16 +552,16 @@ class _ActionButtons extends StatelessWidget {
               Text(
                 'Auto Play',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: CasinoColors.gold,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: CasinoColors.gold,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 24),
               Text(
                 'Select number of spins:',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).casinoColors.textPrimary,
-                ),
+                      color: Theme.of(context).casinoColors.textPrimary,
+                    ),
               ),
               const SizedBox(height: 16),
               Expanded(
@@ -580,7 +584,7 @@ class _ActionButtons extends StatelessWidget {
               const SizedBox(height: 16),
               GlassButton(
                 onPressed: () => Navigator.pop(context),
-                style: GlassButtonStyle.filled,
+                style: GlassButtonStyle.primary,
                 width: double.infinity,
                 child: const Text('Cancel'),
               ),
@@ -612,13 +616,15 @@ class _PaytableOverlay extends StatelessWidget {
                     children: [
                       Text(
                         'Paytable',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: CasinoColors.gold,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  color: CasinoColors.gold,
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       GlassButton(
-                        onPressed: () => context.read<SlotsViewModel>().togglePaytable(),
+                        onPressed: () =>
+                            context.read<SlotsViewModel>().togglePaytable(),
                         style: GlassButtonStyle.outline,
                         width: 40,
                         child: const FaIcon(FontAwesomeIcons.xmark, size: 16),
@@ -671,13 +677,15 @@ class _SettingsOverlay extends StatelessWidget {
                     children: [
                       Text(
                         'Settings',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: CasinoColors.gold,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  color: CasinoColors.gold,
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       GlassButton(
-                        onPressed: () => context.read<SlotsViewModel>().toggleSettings(),
+                        onPressed: () =>
+                            context.read<SlotsViewModel>().toggleSettings(),
                         style: GlassButtonStyle.outline,
                         width: 40,
                         child: const FaIcon(FontAwesomeIcons.xmark, size: 16),
@@ -732,7 +740,7 @@ class _SettingsSwitch extends StatelessWidget {
   final String title;
   final bool value;
   final ValueChanged<bool> onChanged;
-  
+
   const _SettingsSwitch({
     required this.title,
     required this.value,
@@ -749,8 +757,8 @@ class _SettingsSwitch extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).casinoColors.textPrimary,
-            ),
+                  color: Theme.of(context).casinoColors.textPrimary,
+                ),
           ),
           Switch(
             value: value,
@@ -769,7 +777,7 @@ class _SettingsSlider extends StatelessWidget {
   final double min;
   final double max;
   final ValueChanged<double> onChanged;
-  
+
   const _SettingsSlider({
     required this.title,
     required this.value,
@@ -789,15 +797,15 @@ class _SettingsSlider extends StatelessWidget {
             Text(
               title,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).casinoColors.textPrimary,
-              ),
+                    color: Theme.of(context).casinoColors.textPrimary,
+                  ),
             ),
             Text(
               '${value.toStringAsFixed(1)}x',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: CasinoColors.gold,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: CasinoColors.gold,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
           ],
         ),

@@ -60,7 +60,7 @@ class TestWidget extends StatelessWidget {
     test('should respect include/exclude filters', () async {
       // Create test files
       final libDir = Directory(path.join(projectPath, 'lib'))..createSync();
-      
+
       File(path.join(libDir.path, 'included.dart')).writeAsStringSync('''
 import 'package:flutter/material.dart';
 Widget test() => Container(key: Key('included_key'));
@@ -100,7 +100,7 @@ Widget test() => Container(key: Key('test_key'));
 
       expect(result.keyLocations['test_key'], isNotNull);
       expect(result.keyLocations['test_key']!.length, equals(1));
-      
+
       final location = result.keyLocations['test_key']!.first;
       expect(location.line, equals(2));
       expect(location.filePath, endsWith('test.dart'));

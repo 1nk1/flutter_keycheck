@@ -5,26 +5,26 @@ import 'base_agent.dart';
 /// Agent responsible for managing session state and game context
 class ContextManagerAgent extends BaseAgentImpl {
   static const String _agentTypeId = 'ContextManager';
-  
+
   // Session state
   String? _sessionId;
   DateTime? _sessionStartTime;
   SessionState _sessionState = SessionState.idle;
   GameState _gameState = GameState.waiting;
-  
+
   // Game context
   String? _currentGameType;
   Map<String, dynamic> _gameContext = {};
   List<GameAction> _actionHistory = [];
-  
+
   // Session data
   Map<String, dynamic> _sessionData = {};
   final Map<String, dynamic> _preferences = {};
-  
+
   // Stream controllers
-  final StreamController<ContextUpdate> _contextUpdateController = 
+  final StreamController<ContextUpdate> _contextUpdateController =
       StreamController<ContextUpdate>.broadcast();
-  final StreamController<GameAction> _actionHistoryController = 
+  final StreamController<GameAction> _actionHistoryController =
       StreamController<GameAction>.broadcast();
 
   @override
@@ -72,56 +72,59 @@ class ContextManagerAgent extends BaseAgentImpl {
   }
 
   /// Start a new session
-  Future<String> startSession({String? userId, Map<String, dynamic>? initialData}) async {
+  Future<String> startSession(
+      {String? userId, Map<String, dynamic>? initialData}) async {
     validateActive();
-    
+
     if (_sessionState != SessionState.idle) {
-      throw AgentException('Cannot start session in current state: $_sessionState', 
-          agentType: agentType, agentId: agentId);
+      throw AgentException(
+          'Cannot start session in current state: $_sessionState',
+          agentType: agentType,
+          agentId: agentId);
     }
-    
+
     _sessionId = _generateSessionId();
     _sessionStartTime = DateTime.now();
     _sessionState = SessionState.active;
     _gameState = GameState.waiting;
-    
+
     _sessionData = {
       'sessionId': _sessionId,
       'startTime': _sessionStartTime!.toIso8601String(),
       'userId': userId,
       ...?initialData,
     };
-    
+
     _actionHistory.clear();
-    
+
     _emitContextUpdate(ContextUpdateType.sessionStarted, {
       'sessionId': _sessionId,
       'startTime': _sessionStartTime,
       'userId': userId,
     });
-    
+
     return _sessionId!;
   }
 
   /// End current session
   Future<void> endSession() async {
     if (_sessionState == SessionState.idle) return;
-    
+
     _sessionState = SessionState.ending;
-    
+
     // Save final session data
     if (_sessionStartTime != null) {
       _sessionData['endTime'] = DateTime.now().toIso8601String();
       _sessionData['duration'] = sessionDuration!.inMilliseconds;
       _sessionData['actionCount'] = _actionHistory.length;
     }
-    
+
     _emitContextUpdate(ContextUpdateType.sessionEnded, {
       'sessionId': _sessionId,
       'duration': sessionDuration,
       'actionCount': _actionHistory.length,
     });
-    
+
     // Reset state
     _sessionId = null;
     _sessionStartTime = null;
@@ -134,17 +137,17 @@ class ContextManagerAgent extends BaseAgentImpl {
   /// Start a new game within the session
   void startGame(String gameType, {Map<String, dynamic>? gameConfig}) {
     validateActive();
-    
+
     if (_sessionState != SessionState.active) {
-      throw AgentException('Cannot start game outside active session', 
+      throw AgentException('Cannot start game outside active session',
           agentType: agentType, agentId: agentId);
     }
-    
+
     if (_gameState == GameState.playing) {
-      throw AgentException('Game already in progress', 
+      throw AgentException('Game already in progress',
           agentType: agentType, agentId: agentId);
     }
-    
+
     _currentGameType = gameType;
     _gameState = GameState.playing;
     _gameContext = {
@@ -152,12 +155,12 @@ class ContextManagerAgent extends BaseAgentImpl {
       'startTime': DateTime.now().toIso8601String(),
       ...?gameConfig,
     };
-    
+
     _recordAction(GameActionType.gameStarted, {
       'gameType': gameType,
       'config': gameConfig,
     });
-    
+
     _emitContextUpdate(ContextUpdateType.gameStarted, {
       'gameType': gameType,
       'config': gameConfig,
@@ -167,34 +170,35 @@ class ContextManagerAgent extends BaseAgentImpl {
   /// End current game
   void endGame({Map<String, dynamic>? gameResults}) {
     validateActive();
-    
+
     if (_gameState != GameState.playing) {
-      throw AgentException('No game in progress to end', 
+      throw AgentException('No game in progress to end',
           agentType: agentType, agentId: agentId);
     }
-    
+
     _gameContext['endTime'] = DateTime.now().toIso8601String();
     if (gameResults != null) {
       _gameContext['results'] = gameResults;
     }
-    
+
     _recordAction(GameActionType.gameEnded, {
       'gameType': _currentGameType,
       'results': gameResults,
     });
-    
+
     _emitContextUpdate(ContextUpdateType.gameEnded, {
       'gameType': _currentGameType,
       'results': gameResults,
     });
-    
+
     _gameState = GameState.waiting;
     _currentGameType = null;
     _gameContext.clear();
   }
 
   /// Record a game action
-  void recordAction(GameActionType actionType, {Map<String, dynamic>? actionData}) {
+  void recordAction(GameActionType actionType,
+      {Map<String, dynamic>? actionData}) {
     validateActive();
     _recordAction(actionType, actionData);
   }
@@ -202,7 +206,7 @@ class ContextManagerAgent extends BaseAgentImpl {
   /// Set game context data
   void setGameContext(String key, dynamic value) {
     validateActive();
-    
+
     _gameContext[key] = value;
     _emitContextUpdate(ContextUpdateType.gameContextChanged, {
       'key': key,
@@ -219,7 +223,7 @@ class ContextManagerAgent extends BaseAgentImpl {
   /// Set session data
   void setSessionData(String key, dynamic value) {
     validateActive();
-    
+
     _sessionData[key] = value;
     _emitContextUpdate(ContextUpdateType.sessionDataChanged, {
       'key': key,
@@ -236,7 +240,7 @@ class ContextManagerAgent extends BaseAgentImpl {
   /// Set user preference
   void setPreference(String key, dynamic value) {
     validateActive();
-    
+
     _preferences[key] = value;
     _emitContextUpdate(ContextUpdateType.preferencesChanged, {
       'key': key,
@@ -287,11 +291,12 @@ class ContextManagerAgent extends BaseAgentImpl {
       'actionHistory': _actionHistory.map((action) => action.toJson()).toList(),
       'exportTime': DateTime.now().toIso8601String(),
     };
-    
+
     return jsonEncode(data);
   }
 
-  void _recordAction(GameActionType actionType, Map<String, dynamic>? actionData) {
+  void _recordAction(
+      GameActionType actionType, Map<String, dynamic>? actionData) {
     final action = GameAction(
       id: _generateActionId(),
       type: actionType,
@@ -300,9 +305,9 @@ class ContextManagerAgent extends BaseAgentImpl {
       gameType: _currentGameType,
       data: actionData ?? {},
     );
-    
+
     _actionHistory.add(action);
-    
+
     if (!_actionHistoryController.isClosed) {
       _actionHistoryController.add(action);
     }
@@ -471,6 +476,6 @@ class SessionSummary {
   @override
   String toString() {
     return 'SessionSummary(sessionId: $sessionId, state: $sessionState, '
-           'duration: $sessionDuration, actions: $actionCount)';
+        'duration: $sessionDuration, actions: $actionCount)';
   }
 }

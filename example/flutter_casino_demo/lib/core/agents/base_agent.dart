@@ -71,11 +71,12 @@ abstract class BaseAgentImpl implements BaseAgent {
   @override
   Future<void> initialize() async {
     if (_status != AgentStatus.uninitialized) {
-      throw AgentException('Agent is already initialized or in invalid state: $_status');
+      throw AgentException(
+          'Agent is already initialized or in invalid state: $_status');
     }
 
     _status = AgentStatus.initializing;
-    
+
     try {
       await onInitialize();
       _status = AgentStatus.active;
@@ -93,7 +94,7 @@ abstract class BaseAgentImpl implements BaseAgent {
     }
 
     _status = AgentStatus.disposing;
-    
+
     try {
       await onDispose();
     } catch (error, stackTrace) {
@@ -107,7 +108,7 @@ abstract class BaseAgentImpl implements BaseAgent {
   void handleError(Object error, StackTrace stackTrace) {
     final errorMessage = 'Agent $agentType ($agentId) error: $error';
     _errors.add(errorMessage);
-    
+
     // Log error (in a real app, this would use a proper logging system)
     print('ERROR: $errorMessage');
     print('Stack trace: $stackTrace');

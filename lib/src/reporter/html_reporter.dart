@@ -1,5 +1,5 @@
 /// Premium HTML reporter with glassmorphism design
-/// 
+///
 /// Creates self-contained HTML reports with interactive dashboard,
 /// quality scoring, responsive design, dark/light themes, and canvas charts.
 library;
@@ -59,10 +59,10 @@ class HtmlReporter extends BaseReporter {
   }
 
   /// Build the complete HTML document
-  String _buildHtmlDocument(ReportData data, QualityBreakdown quality, 
-                           KeyStatistics stats, List<FileCoverageResult> fileCoverage) {
+  String _buildHtmlDocument(ReportData data, QualityBreakdown quality,
+      KeyStatistics stats, List<FileCoverageResult> fileCoverage) {
     final reportData = _prepareReportData(data, quality, stats, fileCoverage);
-    
+
     return '''
 <!DOCTYPE html>
 <html lang="en">
@@ -586,7 +586,7 @@ body {
     final status = data.passed ? 'passed' : 'failed';
     final statusIcon = data.passed ? '✅' : '❌';
     final statusText = data.passed ? 'All Checks Passed' : 'Issues Found';
-    
+
     return '''
 <div class="glass-header">
     <div class="theme-toggle" onclick="toggleTheme()">
@@ -616,7 +616,8 @@ body {
   }
 
   /// Build the dashboard section
-  String _buildDashboard(ReportData data, QualityBreakdown quality, KeyStatistics stats) {
+  String _buildDashboard(
+      ReportData data, QualityBreakdown quality, KeyStatistics stats) {
     return '''
 <div class="glass-card">
     <h2 class="mb-3">📊 Dashboard Overview</h2>
@@ -687,7 +688,7 @@ body {
       final icon = gate.$4;
       final passed = score >= threshold;
       final statusIcon = passed ? '✅' : '❌';
-      
+
       return '''
 <div class="quality-gate">
     <div class="gate-header">
@@ -733,10 +734,11 @@ body {
     }
 
     final issues = StringBuffer();
-    
+
     // Missing keys
     if (data.missingKeys.isNotEmpty) {
-      issues.writeln('<h3 class="text-error mb-2">🔴 Critical: Missing Keys (${data.missingKeys.length})</h3>');
+      issues.writeln(
+          '<h3 class="text-error mb-2">🔴 Critical: Missing Keys (${data.missingKeys.length})</h3>');
       for (final key in data.missingKeys.take(10)) {
         issues.writeln('''
 <div class="issue-item issue-critical">
@@ -749,13 +751,15 @@ body {
 ''');
       }
       if (data.missingKeys.length > 10) {
-        issues.writeln('<p class="text-muted">... and ${data.missingKeys.length - 10} more missing keys</p>');
+        issues.writeln(
+            '<p class="text-muted">... and ${data.missingKeys.length - 10} more missing keys</p>');
       }
     }
-    
+
     // Extra keys
     if (data.extraKeys.isNotEmpty) {
-      issues.writeln('<h3 class="text-warning mb-2">🟡 Warning: Extra Keys (${data.extraKeys.length})</h3>');
+      issues.writeln(
+          '<h3 class="text-warning mb-2">🟡 Warning: Extra Keys (${data.extraKeys.length})</h3>');
       for (final key in data.extraKeys.take(10)) {
         issues.writeln('''
 <div class="issue-item issue-warning">
@@ -768,7 +772,8 @@ body {
 ''');
       }
       if (data.extraKeys.length > 10) {
-        issues.writeln('<p class="text-muted">... and ${data.extraKeys.length - 10} more extra keys</p>');
+        issues.writeln(
+            '<p class="text-muted">... and ${data.extraKeys.length - 10} more extra keys</p>');
       }
     }
 
@@ -868,8 +873,10 @@ body {
       final coverage = file.coverageScore.toStringAsFixed(1);
       final statusClass = _getCoverageStatusClass(file.coverageScore);
       final statusText = _getCoverageStatusText(file.coverageScore);
-      final fileType = file.isTestFile ? '🧪 Test' : (file.hasKeyConstants ? '🔑 Keys' : '📄 Source');
-      
+      final fileType = file.isTestFile
+          ? '🧪 Test'
+          : (file.hasKeyConstants ? '🔑 Keys' : '📄 Source');
+
       return '''
 <tr>
     <td>${_escapeHtml(file.filePath)}</td>
@@ -1112,8 +1119,11 @@ window.addEventListener('resize', function() {
   }
 
   /// Prepare structured data for JavaScript
-  Map<String, dynamic> _prepareReportData(ReportData data, QualityBreakdown quality, 
-                                          KeyStatistics stats, List<FileCoverageResult> fileCoverage) {
+  Map<String, dynamic> _prepareReportData(
+      ReportData data,
+      QualityBreakdown quality,
+      KeyStatistics stats,
+      List<FileCoverageResult> fileCoverage) {
     return {
       'timestamp': data.timestamp.toIso8601String(),
       'projectPath': data.projectPath,

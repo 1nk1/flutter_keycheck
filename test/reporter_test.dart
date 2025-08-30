@@ -12,7 +12,8 @@ void main() {
       expect(ReporterFactory.create('html'), isA<OptimizedHtmlReporter>());
       expect(ReporterFactory.create('markdown'), isA<MarkdownReporter>());
       expect(ReporterFactory.create('junit'), isA<JUnitReporter>());
-      expect(ReporterFactory.create('unknown'), isA<HumanReporter>()); // Default
+      expect(
+          ReporterFactory.create('unknown'), isA<HumanReporter>()); // Default
     });
 
     test('should list available formats', () {
@@ -209,11 +210,20 @@ void main() {
       final xml = reporter.generate(data);
 
       expect(xml, contains('<?xml version="1.0" encoding="UTF-8"?>'));
-      expect(xml, contains('<testsuites name="Flutter KeyCheck" tests="2" failures="1">'));
-      expect(xml, contains('<testsuite name="Key Validation" tests="2" failures="1" time="0.5">'));
+      expect(
+          xml,
+          contains(
+              '<testsuites name="Flutter KeyCheck" tests="2" failures="1">'));
+      expect(
+          xml,
+          contains(
+              '<testsuite name="Key Validation" tests="2" failures="1" time="0.5">'));
       expect(xml, contains('<testcase name="key1" classname="KeyValidation">'));
       expect(xml, contains('<testcase name="key2" classname="KeyValidation">'));
-      expect(xml, contains('<failure message="Key not found in project">Missing key: key2</failure>'));
+      expect(
+          xml,
+          contains(
+              '<failure message="Key not found in project">Missing key: key2</failure>'));
     });
   });
 

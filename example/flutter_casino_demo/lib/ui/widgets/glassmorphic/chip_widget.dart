@@ -36,16 +36,15 @@ class CasinoChip extends StatefulWidget {
   State<CasinoChip> createState() => _CasinoChipState();
 }
 
-class _CasinoChipState extends State<CasinoChip>
-    with TickerProviderStateMixin {
+class _CasinoChipState extends State<CasinoChip> with TickerProviderStateMixin {
   late AnimationController _rotationController;
   late AnimationController _pulseController;
   late AnimationController _stackController;
-  
+
   late Animation<double> _rotationAnimation;
   late Animation<double> _pulseAnimation;
   late Animation<double> _stackAnimation;
-  
+
   bool _isPressed = false;
 
   @override
@@ -59,31 +58,31 @@ class _CasinoChipState extends State<CasinoChip>
       duration: const Duration(seconds: 10),
       vsync: this,
     );
-    
+
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _stackController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
-    _rotationAnimation = Tween<double>(begin: 0, end: 2 * math.pi)
-        .animate(CurvedAnimation(
+    _rotationAnimation =
+        Tween<double>(begin: 0, end: 2 * math.pi).animate(CurvedAnimation(
       parent: _rotationController,
       curve: Curves.linear,
     ));
 
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1)
-        .animate(CurvedAnimation(
+    _pulseAnimation =
+        Tween<double>(begin: 1.0, end: 1.1).animate(CurvedAnimation(
       parent: _pulseController,
       curve: Curves.easeInOut,
     ));
 
-    _stackAnimation = Tween<double>(begin: 1.0, end: 0.95)
-        .animate(CurvedAnimation(
+    _stackAnimation =
+        Tween<double>(begin: 1.0, end: 0.95).animate(CurvedAnimation(
       parent: _stackController,
       curve: Curves.easeInOut,
     ));
@@ -91,7 +90,7 @@ class _CasinoChipState extends State<CasinoChip>
     if (widget.isAnimating) {
       _rotationController.repeat();
     }
-    
+
     if (widget.isSelected) {
       _pulseController.repeat(reverse: true);
     }
@@ -100,7 +99,7 @@ class _CasinoChipState extends State<CasinoChip>
   @override
   void didUpdateWidget(CasinoChip oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.isAnimating != oldWidget.isAnimating) {
       if (widget.isAnimating) {
         _rotationController.repeat();
@@ -108,7 +107,7 @@ class _CasinoChipState extends State<CasinoChip>
         _rotationController.stop();
       }
     }
-    
+
     if (widget.isSelected != oldWidget.isSelected) {
       if (widget.isSelected) {
         _pulseController.repeat(reverse: true);
@@ -149,8 +148,9 @@ class _CasinoChipState extends State<CasinoChip>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final chipColor = widget.customColor ?? CasinoColors.getChipColor(widget.value);
-    
+    final chipColor =
+        widget.customColor ?? CasinoColors.getChipColor(widget.value);
+
     return GestureDetector(
       onTapDown: _handleTapDown,
       onTapUp: _handleTapUp,
@@ -168,14 +168,14 @@ class _CasinoChipState extends State<CasinoChip>
               angle: _rotationAnimation.value,
               child: SizedBox(
                 width: widget.size,
-                height: widget.size + (widget.stackCount - 1) * (widget.size * 0.1),
+                height:
+                    widget.size + (widget.stackCount - 1) * (widget.size * 0.1),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     // Shadow
-                    if (widget.showShadow)
-                      _buildShadow(),
-                    
+                    if (widget.showShadow) _buildShadow(),
+
                     // Stack of chips
                     ...List.generate(widget.stackCount, (index) {
                       return _buildSingleChip(
@@ -223,7 +223,7 @@ class _CasinoChipState extends State<CasinoChip>
     int stackIndex,
   ) {
     final offset = stackIndex * (widget.size * 0.08);
-    
+
     return Positioned(
       bottom: offset,
       child: Container(
@@ -269,13 +269,13 @@ class _CasinoChipState extends State<CasinoChip>
           children: [
             // Outer ring
             _buildOuterRing(chipColor),
-            
+
             // Inner circle with value
             _buildInnerCircle(theme, chipColor),
-            
+
             // Highlight effect
             _buildHighlight(),
-            
+
             // Edge details
             _buildEdgeDetails(chipColor),
           ],
@@ -405,7 +405,7 @@ class ChipEdgePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
-    
+
     // Edge notches
     final paint = Paint()
       ..color = contrastColor.withOpacity(0.3)
@@ -416,17 +416,17 @@ class ChipEdgePainter extends CustomPainter {
       final angle = (i * 2 * math.pi) / 12;
       final startRadius = radius * 0.85;
       final endRadius = radius * 0.95;
-      
+
       final start = Offset(
         center.dx + startRadius * math.cos(angle),
         center.dy + startRadius * math.sin(angle),
       );
-      
+
       final end = Offset(
         center.dx + endRadius * math.cos(angle),
         center.dy + endRadius * math.sin(angle),
       );
-      
+
       canvas.drawLine(start, end, paint);
     }
   }
@@ -455,10 +455,10 @@ class ChipStack extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (chips.isEmpty) return const SizedBox.shrink();
-    
+
     final visibleChips = chips.take(maxVisible).toList();
     final remainingCount = chips.length - maxVisible;
-    
+
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
@@ -471,7 +471,7 @@ class ChipStack extends StatelessWidget {
               final index = entry.key;
               final value = entry.value;
               final offset = index * (size * spacing);
-              
+
               return Positioned(
                 bottom: offset,
                 child: CasinoChip(
@@ -482,7 +482,7 @@ class ChipStack extends StatelessWidget {
                 ),
               );
             }).toList(),
-            
+
             // Remaining count indicator
             if (remainingCount > 0)
               Positioned(
@@ -635,7 +635,7 @@ class ChipSelector extends StatelessWidget {
       runSpacing: 8,
       children: availableChips.map((value) {
         final isSelected = value == selectedChip;
-        
+
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -644,24 +644,27 @@ class ChipSelector extends StatelessWidget {
               size: size,
               isSelected: isSelected,
               onTap: () => onChipSelected(value),
-            ).animate(
-              delay: Duration(milliseconds: availableChips.indexOf(value) * 100),
-            ).slideY(
-              begin: 1,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutBack,
-            ).fadeIn(),
-            
+            )
+                .animate(
+                  delay: Duration(
+                      milliseconds: availableChips.indexOf(value) * 100),
+                )
+                .slideY(
+                  begin: 1,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutBack,
+                )
+                .fadeIn(),
             if (showLabels) ...[
               const SizedBox(height: 4),
               Text(
                 '\$${value}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: isSelected
-                      ? CasinoColors.gold
-                      : Theme.of(context).colorScheme.onSurface,
-                ),
+                      fontWeight: FontWeight.w500,
+                      color: isSelected
+                          ? CasinoColors.gold
+                          : Theme.of(context).colorScheme.onSurface,
+                    ),
               ),
             ],
           ],

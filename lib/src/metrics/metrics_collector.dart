@@ -25,14 +25,14 @@ class SystemMetrics {
   });
 
   Map<String, dynamic> toJson() => {
-    'cpuUsagePercent': cpuUsagePercent,
-    'memoryUsageMB': memoryUsageMB,
-    'diskUsageMB': diskUsageMB,
-    'processId': processId,
-    'timestamp': timestamp.toIso8601String(),
-    'platform': platform,
-    'environmentInfo': environmentInfo,
-  };
+        'cpuUsagePercent': cpuUsagePercent,
+        'memoryUsageMB': memoryUsageMB,
+        'diskUsageMB': diskUsageMB,
+        'processId': processId,
+        'timestamp': timestamp.toIso8601String(),
+        'platform': platform,
+        'environmentInfo': environmentInfo,
+      };
 }
 
 /// Scan operation metrics
@@ -62,17 +62,18 @@ class ScanMetrics {
   });
 
   Map<String, dynamic> toJson() => {
-    'totalDurationMs': totalDuration.inMilliseconds,
-    'filesScanned': filesScanned,
-    'keysFound': keysFound,
-    'duplicateKeys': duplicateKeys,
-    'missingKeys': missingKeys,
-    'extraKeys': extraKeys,
-    'coveragePercent': coveragePercent,
-    'fileTypeDistribution': fileTypeDistribution,
-    'operationTimings': operationTimings.map((k, v) => MapEntry(k, v.inMilliseconds)),
-    'errorsEncountered': errorsEncountered,
-  };
+        'totalDurationMs': totalDuration.inMilliseconds,
+        'filesScanned': filesScanned,
+        'keysFound': keysFound,
+        'duplicateKeys': duplicateKeys,
+        'missingKeys': missingKeys,
+        'extraKeys': extraKeys,
+        'coveragePercent': coveragePercent,
+        'fileTypeDistribution': fileTypeDistribution,
+        'operationTimings':
+            operationTimings.map((k, v) => MapEntry(k, v.inMilliseconds)),
+        'errorsEncountered': errorsEncountered,
+      };
 }
 
 /// Quality metrics from analysis
@@ -100,16 +101,16 @@ class QualityMetrics {
   });
 
   Map<String, dynamic> toJson() => {
-    'overallScore': overallScore,
-    'coverageScore': coverageScore,
-    'organizationScore': organizationScore,
-    'consistencyScore': consistencyScore,
-    'efficiencyScore': efficiencyScore,
-    'maintainabilityScore': maintainabilityScore,
-    'issuesFound': issuesFound,
-    'recommendations': recommendations,
-    'severityDistribution': severityDistribution,
-  };
+        'overallScore': overallScore,
+        'coverageScore': coverageScore,
+        'organizationScore': organizationScore,
+        'consistencyScore': consistencyScore,
+        'efficiencyScore': efficiencyScore,
+        'maintainabilityScore': maintainabilityScore,
+        'issuesFound': issuesFound,
+        'recommendations': recommendations,
+        'severityDistribution': severityDistribution,
+      };
 }
 
 /// Cache performance metrics
@@ -133,14 +134,14 @@ class CacheMetrics {
   });
 
   Map<String, dynamic> toJson() => {
-    'hitCount': hitCount,
-    'missCount': missCount,
-    'hitRate': hitRate,
-    'totalEntries': totalEntries,
-    'sizeMB': sizeMB,
-    'averageAccessTimeMs': averageAccessTime.inMilliseconds,
-    'operationCounts': operationCounts,
-  };
+        'hitCount': hitCount,
+        'missCount': missCount,
+        'hitRate': hitRate,
+        'totalEntries': totalEntries,
+        'sizeMB': sizeMB,
+        'averageAccessTimeMs': averageAccessTime.inMilliseconds,
+        'operationCounts': operationCounts,
+      };
 }
 
 /// Comprehensive metrics report
@@ -164,14 +165,14 @@ class MetricsReport {
   });
 
   Map<String, dynamic> toJson() => {
-    'system': system.toJson(),
-    'scan': scan.toJson(),
-    'quality': quality.toJson(),
-    'cache': cache.toJson(),
-    'generatedAt': generatedAt.toIso8601String(),
-    'version': version,
-    'customMetrics': customMetrics,
-  };
+        'system': system.toJson(),
+        'scan': scan.toJson(),
+        'quality': quality.toJson(),
+        'cache': cache.toJson(),
+        'generatedAt': generatedAt.toIso8601String(),
+        'version': version,
+        'customMetrics': customMetrics,
+      };
 }
 
 /// Configuration for metrics collection
@@ -208,14 +209,14 @@ class MetricsCollector {
   final Map<String, Stopwatch> _activeTimers = {};
   final List<String> _errors = [];
   final Map<String, dynamic> _customMetrics = {};
-  
+
   int _filesScanned = 0;
   int _keysFound = 0;
   int _duplicateKeys = 0;
   int _missingKeys = 0;
   int _extraKeys = 0;
   double _coveragePercent = 0.0;
-  
+
   MetricsCollector({
     required this.projectPath,
     this.config = const MetricsConfig(),
@@ -244,7 +245,8 @@ class MetricsCollector {
 
     final systemMetrics = await _generateSystemMetrics();
     final scanMetrics = _generateScanMetrics();
-    final finalQualityMetrics = qualityMetrics ?? _generateDefaultQualityMetrics();
+    final finalQualityMetrics =
+        qualityMetrics ?? _generateDefaultQualityMetrics();
     final finalCacheMetrics = cacheMetrics ?? _generateDefaultCacheMetrics();
 
     final report = MetricsReport(
@@ -267,7 +269,7 @@ class MetricsCollector {
   /// Start timing an operation
   void startOperation(String operationName) {
     _activeTimers[operationName] = Stopwatch()..start();
-    
+
     if (verbose) {
       print('⏱️  Started timing: $operationName');
     }
@@ -278,11 +280,12 @@ class MetricsCollector {
     final timer = _activeTimers.remove(operationName);
     if (timer != null) {
       timer.stop();
-      _operationTimings[operationName] = 
+      _operationTimings[operationName] =
           (_operationTimings[operationName] ?? Duration.zero) + timer.elapsed;
-      
+
       if (verbose) {
-        print('⏱️  Stopped timing: $operationName (${timer.elapsedMilliseconds}ms)');
+        print(
+            '⏱️  Stopped timing: $operationName (${timer.elapsedMilliseconds}ms)');
       }
     }
   }
@@ -290,7 +293,7 @@ class MetricsCollector {
   /// Record file scanning activity
   void recordFileScanned(String filePath) {
     _filesScanned++;
-    
+
     // Track file type distribution
     final extension = filePath.split('.').last.toLowerCase();
     final currentCount = _customMetrics['fileTypes'] as Map<String, int>? ?? {};
@@ -301,7 +304,7 @@ class MetricsCollector {
   /// Record key discovery
   void recordKeyFound(String keyName) {
     _keysFound++;
-    
+
     // Track key patterns
     final patterns = _customMetrics['keyPatterns'] as Map<String, int>? ?? {};
     final pattern = _extractKeyPattern(keyName);
@@ -325,7 +328,7 @@ class MetricsCollector {
   /// Record an error
   void recordError(String error) {
     _errors.add(error);
-    
+
     if (verbose) {
       print('❌ Error recorded: $error');
     }
@@ -359,21 +362,23 @@ class MetricsCollector {
     final timestamp = DateTime.now();
     final processId = pid;
     final platform = Platform.operatingSystem;
-    
+
     double memoryUsageMB = 0.0;
     double cpuUsagePercent = 0.0;
     double diskUsageMB = 0.0;
-    
+
     // Try to get memory usage (platform-specific)
     try {
       if (Platform.isLinux || Platform.isMacOS) {
-        final result = await Process.run('ps', ['-o', 'rss,pcpu', '-p', '$processId']);
+        final result =
+            await Process.run('ps', ['-o', 'rss,pcpu', '-p', '$processId']);
         if (result.exitCode == 0) {
           final lines = result.stdout.toString().trim().split('\n');
           if (lines.length > 1) {
             final parts = lines[1].trim().split(RegExp(r'\s+'));
             if (parts.length >= 2) {
-              memoryUsageMB = (int.tryParse(parts[0]) ?? 0) / 1024.0; // Convert KB to MB
+              memoryUsageMB =
+                  (int.tryParse(parts[0]) ?? 0) / 1024.0; // Convert KB to MB
               cpuUsagePercent = double.tryParse(parts[1]) ?? 0.0;
             }
           }
@@ -423,15 +428,18 @@ class MetricsCollector {
     }
 
     // Calculate averages from samples
-    final avgCpu = _systemSamples.map((s) => s.cpuUsagePercent)
-        .reduce((a, b) => a + b) / _systemSamples.length;
-    final avgMemory = _systemSamples.map((s) => s.memoryUsageMB)
-        .reduce((a, b) => a + b) / _systemSamples.length;
-    final avgDisk = _systemSamples.map((s) => s.diskUsageMB)
-        .reduce((a, b) => a + b) / _systemSamples.length;
+    final avgCpu =
+        _systemSamples.map((s) => s.cpuUsagePercent).reduce((a, b) => a + b) /
+            _systemSamples.length;
+    final avgMemory =
+        _systemSamples.map((s) => s.memoryUsageMB).reduce((a, b) => a + b) /
+            _systemSamples.length;
+    final avgDisk =
+        _systemSamples.map((s) => s.diskUsageMB).reduce((a, b) => a + b) /
+            _systemSamples.length;
 
     final latest = _systemSamples.last;
-    
+
     return SystemMetrics(
       cpuUsagePercent: avgCpu,
       memoryUsageMB: avgMemory,
@@ -445,8 +453,8 @@ class MetricsCollector {
 
   /// Generate scan metrics summary
   ScanMetrics _generateScanMetrics() {
-    final totalDuration = _operationTimings.values.fold(
-        Duration.zero, (sum, duration) => sum + duration);
+    final totalDuration = _operationTimings.values
+        .fold(Duration.zero, (sum, duration) => sum + duration);
 
     final fileTypes = _customMetrics['fileTypes'] as Map<String, int>? ?? {};
 
@@ -468,7 +476,7 @@ class MetricsCollector {
   QualityMetrics _generateDefaultQualityMetrics() {
     final issuesFound = _missingKeys + _duplicateKeys + _errors.length;
     final overallScore = _coveragePercent; // Simplified calculation
-    
+
     return QualityMetrics(
       overallScore: overallScore,
       coverageScore: _coveragePercent,
@@ -502,27 +510,30 @@ class MetricsCollector {
   /// Generate basic recommendations
   List<String> _generateBasicRecommendations() {
     final recommendations = <String>[];
-    
+
     if (_missingKeys > 0) {
       recommendations.add('Add $_missingKeys missing keys to improve coverage');
     }
-    
+
     if (_duplicateKeys > 0) {
-      recommendations.add('Review $_duplicateKeys duplicate keys for optimization');
+      recommendations
+          .add('Review $_duplicateKeys duplicate keys for optimization');
     }
-    
+
     if (_errors.isNotEmpty) {
-      recommendations.add('Fix ${_errors.length} errors encountered during scan');
+      recommendations
+          .add('Fix ${_errors.length} errors encountered during scan');
     }
-    
+
     if (_coveragePercent < 80) {
       recommendations.add('Improve key coverage to meet quality standards');
     }
-    
+
     if (recommendations.isEmpty) {
-      recommendations.add('All metrics look good - maintain current quality standards');
+      recommendations
+          .add('All metrics look good - maintain current quality standards');
     }
-    
+
     return recommendations;
   }
 
@@ -532,8 +543,10 @@ class MetricsCollector {
     if (keyName.contains('text') || keyName.contains('label')) return 'text';
     if (keyName.contains('field') || keyName.contains('input')) return 'input';
     if (keyName.contains('screen') || keyName.contains('page')) return 'screen';
-    if (keyName.contains('dialog') || keyName.contains('modal')) return 'dialog';
-    if (keyName.contains('menu') || keyName.contains('nav')) return 'navigation';
+    if (keyName.contains('dialog') || keyName.contains('modal'))
+      return 'dialog';
+    if (keyName.contains('menu') || keyName.contains('nav'))
+      return 'navigation';
     return 'other';
   }
 
@@ -545,7 +558,8 @@ class MetricsCollector {
         outputDir.createSync(recursive: true);
       }
 
-      final timestamp = DateTime.now().toIso8601String()
+      final timestamp = DateTime.now()
+          .toIso8601String()
           .replaceAll(':', '-')
           .replaceAll('.', '-');
       final filename = 'metrics_$timestamp.json';

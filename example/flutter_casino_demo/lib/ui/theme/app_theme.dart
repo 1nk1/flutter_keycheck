@@ -429,10 +429,12 @@ class DarkCasinoColorScheme extends CasinoColorScheme {
   Color get textSecondary => CasinoColors.lightTextSecondary;
 
   @override
-  LinearGradient get backgroundGradient => CasinoColors.casinoBackgroundGradient;
+  LinearGradient get backgroundGradient =>
+      CasinoColors.casinoBackgroundGradient;
 
   @override
-  List<BoxShadow> get defaultGlow => CasinoColors.getNeonGlow(CasinoColors.gold);
+  List<BoxShadow> get defaultGlow =>
+      CasinoColors.getNeonGlow(CasinoColors.gold);
 }
 
 /// Light casino color scheme

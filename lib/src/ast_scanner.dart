@@ -1,5 +1,5 @@
 /// AST-based scanner for enhanced Flutter key detection
-/// 
+///
 /// This module provides advanced scanning capabilities using the Dart analyzer
 /// for more accurate and comprehensive key detection.
 library;
@@ -57,7 +57,7 @@ class KeyDetectorVisitor extends RecursiveAstVisitor<void> {
   @override
   void visitMethodInvocation(MethodInvocation node) {
     // Detect Key() constructors
-    if (node.methodName.name == 'Key' || 
+    if (node.methodName.name == 'Key' ||
         node.methodName.name == 'ValueKey' ||
         node.methodName.name == 'ObjectKey' ||
         node.methodName.name == 'GlobalKey' ||
@@ -66,7 +66,8 @@ class KeyDetectorVisitor extends RecursiveAstVisitor<void> {
     }
 
     // Detect find.byKey() patterns
-    if (node.methodName.name == 'byKey' || node.methodName.name == 'byValueKey') {
+    if (node.methodName.name == 'byKey' ||
+        node.methodName.name == 'byValueKey') {
       final target = node.target;
       if (target is Identifier && target.name == 'find') {
         _extractKeyFromNode(node);
@@ -79,23 +80,23 @@ class KeyDetectorVisitor extends RecursiveAstVisitor<void> {
   @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
     final typeName = node.constructorName.type;
-    
+
     // Check for Key constructors
     final name = typeName.name2.lexeme;
-    if (name == 'Key' || 
-        name == 'ValueKey' || 
+    if (name == 'Key' ||
+        name == 'ValueKey' ||
         name == 'ObjectKey' ||
         name == 'GlobalKey' ||
         name == 'UniqueKey') {
       _extractKeyFromNode(node);
     }
-  
+
     super.visitInstanceCreationExpression(node);
   }
 
   void _extractKeyFromNode(AstNode node) {
     String? keyValue;
-    
+
     // Extract the key value from the arguments
     if (node is MethodInvocation) {
       final args = node.argumentList.arguments;
@@ -111,19 +112,19 @@ class KeyDetectorVisitor extends RecursiveAstVisitor<void> {
 
     if (keyValue != null) {
       foundKeys.add(keyValue);
-      
+
       // Track location
       final lineInfo = unit.lineInfo;
       final location = lineInfo.getLocation(node.offset);
-      
+
       keyLocations.putIfAbsent(keyValue, () => []).add(
-        KeyLocation(
-          filePath: filePath,
-          line: location.lineNumber,
-          column: location.columnNumber,
-          context: node.toSource(),
-        ),
-      );
+            KeyLocation(
+              filePath: filePath,
+              line: location.lineNumber,
+              column: location.columnNumber,
+              context: node.toSource(),
+            ),
+          );
 
       // Track usage count
       keyUsageCounts[keyValue] = (keyUsageCounts[keyValue] ?? 0) + 1;
@@ -173,7 +174,7 @@ class AstScanner {
 
     // Get files to scan
     final files = await _getFilesToScan();
-    
+
     if (verbose) {
       print('🔍 Scanning ${files.length} files with AST analyzer...');
     }
@@ -189,11 +190,11 @@ class AstScanner {
       try {
         final context = collection.contextFor(filePath);
         final result = await context.currentSession.getResolvedUnit(filePath);
-        
+
         if (result is ResolvedUnitResult) {
           final visitor = KeyDetectorVisitor(filePath, result.unit);
           result.unit.accept(visitor);
-          
+
           // Merge results
           foundKeys.addAll(visitor.foundKeys);
           visitor.keyLocations.forEach((key, locations) {
@@ -202,25 +203,28 @@ class AstScanner {
           visitor.keyUsageCounts.forEach((key, count) {
             keyUsageCounts[key] = (keyUsageCounts[key] ?? 0) + count;
           });
-          
+
           scannedFiles.add(filePath);
-          
+
           if (verbose && visitor.foundKeys.isNotEmpty) {
-            print('  📄 ${path.relative(filePath, from: projectPath)}: ${visitor.foundKeys.length} keys');
+            print(
+                '  📄 ${path.relative(filePath, from: projectPath)}: ${visitor.foundKeys.length} keys');
           }
         }
       } catch (e) {
         if (verbose) {
-          print('  ⚠️ Error scanning ${path.relative(filePath, from: projectPath)}: $e');
+          print(
+              '  ⚠️ Error scanning ${path.relative(filePath, from: projectPath)}: $e');
         }
       }
     }
 
     final duration = DateTime.now().difference(startTime);
-    
+
     if (verbose) {
       print('✅ AST scan complete in ${duration.inMilliseconds}ms');
-      print('   Found ${foundKeys.length} unique keys across ${scannedFiles.length} files');
+      print(
+          '   Found ${foundKeys.length} unique keys across ${scannedFiles.length} files');
     }
 
     return AstScanResult(
@@ -249,8 +253,9 @@ class AstScanner {
       if (testDir.existsSync()) {
         dirsToScan.add(testDir);
       }
-      
-      final integrationTestDir = Directory(path.join(projectPath, 'integration_test'));
+
+      final integrationTestDir =
+          Directory(path.join(projectPath, 'integration_test'));
       if (integrationTestDir.existsSync()) {
         dirsToScan.add(integrationTestDir);
       }
@@ -284,7 +289,7 @@ class AstScanner {
   /// Check if file should be included based on filters
   bool _shouldIncludeFile(String filePath) {
     final relativePath = path.relative(filePath, from: projectPath);
-    
+
     // Check exclude patterns
     if (exclude != null) {
       for (final pattern in exclude!) {

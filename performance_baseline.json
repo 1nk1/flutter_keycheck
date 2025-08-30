@@ -1,0 +1,71 @@
+{
+  "metrics": {
+    "runtime_ms": {
+      "mean": 10099.6,
+      "median": 10110.0,
+      "stddev": 38.32283914325764,
+      "min": 10031,
+      "max": 10139
+    },
+    "peak_rss_mb": {
+      "mean": 1004.3671875,
+      "median": 1000.87109375,
+      "stddev": 14.578971957577933,
+      "min": 989.51953125,
+      "max": 1030.71484375
+    },
+    "json_size_kb": {
+      "mean": 33.3,
+      "median": 33.3,
+      "stddev": 0.0,
+      "min": 33.3,
+      "max": 33.3
+    },
+    "files_scanned": 29,
+    "keys_found": 15
+  },
+  "raw_runs": [
+    {
+      "runtime_ms": 10110,
+      "peak_rss_mb": 993.16015625,
+      "json_size_kb": 33.3,
+      "files_scanned": 29,
+      "keys_found": 15
+    },
+    {
+      "runtime_ms": 10089,
+      "peak_rss_mb": 1030.71484375,
+      "json_size_kb": 33.3,
+      "files_scanned": 29,
+      "keys_found": 15
+    },
+    {
+      "runtime_ms": 10139,
+      "peak_rss_mb": 989.51953125,
+      "json_size_kb": 33.3,
+      "files_scanned": 29,
+      "keys_found": 15
+    },
+    {
+      "runtime_ms": 10031,
+      "peak_rss_mb": 1000.87109375,
+      "json_size_kb": 33.3,
+      "files_scanned": 29,
+      "keys_found": 15
+    },
+    {
+      "runtime_ms": 10129,
+      "peak_rss_mb": 1007.5703125,
+      "json_size_kb": 33.3,
+      "files_scanned": 29,
+      "keys_found": 15
+    }
+  ],
+  "metadata": {
+    "timestamp": "2025-08-31T01:11:47.024292",
+    "dart_version": "3.5.4 (stable) (Wed Oct 16 16:18:51 2024 +0000) on \"linux_x64\"",
+    "platform": "linux",
+    "target_project": "/home/adj/projects/flutter_keycheck/example/flutter_casino_demo",
+    "run_count": 5
+  }
+}

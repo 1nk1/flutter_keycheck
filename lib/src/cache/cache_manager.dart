@@ -30,10 +30,12 @@ class CachedScanResult {
     return CachedScanResult(
       foundKeys: Set<String>.from(json['foundKeys'] ?? []),
       keyUsageCounts: Map<String, int>.from(json['keyUsageCounts'] ?? {}),
-      keyLocations: (json['keyLocations'] as Map<String, dynamic>? ?? {})
-          .map((k, v) => MapEntry(k, (v as List)
-              .map((loc) => CachedKeyLocation.fromJson(loc))
-              .toList())),
+      keyLocations: (json['keyLocations'] as Map<String, dynamic>? ?? {}).map(
+          (k, v) => MapEntry(
+              k,
+              (v as List)
+                  .map((loc) => CachedKeyLocation.fromJson(loc))
+                  .toList())),
       timestamp: DateTime.parse(json['timestamp']),
       fileHash: json['fileHash'] ?? '',
       scanDuration: Duration(milliseconds: json['scanDurationMs'] ?? 0),
@@ -42,15 +44,15 @@ class CachedScanResult {
   }
 
   Map<String, dynamic> toJson() => {
-    'foundKeys': foundKeys.toList(),
-    'keyUsageCounts': keyUsageCounts,
-    'keyLocations': keyLocations.map((k, v) => 
-        MapEntry(k, v.map((loc) => loc.toJson()).toList())),
-    'timestamp': timestamp.toIso8601String(),
-    'fileHash': fileHash,
-    'scanDurationMs': scanDuration.inMilliseconds,
-    'metadata': metadata,
-  };
+        'foundKeys': foundKeys.toList(),
+        'keyUsageCounts': keyUsageCounts,
+        'keyLocations': keyLocations
+            .map((k, v) => MapEntry(k, v.map((loc) => loc.toJson()).toList())),
+        'timestamp': timestamp.toIso8601String(),
+        'fileHash': fileHash,
+        'scanDurationMs': scanDuration.inMilliseconds,
+        'metadata': metadata,
+      };
 
   /// Check if cache entry is still valid
   bool isValid(String currentFileHash, Duration maxAge) {
@@ -83,11 +85,11 @@ class CachedKeyLocation {
   }
 
   Map<String, dynamic> toJson() => {
-    'filePath': filePath,
-    'line': line,
-    'column': column,
-    'context': context,
-  };
+        'filePath': filePath,
+        'line': line,
+        'column': column,
+        'context': context,
+      };
 }
 
 /// Cache statistics and metadata
@@ -111,14 +113,14 @@ class CacheStats {
   });
 
   Map<String, dynamic> toJson() => {
-    'totalEntries': totalEntries,
-    'validEntries': validEntries,
-    'expiredEntries': expiredEntries,
-    'hitRate': hitRate,
-    'sizeMB': sizeMB,
-    'lastCleanup': lastCleanup.toIso8601String(),
-    'typeDistribution': typeDistribution,
-  };
+        'totalEntries': totalEntries,
+        'validEntries': validEntries,
+        'expiredEntries': expiredEntries,
+        'hitRate': hitRate,
+        'sizeMB': sizeMB,
+        'lastCleanup': lastCleanup.toIso8601String(),
+        'typeDistribution': typeDistribution,
+      };
 }
 
 /// Configuration for cache behavior
@@ -151,7 +153,7 @@ class CacheManager {
   late final Directory _cacheDirectory;
   late final File _indexFile;
   late final File _statsFile;
-  
+
   final Map<String, CachedScanResult> _memoryCache = {};
   Map<String, String> _fileIndex = {}; // filePath -> cacheKey mapping
   DateTime _lastCleanup = DateTime.now();
@@ -179,7 +181,7 @@ class CacheManager {
 
     await _loadIndex();
     await _loadMemoryCache();
-    
+
     if (verbose) {
       print('🗂️ Cache initialized with ${_memoryCache.length} entries');
     }
@@ -262,7 +264,7 @@ class CacheManager {
   Future<bool> isCached(String filePath) async {
     final fileHash = await _calculateFileHash(filePath);
     final cacheKey = _generateCacheKey(filePath, fileHash);
-    
+
     final result = _memoryCache[cacheKey] ?? await _loadFromDisk(cacheKey);
     return result?.isValid(fileHash, config.maxAge) ?? false;
   }
@@ -274,7 +276,7 @@ class CacheManager {
       _memoryCache.remove(oldCacheKey);
       _fileIndex.remove(filePath);
       await _removeFromDisk(oldCacheKey);
-      
+
       if (verbose) {
         print('🗑️  Invalidated cache: $filePath');
       }
@@ -283,9 +285,9 @@ class CacheManager {
     // Also remove any cache entries with different hashes
     final currentHash = await _calculateFileHash(filePath);
     final keysToRemove = <String>[];
-    
+
     for (final entry in _memoryCache.entries) {
-      if (entry.value.metadata['filePath'] == filePath && 
+      if (entry.value.metadata['filePath'] == filePath &&
           entry.value.fileHash != currentHash) {
         keysToRemove.add(entry.key);
       }
@@ -301,12 +303,12 @@ class CacheManager {
   Future<void> clear() async {
     _memoryCache.clear();
     _fileIndex.clear();
-    
+
     if (_cacheDirectory.existsSync()) {
       await _cacheDirectory.delete(recursive: true);
       await _cacheDirectory.create(recursive: true);
     }
-    
+
     if (verbose) {
       print('🧹 Cache cleared');
     }
@@ -322,13 +324,13 @@ class CacheManager {
     for (final entry in _memoryCache.entries) {
       final result = entry.value;
       final age = now.difference(result.timestamp);
-      
+
       if (age < config.maxAge) {
         validEntries.add(entry.key);
       } else {
         expiredEntries.add(entry.key);
       }
-      
+
       // Track by file type
       final filePath = result.metadata['filePath'] as String? ?? '';
       final extension = path.extension(filePath);
@@ -337,7 +339,7 @@ class CacheManager {
 
     final totalRequests = _cacheHits + _cacheMisses;
     final hitRate = totalRequests > 0 ? (_cacheHits / totalRequests) : 0.0;
-    
+
     final sizeMB = await _calculateCacheSize();
 
     return CacheStats(
@@ -392,7 +394,7 @@ class CacheManager {
     try {
       final file = File(filePath);
       if (!file.existsSync()) return '';
-      
+
       final stat = file.statSync();
       final content = '${stat.modified.millisecondsSinceEpoch}_${stat.size}';
       return sha256.convert(utf8.encode(content)).toString();
@@ -418,11 +420,11 @@ class CacheManager {
       final content = _indexFile.readAsStringSync();
       final data = jsonDecode(content) as Map<String, dynamic>;
       _fileIndex = Map<String, String>.from(data['fileIndex'] ?? {});
-      
+
       final stats = data['stats'] as Map<String, dynamic>? ?? {};
       _cacheHits = stats['cacheHits'] ?? 0;
       _cacheMisses = stats['cacheMisses'] ?? 0;
-      
+
       if (stats['lastCleanup'] != null) {
         _lastCleanup = DateTime.parse(stats['lastCleanup']);
       }
@@ -447,7 +449,7 @@ class CacheManager {
           'lastCleanup': _lastCleanup.toIso8601String(),
         },
       };
-      
+
       _indexFile.writeAsStringSync(jsonEncode(data));
     } catch (e) {
       if (verbose) {
@@ -460,7 +462,8 @@ class CacheManager {
   Future<void> _loadMemoryCache() async {
     if (!config.persistAcrossSessions) return;
 
-    final cacheFiles = _cacheDirectory.listSync()
+    final cacheFiles = _cacheDirectory
+        .listSync()
         .whereType<File>()
         .where((f) => f.path.endsWith('.cache'))
         .toList();
@@ -500,7 +503,7 @@ class CacheManager {
   /// Save cached result to disk
   Future<void> _saveToDisk(String cacheKey, CachedScanResult result) async {
     final file = File(path.join(cacheDir, '$cacheKey.cache'));
-    
+
     try {
       final data = result.toJson();
       file.writeAsStringSync(jsonEncode(data));

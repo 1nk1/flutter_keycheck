@@ -1,0 +1,57 @@
+# Custom Flutter KeyCheck Configuration
+# Demonstrating all configuration options
+
+# Project settings
+project_root: example/flutter_casino_demo
+output_directory: custom_reports
+report_format: html
+
+# Cache configuration
+cache:
+  enabled: true
+  ttl: 7200  # 2 hours
+  directory: .keycheck_cache_custom
+
+# Custom ignore patterns
+ignore_patterns:
+  - "**/generated/**"
+  - "**/*.g.dart"
+  - "**/*.freezed.dart"
+  - "**/glassmorphic/**"  # Custom pattern for demo
+  - "**/.dart_tool/**"
+  - "**/build/**"
+
+# Include patterns (if specified, only these are scanned)
+include_patterns:
+  - "lib/**/*.dart"
+  - "test/**/*.dart"
+
+# Quality thresholds
+quality:
+  min_coverage: 80
+  max_duplicates: 3
+  required_keys:
+    - homeScreen
+    - playButton
+    - betAmount
+
+# Performance settings
+performance:
+  parallel_files: 4
+  batch_size: 10
+  timeout_seconds: 30
+
+# Report customization
+report:
+  title: "Custom Casino Demo Key Analysis"
+  show_metrics: true
+  show_charts: true
+  show_duplicates: true
+  theme: premium  # premium or basic
+
+# Plugin configuration
+plugins:
+  enabled: true
+  paths:
+    - plugins/custom_analyzer.dart
+    - plugins/security_checker.dart

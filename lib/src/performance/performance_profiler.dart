@@ -55,7 +55,7 @@ class PerformanceMetrics {
     final timeScore = _calculateTimeScore();
     final throughputScore = _calculateThroughputScore();
     final resourceScore = _calculateResourceScore();
-    
+
     return (timeScore + throughputScore + resourceScore) / 3.0;
   }
 
@@ -92,24 +92,25 @@ class PerformanceMetrics {
 
   /// Convert to JSON for reporting
   Map<String, dynamic> toJson() => {
-    'totalScanTimeMs': totalScanTime.inMilliseconds,
-    'astParsingTimeMs': astParsingTime.inMilliseconds,
-    'fileReadTimeMs': fileReadTime.inMilliseconds,
-    'analysisTimeMs': analysisTime.inMilliseconds,
-    'reportGenerationTimeMs': reportGenerationTime.inMilliseconds,
-    'filesScanned': filesScanned,
-    'keysFound': keysFound,
-    'astNodesProcessed': astNodesProcessed,
-    'memoryUsageMB': memoryUsageMB,
-    'cpuUsagePercent': cpuUsagePercent,
-    'keysPerSecond': keysPerSecond,
-    'filesPerSecond': filesPerSecond,
-    'astNodesPerSecond': astNodesPerSecond,
-    'performanceScore': performanceScore,
-    'operationTimes': operationTimes.map((k, v) => MapEntry(k, v.inMilliseconds)),
-    'operationCounts': operationCounts,
-    'bottlenecks': bottlenecks.map((b) => b.toJson()).toList(),
-  };
+        'totalScanTimeMs': totalScanTime.inMilliseconds,
+        'astParsingTimeMs': astParsingTime.inMilliseconds,
+        'fileReadTimeMs': fileReadTime.inMilliseconds,
+        'analysisTimeMs': analysisTime.inMilliseconds,
+        'reportGenerationTimeMs': reportGenerationTime.inMilliseconds,
+        'filesScanned': filesScanned,
+        'keysFound': keysFound,
+        'astNodesProcessed': astNodesProcessed,
+        'memoryUsageMB': memoryUsageMB,
+        'cpuUsagePercent': cpuUsagePercent,
+        'keysPerSecond': keysPerSecond,
+        'filesPerSecond': filesPerSecond,
+        'astNodesPerSecond': astNodesPerSecond,
+        'performanceScore': performanceScore,
+        'operationTimes':
+            operationTimes.map((k, v) => MapEntry(k, v.inMilliseconds)),
+        'operationCounts': operationCounts,
+        'bottlenecks': bottlenecks.map((b) => b.toJson()).toList(),
+      };
 }
 
 /// Performance bottleneck identification
@@ -129,12 +130,12 @@ class PerformanceBottleneck {
   });
 
   Map<String, dynamic> toJson() => {
-    'operation': operation,
-    'timeMs': time.inMilliseconds,
-    'impactPercent': impactPercent,
-    'description': description,
-    'recommendations': recommendations,
-  };
+        'operation': operation,
+        'timeMs': time.inMilliseconds,
+        'impactPercent': impactPercent,
+        'description': description,
+        'recommendations': recommendations,
+      };
 }
 
 /// Performance profiling configuration
@@ -160,12 +161,12 @@ class ProfilingConfig {
 class PerformanceProfiler {
   final ProfilingConfig config;
   final bool verbose;
-  
+
   final Map<String, Stopwatch> _operationTimers = {};
   final Map<String, Duration> _operationTimes = {};
   final Map<String, int> _operationCounts = {};
   final List<PerformanceBottleneck> _bottlenecks = [];
-  
+
   int _filesScanned = 0;
   int _keysFound = 0;
   int _astNodesProcessed = 0;
@@ -182,7 +183,8 @@ class PerformanceProfiler {
     if (!config.enableDetailedProfiling) return;
 
     _operationTimers[operationName] = Stopwatch()..start();
-    _operationCounts[operationName] = (_operationCounts[operationName] ?? 0) + 1;
+    _operationCounts[operationName] =
+        (_operationCounts[operationName] ?? 0) + 1;
 
     if (verbose) {
       print('📊 Starting operation: $operationName');
@@ -197,11 +199,12 @@ class PerformanceProfiler {
     if (timer != null) {
       timer.stop();
       final duration = timer.elapsed;
-      _operationTimes[operationName] = 
+      _operationTimes[operationName] =
           (_operationTimes[operationName] ?? Duration.zero) + duration;
-      
+
       if (verbose && duration > config.slowOperationThreshold) {
-        print('⚠️ Slow operation: $operationName took ${duration.inMilliseconds}ms');
+        print(
+            '⚠️ Slow operation: $operationName took ${duration.inMilliseconds}ms');
       }
     }
   }
@@ -243,7 +246,7 @@ class PerformanceProfiler {
   /// Update CPU usage (placeholder for future implementation)
   void updateCpuUsage() {
     if (!config.enableCpuProfiling) return;
-    
+
     // CPU profiling would require platform-specific implementation
     // For now, we'll leave this as a placeholder
     _cpuUsagePercent = 0.0;
@@ -252,7 +255,7 @@ class PerformanceProfiler {
   /// Analyze performance bottlenecks
   void _analyzeBottlenecks(Duration totalTime) {
     _bottlenecks.clear();
-    
+
     final totalMs = totalTime.inMilliseconds.toDouble();
     if (totalMs == 0) return;
 
@@ -264,12 +267,13 @@ class PerformanceProfiler {
       if (impactPercent >= config.bottleneckThresholdPercent) {
         final recommendations = _getRecommendationsForOperation(
             operationName, operationTime, impactPercent);
-        
+
         _bottlenecks.add(PerformanceBottleneck(
           operation: operationName,
           time: operationTime,
           impactPercent: impactPercent,
-          description: 'Operation taking ${impactPercent.toStringAsFixed(1)}% of total time',
+          description:
+              'Operation taking ${impactPercent.toStringAsFixed(1)}% of total time',
           recommendations: recommendations,
         ));
       }
@@ -318,11 +322,13 @@ class PerformanceProfiler {
         break;
 
       default:
-        recommendations.add('Profile this operation in more detail to identify specific optimizations');
+        recommendations.add(
+            'Profile this operation in more detail to identify specific optimizations');
     }
 
     if (impactPercent > 50) {
-      recommendations.insert(0, 'Consider major architectural changes - this operation dominates scan time');
+      recommendations.insert(0,
+          'Consider major architectural changes - this operation dominates scan time');
     }
 
     return recommendations;
@@ -330,9 +336,9 @@ class PerformanceProfiler {
 
   /// Generate comprehensive performance metrics
   PerformanceMetrics generateMetrics() {
-    final totalTime = _operationTimes.values.fold(
-        Duration.zero, (sum, duration) => sum + duration);
-    
+    final totalTime = _operationTimes.values
+        .fold(Duration.zero, (sum, duration) => sum + duration);
+
     _analyzeBottlenecks(totalTime);
     updateMemoryUsage();
     updateCpuUsage();
@@ -342,7 +348,8 @@ class PerformanceProfiler {
       astParsingTime: _operationTimes['ast_parsing'] ?? Duration.zero,
       fileReadTime: _operationTimes['file_reading'] ?? Duration.zero,
       analysisTime: _operationTimes['key_analysis'] ?? Duration.zero,
-      reportGenerationTime: _operationTimes['report_generation'] ?? Duration.zero,
+      reportGenerationTime:
+          _operationTimes['report_generation'] ?? Duration.zero,
       filesScanned: _filesScanned,
       keysFound: _keysFound,
       astNodesProcessed: _astNodesProcessed,
@@ -370,15 +377,16 @@ class PerformanceProfiler {
   /// Print performance summary to console
   void printSummary() {
     final metrics = generateMetrics();
-    
+
     print('\n📊 Performance Summary:');
     print('  Total Time: ${metrics.totalScanTime.inMilliseconds}ms');
     print('  Files Scanned: ${metrics.filesScanned}');
     print('  Keys Found: ${metrics.keysFound}');
     print('  Keys/Second: ${metrics.keysPerSecond.toStringAsFixed(1)}');
     print('  Files/Second: ${metrics.filesPerSecond.toStringAsFixed(1)}');
-    print('  Performance Score: ${metrics.performanceScore.toStringAsFixed(1)}/100');
-    
+    print(
+        '  Performance Score: ${metrics.performanceScore.toStringAsFixed(1)}/100');
+
     if (config.enableMemoryProfiling) {
       print('  Memory Usage: ${metrics.memoryUsageMB.toStringAsFixed(1)} MB');
     }
@@ -386,7 +394,8 @@ class PerformanceProfiler {
     if (metrics.bottlenecks.isNotEmpty) {
       print('\n⚠️ Performance Bottlenecks:');
       for (final bottleneck in metrics.bottlenecks.take(3)) {
-        print('  • ${bottleneck.operation}: ${bottleneck.impactPercent.toStringAsFixed(1)}% (${bottleneck.time.inMilliseconds}ms)');
+        print(
+            '  • ${bottleneck.operation}: ${bottleneck.impactPercent.toStringAsFixed(1)}% (${bottleneck.time.inMilliseconds}ms)');
       }
     }
   }
@@ -412,7 +421,8 @@ class OptimizationEngine {
 
     // Memory recommendations
     if (metrics.memoryUsageMB > 500) {
-      recommendations.add('Implement memory-efficient streaming for large files');
+      recommendations
+          .add('Implement memory-efficient streaming for large files');
       recommendations.add('Consider processing files in batches');
     }
 
@@ -429,7 +439,8 @@ class OptimizationEngine {
 
     // General recommendations
     if (recommendations.isEmpty) {
-      recommendations.add('Performance appears optimal - no specific optimizations needed');
+      recommendations.add(
+          'Performance appears optimal - no specific optimizations needed');
     }
 
     return recommendations.take(5).toList(); // Limit to top 5 recommendations

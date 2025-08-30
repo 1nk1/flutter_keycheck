@@ -11,7 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_casino_demo/main.dart';
 
 void main() {
-  testWidgets('Casino demo app loads without crashing', (WidgetTester tester) async {
+  testWidgets('Casino demo app loads without crashing',
+      (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const CasinoDemoApp());
 

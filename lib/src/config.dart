@@ -37,19 +37,19 @@ class FlutterKeycheckConfig {
 
   /// Export configuration for reports
   final String? exportPath;
-  
+
   /// Quality thresholds (v3 features)
   final Map<String, dynamic>? qualityThresholds;
-  
+
   /// Enable AST-based scanning (v3 feature)
   final bool? useAstScanning;
-  
+
   /// Include test files in AST scanning
   final bool? includeTestsInAst;
-  
+
   /// Cache directory for performance optimization
   final String? cacheDir;
-  
+
   /// Enable performance metrics
   final bool? enableMetrics;
 

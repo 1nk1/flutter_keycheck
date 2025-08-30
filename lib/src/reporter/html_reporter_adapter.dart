@@ -1,5 +1,5 @@
 /// Adapter to use premium HtmlReporter with ReporterV3 interface
-/// 
+///
 /// This adapter bridges the gap between the V3 command infrastructure
 /// and the premium HTML reporter that uses BaseReporter interface.
 library;
@@ -14,10 +14,10 @@ import 'package:flutter_keycheck/src/reporter/html_reporter.dart';
 /// Adapter class to use HtmlReporter with ReporterV3 interface
 class HtmlReporterAdapter extends ReporterV3 {
   final HtmlReporter _htmlReporter;
-  
+
   HtmlReporterAdapter({bool darkTheme = false})
       : _htmlReporter = HtmlReporter(darkTheme: darkTheme);
-  
+
   @override
   Future<void> generateScanReport(
     ScanResult result,
@@ -27,15 +27,15 @@ class HtmlReporterAdapter extends ReporterV3 {
   }) async {
     // Convert ScanResult to ReportData for premium reporter
     final reportData = _convertToReportData(result);
-    
+
     // Generate premium HTML report
     final html = _htmlReporter.generate(reportData);
-    
+
     // Write to file
     await outputFile.parent.create(recursive: true);
     await outputFile.writeAsString(html);
   }
-  
+
   @override
   Future<void> generateValidationReport(
     ValidationResult result,
@@ -46,10 +46,10 @@ class HtmlReporterAdapter extends ReporterV3 {
     // Extract keys from ValidationResult structure
     final extraKeyNames = result.extraKeys.map((info) => info.id).toSet();
     final lostKeyNames = result.lostKeys.map((info) => info.id).toSet();
-    
+
     final reportData = ReportData(
       expectedKeys: <String>{}, // Not available in ValidationResult
-      foundKeys: <String>{}, // Not available in ValidationResult  
+      foundKeys: <String>{}, // Not available in ValidationResult
       missingKeys: lostKeyNames,
       extraKeys: extraKeyNames,
       projectPath: Directory.current.path,
@@ -61,20 +61,20 @@ class HtmlReporterAdapter extends ReporterV3 {
         'driftPercentage': result.driftPercentage,
       },
     );
-    
+
     // Generate premium HTML report
     final html = _htmlReporter.generate(reportData);
-    
+
     // Write to file
     await outputFile.parent.create(recursive: true);
     await outputFile.writeAsString(html);
   }
-  
+
   /// Convert ScanResult to ReportData for compatibility
   ReportData _convertToReportData(ScanResult result) {
     // Extract found keys from keyUsages map
     final foundKeys = result.keyUsages.keys.toSet();
-    
+
     // Create key usage counts
     final keyUsageCounts = <String, int>{};
     for (final entry in result.keyUsages.entries) {
@@ -82,7 +82,7 @@ class HtmlReporterAdapter extends ReporterV3 {
       final usage = entry.value;
       keyUsageCounts[key] = usage.locations.length;
     }
-    
+
     // Create key locations
     final keyLocations = <String, List<dynamic>>{};
     for (final entry in result.keyUsages.entries) {
@@ -99,7 +99,7 @@ class HtmlReporterAdapter extends ReporterV3 {
       }
       keyLocations[key] = locations;
     }
-    
+
     // Extract scanned files
     final scannedFiles = <String>[];
     final fileSet = <String>{};
@@ -107,7 +107,7 @@ class HtmlReporterAdapter extends ReporterV3 {
       fileSet.add(fileAnalysis.path);
     }
     scannedFiles.addAll(fileSet);
-    
+
     // Create metrics
     final metrics = {
       'totalFiles': result.metrics.totalFiles,
@@ -118,7 +118,7 @@ class HtmlReporterAdapter extends ReporterV3 {
       'incrementalScan': result.metrics.incrementalScan,
       'incrementalBase': result.metrics.incrementalBase,
     };
-    
+
     return ReportData(
       expectedKeys: <String>{}, // Will be filled from expected_keys.yaml if needed
       foundKeys: foundKeys,

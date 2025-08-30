@@ -13,8 +13,20 @@ void main() {
 
     setUp(() {
       testData = ReportData(
-        expectedKeys: {'loginButton', 'submitButton', 'usernameField', 'passwordField', 'homeScreen'},
-        foundKeys: {'loginButton', 'submitButton', 'usernameField', 'extraKey1', 'extraKey2'},
+        expectedKeys: {
+          'loginButton',
+          'submitButton',
+          'usernameField',
+          'passwordField',
+          'homeScreen'
+        },
+        foundKeys: {
+          'loginButton',
+          'submitButton',
+          'usernameField',
+          'extraKey1',
+          'extraKey2'
+        },
         missingKeys: {'passwordField', 'homeScreen'},
         extraKeys: {'extraKey1', 'extraKey2'},
         keyUsageCounts: {
@@ -96,7 +108,8 @@ void main() {
         );
 
         expect(emptyQuality.overall, greaterThanOrEqualTo(0));
-        expect(emptyQuality.coverage, equals(100.0)); // No expected keys = 100% coverage
+        expect(emptyQuality.coverage,
+            equals(100.0)); // No expected keys = 100% coverage
       });
     });
 
@@ -121,7 +134,8 @@ void main() {
         expect(stats.trends, isNotEmpty);
 
         // Verify specific metrics
-        expect(stats.coverage['percentage'], equals(60.0)); // 3 out of 5 expected keys found
+        expect(stats.coverage['percentage'],
+            equals(60.0)); // 3 out of 5 expected keys found
         expect(stats.performance['scanTimeMs'], equals(250));
       });
 
@@ -133,13 +147,14 @@ void main() {
         );
 
         expect(fileCoverage, isNotEmpty);
-        expect(fileCoverage.length, lessThanOrEqualTo(testData.scannedFiles!.length));
-        
+        expect(fileCoverage.length,
+            lessThanOrEqualTo(testData.scannedFiles!.length));
+
         final loginFile = fileCoverage.firstWhere(
           (file) => file.filePath.contains('login.dart'),
           orElse: () => throw StateError('Login file not found'),
         );
-        
+
         expect(loginFile.keyCount, greaterThan(0));
         expect(loginFile.coverageScore, greaterThan(0));
       });
@@ -152,7 +167,7 @@ void main() {
 
         expect(distribution.byCategory, isNotEmpty);
         expect(distribution.categoryPercentages, isNotEmpty);
-        
+
         // Should categorize loginButton as "Buttons"
         expect(distribution.byCategory['Buttons'], greaterThan(0));
       });
@@ -292,12 +307,13 @@ void main() {
         expect(ReporterFactory.create('markdown'), isA<MarkdownReporter>());
         expect(ReporterFactory.create('junit'), isA<JUnitReporter>());
         expect(ReporterFactory.create('human'), isA<HumanReporter>());
-        expect(ReporterFactory.create('unknown'), isA<HumanReporter>()); // Default
+        expect(
+            ReporterFactory.create('unknown'), isA<HumanReporter>()); // Default
       });
 
       test('should list all available formats', () {
         final formats = ReporterFactory.availableFormats;
-        
+
         expect(formats, contains('html'));
         expect(formats, contains('html-premium'));
         expect(formats, contains('html-dark'));
@@ -315,9 +331,11 @@ void main() {
         for (final format in ReporterFactory.availableFormats) {
           final reporter = ReporterFactory.create(format);
           final content = reporter.generate(testData);
-          
-          expect(content, isNotEmpty, reason: 'Format $format should generate content');
-          expect(content.length, greaterThan(100), reason: 'Format $format should generate substantial content');
+
+          expect(content, isNotEmpty,
+              reason: 'Format $format should generate content');
+          expect(content.length, greaterThan(100),
+              reason: 'Format $format should generate substantial content');
         }
       });
 
@@ -343,10 +361,12 @@ void main() {
       });
 
       test('should handle file writing correctly', () async {
-        final tempDir = '/tmp/flutter_keycheck_test_${DateTime.now().millisecondsSinceEpoch}';
+        final tempDir =
+            '/tmp/flutter_keycheck_test_${DateTime.now().millisecondsSinceEpoch}';
         final reporter = ReporterFactory.create('html') as HtmlReporter;
 
-        await reporter.writeToFile(testData, '$tempDir/report.${reporter.fileExtension}');
+        await reporter.writeToFile(
+            testData, '$tempDir/report.${reporter.fileExtension}');
 
         // Clean up is handled by OS temp directory cleanup
       });
@@ -355,7 +375,7 @@ void main() {
     group('Quality and Performance Validation', () {
       test('should complete quality analysis within reasonable time', () {
         final stopwatch = Stopwatch()..start();
-        
+
         QualityScorer.calculateQuality(
           expectedKeys: testData.expectedKeys,
           foundKeys: testData.foundKeys,
@@ -366,15 +386,15 @@ void main() {
           scannedFiles: testData.scannedFiles,
           scanDuration: testData.scanDuration,
         );
-        
+
         stopwatch.stop();
-        expect(stopwatch.elapsedMilliseconds, lessThan(100), 
-               reason: 'Quality analysis should complete quickly');
+        expect(stopwatch.elapsedMilliseconds, lessThan(100),
+            reason: 'Quality analysis should complete quickly');
       });
 
       test('should complete statistics calculation within reasonable time', () {
         final stopwatch = Stopwatch()..start();
-        
+
         StatsCalculator.calculateStatistics(
           expectedKeys: testData.expectedKeys,
           foundKeys: testData.foundKeys,
@@ -385,32 +405,32 @@ void main() {
           scannedFiles: testData.scannedFiles,
           scanDuration: testData.scanDuration,
         );
-        
+
         stopwatch.stop();
-        expect(stopwatch.elapsedMilliseconds, lessThan(50), 
-               reason: 'Statistics calculation should complete quickly');
+        expect(stopwatch.elapsedMilliseconds, lessThan(50),
+            reason: 'Statistics calculation should complete quickly');
       });
 
       test('should generate HTML report within reasonable time', () {
         final stopwatch = Stopwatch()..start();
         final reporter = HtmlReporter();
-        
+
         reporter.generate(testData);
-        
+
         stopwatch.stop();
-        expect(stopwatch.elapsedMilliseconds, lessThan(200), 
-               reason: 'HTML report generation should complete quickly');
+        expect(stopwatch.elapsedMilliseconds, lessThan(200),
+            reason: 'HTML report generation should complete quickly');
       });
 
       test('should generate CI report within reasonable time', () {
         final stopwatch = Stopwatch()..start();
         final reporter = CIReporter.autoDetect(verbose: true);
-        
+
         reporter.generate(testData);
-        
+
         stopwatch.stop();
-        expect(stopwatch.elapsedMilliseconds, lessThan(100), 
-               reason: 'CI report generation should complete quickly');
+        expect(stopwatch.elapsedMilliseconds, lessThan(100),
+            reason: 'CI report generation should complete quickly');
       });
     });
   });

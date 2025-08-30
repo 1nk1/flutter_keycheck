@@ -70,11 +70,11 @@ class KeyLocation {
   });
 
   Map<String, dynamic> toJson() => {
-    'file': filePath,
-    'line': line,
-    'column': column,
-    'context': context,
-  };
+        'file': filePath,
+        'line': line,
+        'column': column,
+        'context': context,
+      };
 }
 
 /// Recommendation for handling duplicates
@@ -120,29 +120,30 @@ class DuplicateDetector {
 
     // Find exact duplicates
     final exactDuplicates = _findExactDuplicates(keyUsageCounts);
-    
+
     // Find similar keys
     final similarKeys = _findSimilarKeys(foundKeys.toList());
-    
+
     // Extract duplicate locations
-    final duplicateLocations = _extractDuplicateLocations(
-      exactDuplicates, keyLocations);
-    
+    final duplicateLocations =
+        _extractDuplicateLocations(exactDuplicates, keyLocations);
+
     // Calculate metrics
-    final totalDuplicates = exactDuplicates.values
-        .fold(0, (sum, keys) => sum + keys.length);
-    final potentialDuplicates = similarKeys.values
-        .fold(0, (sum, similar) => sum + similar.length);
-    final duplicateRatio = foundKeys.isEmpty ? 0.0 :
-        (totalDuplicates / foundKeys.length) * 100;
+    final totalDuplicates =
+        exactDuplicates.values.fold(0, (sum, keys) => sum + keys.length);
+    final potentialDuplicates =
+        similarKeys.values.fold(0, (sum, similar) => sum + similar.length);
+    final duplicateRatio =
+        foundKeys.isEmpty ? 0.0 : (totalDuplicates / foundKeys.length) * 100;
 
     // Generate recommendations
-    final recommendations = _generateRecommendations(
-      exactDuplicates, similarKeys, duplicateRatio);
+    final recommendations =
+        _generateRecommendations(exactDuplicates, similarKeys, duplicateRatio);
 
     stopwatch.stop();
     if (verbose) {
-      print('Duplicate analysis completed in ${stopwatch.elapsedMilliseconds}ms');
+      print(
+          'Duplicate analysis completed in ${stopwatch.elapsedMilliseconds}ms');
     }
 
     return DuplicateAnalysis(
@@ -157,7 +158,8 @@ class DuplicateDetector {
   }
 
   /// Find keys with identical usage patterns
-  Map<String, List<String>> _findExactDuplicates(Map<String, int> keyUsageCounts) {
+  Map<String, List<String>> _findExactDuplicates(
+      Map<String, int> keyUsageCounts) {
     final duplicates = <String, List<String>>{};
     final processed = <String>{};
 
@@ -168,7 +170,8 @@ class DuplicateDetector {
       if (processed.contains(key) || count == 1) continue;
 
       final duplicatesForKey = keyUsageCounts.entries
-          .where((e) => e.value == count && e.key != key && !processed.contains(e.key))
+          .where((e) =>
+              e.value == count && e.key != key && !processed.contains(e.key))
           .map((e) => e.key)
           .toList();
 
@@ -197,7 +200,7 @@ class DuplicateDetector {
         if (_shouldIgnoreKey(key2)) continue;
 
         final similarities = _calculateSimilarities(key1, key2);
-        
+
         for (final similarity in similarities) {
           if (similarity.similarity >= similarityThreshold) {
             similarForKey.add(similarity);
@@ -309,8 +312,8 @@ class DuplicateDetector {
       for (int j = 1; j <= s2.length; j++) {
         final cost = s1[i - 1] == s2[j - 1] ? 0 : 1;
         matrix[i][j] = [
-          matrix[i - 1][j] + 1,      // deletion
-          matrix[i][j - 1] + 1,      // insertion
+          matrix[i - 1][j] + 1, // deletion
+          matrix[i][j - 1] + 1, // insertion
           matrix[i - 1][j - 1] + cost, // substitution
         ].reduce((a, b) => a < b ? a : b);
       }
@@ -358,18 +361,27 @@ class DuplicateDetector {
     // Convert to comparable patterns
     final pattern1 = _extractPattern(s1);
     final pattern2 = _extractPattern(s2);
-    
+
     if (pattern1 == pattern2) return 1.0;
-    
+
     // Check for common UI patterns
     final uiPatterns = {
-      'button', 'text', 'field', 'container', 'widget',
-      'screen', 'page', 'dialog', 'modal', 'form'
+      'button',
+      'text',
+      'field',
+      'container',
+      'widget',
+      'screen',
+      'page',
+      'dialog',
+      'modal',
+      'form'
     };
-    
+
     final hasCommonPattern = uiPatterns.any((pattern) =>
-        s1.toLowerCase().contains(pattern) && s2.toLowerCase().contains(pattern));
-    
+        s1.toLowerCase().contains(pattern) &&
+        s2.toLowerCase().contains(pattern));
+
     return hasCommonPattern ? 0.7 : 0.0;
   }
 
@@ -377,10 +389,16 @@ class DuplicateDetector {
   String _extractPattern(String key) {
     // Remove common suffixes/prefixes and extract core pattern
     final cleaned = key
-        .replaceAll(RegExp(r'_?(button|btn|text|field|container|widget)_?', caseSensitive: false), '_X_')
-        .replaceAll(RegExp(r'_?(screen|page|dialog|modal|form)_?', caseSensitive: false), '_Y_')
+        .replaceAll(
+            RegExp(r'_?(button|btn|text|field|container|widget)_?',
+                caseSensitive: false),
+            '_X_')
+        .replaceAll(
+            RegExp(r'_?(screen|page|dialog|modal|form)_?',
+                caseSensitive: false),
+            '_Y_')
         .replaceAll(RegExp(r'\d+'), 'N');
-    
+
     return cleaned;
   }
 
@@ -397,7 +415,7 @@ class DuplicateDetector {
     for (final group in semanticGroups.values) {
       final s1InGroup = group.any((word) => s1.toLowerCase().contains(word));
       final s2InGroup = group.any((word) => s2.toLowerCase().contains(word));
-      
+
       if (s1InGroup && s2InGroup) {
         return 0.8; // High semantic similarity
       }
@@ -408,8 +426,8 @@ class DuplicateDetector {
 
   /// Check if key should be ignored
   bool _shouldIgnoreKey(String key) {
-    return ignoredPatterns.any((pattern) => 
-        RegExp(pattern, caseSensitive: false).hasMatch(key));
+    return ignoredPatterns
+        .any((pattern) => RegExp(pattern, caseSensitive: false).hasMatch(key));
   }
 
   /// Extract locations for duplicate keys
@@ -424,10 +442,10 @@ class DuplicateDetector {
       final duplicateKeys = entry.value;
 
       final locations = <KeyLocation>[];
-      
+
       // Add primary key locations
       locations.addAll(keyLocations[primaryKey] ?? []);
-      
+
       // Add duplicate key locations
       for (final duplicateKey in duplicateKeys) {
         locations.addAll(keyLocations[duplicateKey] ?? []);
@@ -453,10 +471,12 @@ class DuplicateDetector {
     if (exactDuplicates.isNotEmpty) {
       recommendations.add(DuplicateRecommendation(
         type: 'exact_duplicates',
-        description: 'Found ${exactDuplicates.length} sets of exact duplicate keys',
+        description:
+            'Found ${exactDuplicates.length} sets of exact duplicate keys',
         affectedKeys: exactDuplicates.keys.toList(),
         priority: 'high',
-        action: 'Review and consolidate duplicate keys to improve maintainability',
+        action:
+            'Review and consolidate duplicate keys to improve maintainability',
       ));
     }
 
@@ -475,7 +495,8 @@ class DuplicateDetector {
     if (duplicateRatio > 20.0) {
       recommendations.add(DuplicateRecommendation(
         type: 'high_duplicate_ratio',
-        description: 'High duplicate ratio (${duplicateRatio.toStringAsFixed(1)}%)',
+        description:
+            'High duplicate ratio (${duplicateRatio.toStringAsFixed(1)}%)',
         affectedKeys: [],
         priority: 'high',
         action: 'Review key naming strategy and consider refactoring',

@@ -29,7 +29,8 @@ class CasinoAnimatedBackground extends StatefulWidget {
   final CasinoBackgroundType backgroundType;
 
   @override
-  State<CasinoAnimatedBackground> createState() => _CasinoAnimatedBackgroundState();
+  State<CasinoAnimatedBackground> createState() =>
+      _CasinoAnimatedBackgroundState();
 }
 
 class _CasinoAnimatedBackgroundState extends State<CasinoAnimatedBackground>
@@ -37,10 +38,10 @@ class _CasinoAnimatedBackgroundState extends State<CasinoAnimatedBackground>
   late AnimationController _primaryController;
   late AnimationController _secondaryController;
   late AnimationController _particleController;
-  
+
   late Animation<double> _gradientAnimation;
   late Animation<double> _shapeAnimation;
-  
+
   final List<Particle> _particles = [];
   final Random _random = Random();
 
@@ -56,12 +57,12 @@ class _CasinoAnimatedBackgroundState extends State<CasinoAnimatedBackground>
       duration: Duration(seconds: (8 / widget.animationSpeed).round()),
       vsync: this,
     );
-    
+
     _secondaryController = AnimationController(
       duration: Duration(seconds: (12 / widget.animationSpeed).round()),
       vsync: this,
     );
-    
+
     _particleController = AnimationController(
       duration: Duration(seconds: (6 / widget.animationSpeed).round()),
       vsync: this,
@@ -84,7 +85,7 @@ class _CasinoAnimatedBackgroundState extends State<CasinoAnimatedBackground>
 
   void _initializeParticles() {
     if (!widget.showParticles) return;
-    
+
     _particles.clear();
     for (int i = 0; i < widget.particleCount; i++) {
       _particles.add(Particle.random(_random, widget.intensity));
@@ -94,12 +95,12 @@ class _CasinoAnimatedBackgroundState extends State<CasinoAnimatedBackground>
   @override
   void didUpdateWidget(CasinoAnimatedBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.particleCount != oldWidget.particleCount ||
         widget.intensity != oldWidget.intensity) {
       _initializeParticles();
     }
-    
+
     if (widget.animationSpeed != oldWidget.animationSpeed) {
       _setupAnimations();
     }
@@ -122,22 +123,19 @@ class _CasinoAnimatedBackgroundState extends State<CasinoAnimatedBackground>
         children: [
           // Base gradient background
           _buildBaseGradient(),
-          
+
           // Animated gradient overlay
-          if (widget.showGradientAnimation)
-            _buildAnimatedGradient(),
-          
+          if (widget.showGradientAnimation) _buildAnimatedGradient(),
+
           // Geometric shapes
-          if (widget.showGeometricShapes)
-            _buildGeometricShapes(),
-          
+          if (widget.showGeometricShapes) _buildGeometricShapes(),
+
           // Particle system
-          if (widget.showParticles)
-            _buildParticleSystem(),
-          
+          if (widget.showParticles) _buildParticleSystem(),
+
           // Glass overlay
           _buildGlassOverlay(),
-          
+
           // Child content
           widget.child,
         ],
@@ -292,7 +290,7 @@ class GeometricShapesPainter extends CustomPainter {
     _paintDiamondShapes(canvas, size, paint);
     _paintCircularPatterns(canvas, size, paint);
     _paintCardSuits(canvas, size, paint);
-    
+
     if (backgroundType == CasinoBackgroundType.premium ||
         backgroundType == CasinoBackgroundType.vip) {
       _paintLuxuryElements(canvas, size, paint);
@@ -301,38 +299,38 @@ class GeometricShapesPainter extends CustomPainter {
 
   void _paintDiamondShapes(Canvas canvas, Size size, Paint paint) {
     paint.color = CasinoColors.gold.withOpacity(0.1 * intensity);
-    
+
     for (int i = 0; i < 5; i++) {
       final center = Offset(
         size.width * 0.2 * (i + 1),
         size.height * 0.3 + math.sin(animation + i) * 50 * intensity,
       );
-      
+
       final path = Path();
       final diamondSize = 30 + math.sin(animation + i * 0.5) * 10;
-      
+
       path.moveTo(center.dx, center.dy - diamondSize);
       path.lineTo(center.dx + diamondSize, center.dy);
       path.lineTo(center.dx, center.dy + diamondSize);
       path.lineTo(center.dx - diamondSize, center.dy);
       path.close();
-      
+
       canvas.drawPath(path, paint);
     }
   }
 
   void _paintCircularPatterns(Canvas canvas, Size size, Paint paint) {
     paint.color = CasinoColors.emerald.withOpacity(0.08 * intensity);
-    
+
     for (int i = 0; i < 3; i++) {
       final center = Offset(
         size.width * 0.7,
         size.height * 0.2 + i * size.height * 0.3,
       );
-      
+
       final radius = 40 + math.cos(animation + i * 0.3) * 15;
       canvas.drawCircle(center, radius, paint);
-      
+
       // Inner circle
       paint.strokeWidth = 0.5;
       canvas.drawCircle(center, radius * 0.6, paint);
@@ -343,39 +341,39 @@ class GeometricShapesPainter extends CustomPainter {
   void _paintCardSuits(Canvas canvas, Size size, Paint paint) {
     paint.color = CasinoColors.ruby.withOpacity(0.06 * intensity);
     paint.style = PaintingStyle.fill;
-    
+
     // Spade shape
     final spadeCenter = Offset(
       size.width * 0.9,
       size.height * 0.8 + math.sin(animation * 0.5) * 20,
     );
-    
+
     _drawSpade(canvas, spadeCenter, 25 * intensity, paint);
-    
+
     // Heart shape
     paint.color = CasinoColors.ruby.withOpacity(0.05 * intensity);
     final heartCenter = Offset(
       size.width * 0.1,
       size.height * 0.7 + math.cos(animation * 0.7) * 30,
     );
-    
+
     _drawHeart(canvas, heartCenter, 20 * intensity, paint);
   }
 
   void _paintLuxuryElements(Canvas canvas, Size size, Paint paint) {
     paint.style = PaintingStyle.stroke;
     paint.color = CasinoColors.gold.withOpacity(0.15 * intensity);
-    
+
     // Crown pattern
     final crownPath = Path();
     final crownCenter = Offset(size.width * 0.5, size.height * 0.1);
-    
+
     crownPath.moveTo(crownCenter.dx - 40, crownCenter.dy);
     crownPath.lineTo(crownCenter.dx - 20, crownCenter.dy - 30);
     crownPath.lineTo(crownCenter.dx, crownCenter.dy - 20);
     crownPath.lineTo(crownCenter.dx + 20, crownCenter.dy - 35);
     crownPath.lineTo(crownCenter.dx + 40, crownCenter.dy);
-    
+
     canvas.drawPath(crownPath, paint);
   }
 
@@ -383,20 +381,28 @@ class GeometricShapesPainter extends CustomPainter {
     final path = Path();
     path.moveTo(center.dx, center.dy - size);
     path.quadraticBezierTo(
-      center.dx - size * 0.8, center.dy - size * 0.3,
-      center.dx - size * 0.5, center.dy,
+      center.dx - size * 0.8,
+      center.dy - size * 0.3,
+      center.dx - size * 0.5,
+      center.dy,
     );
     path.quadraticBezierTo(
-      center.dx - size * 0.3, center.dy + size * 0.3,
-      center.dx, center.dy + size * 0.1,
+      center.dx - size * 0.3,
+      center.dy + size * 0.3,
+      center.dx,
+      center.dy + size * 0.1,
     );
     path.quadraticBezierTo(
-      center.dx + size * 0.3, center.dy + size * 0.3,
-      center.dx + size * 0.5, center.dy,
+      center.dx + size * 0.3,
+      center.dy + size * 0.3,
+      center.dx + size * 0.5,
+      center.dy,
     );
     path.quadraticBezierTo(
-      center.dx + size * 0.8, center.dy - size * 0.3,
-      center.dx, center.dy - size,
+      center.dx + size * 0.8,
+      center.dy - size * 0.3,
+      center.dx,
+      center.dy - size,
     );
     canvas.drawPath(path, paint);
   }
@@ -405,14 +411,20 @@ class GeometricShapesPainter extends CustomPainter {
     final path = Path();
     path.moveTo(center.dx, center.dy + size * 0.5);
     path.cubicTo(
-      center.dx - size, center.dy - size * 0.5,
-      center.dx - size * 0.5, center.dy - size,
-      center.dx, center.dy - size * 0.3,
+      center.dx - size,
+      center.dy - size * 0.5,
+      center.dx - size * 0.5,
+      center.dy - size,
+      center.dx,
+      center.dy - size * 0.3,
     );
     path.cubicTo(
-      center.dx + size * 0.5, center.dy - size,
-      center.dx + size, center.dy - size * 0.5,
-      center.dx, center.dy + size * 0.5,
+      center.dx + size * 0.5,
+      center.dy - size,
+      center.dx + size,
+      center.dy - size * 0.5,
+      center.dx,
+      center.dy + size * 0.5,
     );
     canvas.drawPath(path, paint);
   }
@@ -439,17 +451,17 @@ class ParticleSystemPainter extends CustomPainter {
 
     for (final particle in particles) {
       particle.update(animationValue, size);
-      
+
       paint.color = particle.color.withOpacity(
         particle.opacity * intensity,
       );
-      
+
       canvas.drawCircle(
         particle.position,
         particle.size * intensity,
         paint,
       );
-      
+
       // Add glow effect for special particles
       if (particle.hasGlow) {
         paint.color = particle.color.withOpacity(
@@ -518,19 +530,19 @@ class Particle {
 
   void update(double deltaTime, Size screenSize) {
     age += deltaTime * 0.016; // Approximate 60fps
-    
+
     position = Offset(
       position.dx + velocity.dx,
       position.dy + velocity.dy,
     );
-    
+
     // Wrap around screen
     if (position.dx < -size) {
       position = Offset(screenSize.width + size, position.dy);
     } else if (position.dx > screenSize.width + size) {
       position = Offset(-size, position.dy);
     }
-    
+
     if (position.dy < -size) {
       position = Offset(position.dx, screenSize.height + size);
     } else if (position.dy > screenSize.height + size) {
@@ -581,7 +593,7 @@ class _FloatingLightOrbsState extends State<FloatingLightOrbs>
     _positionAnimations = _controllers.asMap().entries.map((entry) {
       final index = entry.key;
       final controller = entry.value;
-      
+
       return Tween<Offset>(
         begin: Offset(
           math.sin(index * 0.5) * 0.3,
@@ -616,15 +628,15 @@ class _FloatingLightOrbsState extends State<FloatingLightOrbs>
       children: _positionAnimations.asMap().entries.map((entry) {
         final index = entry.key;
         final animation = entry.value;
-        
+
         return AnimatedBuilder(
           animation: animation,
           builder: (context, child) {
             return Positioned(
-              left: MediaQuery.of(context).size.width * 0.5 + 
-                     animation.value.dx * MediaQuery.of(context).size.width,
-              top: MediaQuery.of(context).size.height * 0.5 + 
-                    animation.value.dy * MediaQuery.of(context).size.height,
+              left: MediaQuery.of(context).size.width * 0.5 +
+                  animation.value.dx * MediaQuery.of(context).size.width,
+              top: MediaQuery.of(context).size.height * 0.5 +
+                  animation.value.dy * MediaQuery.of(context).size.height,
               child: Container(
                 width: widget.size,
                 height: widget.size,
@@ -649,8 +661,8 @@ class _FloatingLightOrbsState extends State<FloatingLightOrbs>
 
 /// Background type enumeration
 enum CasinoBackgroundType {
-  minimal,    // Simple gradient
-  standard,   // Basic casino effects
-  premium,    // Enhanced effects
-  vip,        // Maximum luxury effects
+  minimal, // Simple gradient
+  standard, // Basic casino effects
+  premium, // Enhanced effects
+  vip, // Maximum luxury effects
 }

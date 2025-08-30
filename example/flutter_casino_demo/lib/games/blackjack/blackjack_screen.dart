@@ -12,7 +12,7 @@ import '../../core/agents/agents.dart';
 class BlackjackScreen extends StatelessWidget {
   final bool demoMode;
   final int startingBalance;
-  
+
   const BlackjackScreen({
     super.key,
     this.demoMode = false,
@@ -30,10 +30,10 @@ class BlackjackScreen extends StatelessWidget {
             name: 'Blackjack Game Engine',
           ),
         );
-        
+
         final viewModel = BlackjackViewModel(engine: engine);
         viewModel.initialize(startingBalance, demoMode: demoMode);
-        
+
         return viewModel;
       },
       child: const _BlackjackScreenContent(),
@@ -50,21 +50,22 @@ class _BlackjackScreenContent extends StatelessWidget {
       appBar: AppBar(
         title: Row(
           children: [
-            const FaIcon(FontAwesomeIcons.spade, size: 20),
+            const FaIcon(FontAwesomeIcons.diamondTurnRight, size: 20),
             const SizedBox(width: 8),
             const Text('Blackjack VIP'),
             const Spacer(),
             Consumer<BlackjackViewModel>(
               builder: (context, viewModel, child) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: viewModel.isDemoMode 
+                    color: viewModel.isDemoMode
                         ? CasinoColors.emerald.withOpacity(0.2)
                         : CasinoColors.gold.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: viewModel.isDemoMode 
+                      color: viewModel.isDemoMode
                           ? CasinoColors.emerald
                           : CasinoColors.gold,
                       width: 1,
@@ -73,11 +74,11 @@ class _BlackjackScreenContent extends StatelessWidget {
                   child: Text(
                     viewModel.isDemoMode ? 'DEMO' : 'LIVE',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: viewModel.isDemoMode 
-                          ? CasinoColors.emerald
-                          : CasinoColors.gold,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: viewModel.isDemoMode
+                              ? CasinoColors.emerald
+                              : CasinoColors.gold,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 );
               },
@@ -183,17 +184,17 @@ class _BlackjackScreenContent extends StatelessWidget {
               Text(
                 'Reset Statistics',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Theme.of(context).casinoColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: Theme.of(context).casinoColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 8),
               Text(
                 'This will reset all game statistics.\nAre you sure?',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).casinoColors.textSecondary,
-                ),
+                      color: Theme.of(context).casinoColors.textSecondary,
+                    ),
               ),
               const SizedBox(height: 24),
               Row(
@@ -209,7 +210,7 @@ class _BlackjackScreenContent extends StatelessWidget {
                       viewModel.resetStats();
                       Navigator.pop(context);
                     },
-                    style: GlassButtonStyle.filled,
+                    style: GlassButtonStyle.primary,
                     child: const Text('Reset'),
                   ),
                 ],
@@ -231,17 +232,17 @@ class _GameContent extends StatelessWidget {
       children: [
         // Game header
         const _GameHeader(),
-        
+
         const SizedBox(height: 16),
-        
+
         // Game table
         const Expanded(child: _GameTable()),
-        
+
         const SizedBox(height: 16),
-        
+
         // Controls
         const _GameControls(),
-        
+
         const SizedBox(height: 16),
       ],
     );
@@ -293,7 +294,7 @@ class _StatCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
-  
+
   const _StatCard({
     required this.title,
     required this.value,
@@ -304,7 +305,7 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Column(
       children: [
         FaIcon(icon, color: color, size: 20),
@@ -346,10 +347,13 @@ class _GameTable extends StatelessWidget {
                     children: [
                       Text(
                         'Dealer',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Theme.of(context).casinoColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                              color: Theme.of(context).casinoColors.textPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       const SizedBox(height: 12),
                       Expanded(
@@ -358,8 +362,10 @@ class _GameTable extends StatelessWidget {
                             hand: viewModel.dealerHand,
                             isDealer: true,
                             label: 'Dealer',
-                            valueText: viewModel.dealerTurn || !viewModel.gameInProgress 
-                                ? viewModel.getHandValueString(viewModel.dealerHand)
+                            valueText: viewModel.dealerTurn ||
+                                    !viewModel.gameInProgress
+                                ? viewModel
+                                    .getHandValueString(viewModel.dealerHand)
                                 : null,
                             cardWidth: 70,
                           ),
@@ -368,7 +374,7 @@ class _GameTable extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // Divider
                 Container(
                   height: 2,
@@ -383,7 +389,7 @@ class _GameTable extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 // Player hands
                 Expanded(
                   flex: 3,
@@ -417,11 +423,12 @@ class _GameTable extends StatelessWidget {
       children: viewModel.playerHands.asMap().entries.map((entry) {
         final index = entry.key;
         final hand = entry.value;
-        
+
         return Expanded(
           child: HandDisplayWidget(
             hand: hand,
-            isActive: viewModel.gameInProgress && viewModel.currentHandIndex == index,
+            isActive:
+                viewModel.gameInProgress && viewModel.currentHandIndex == index,
             label: 'Hand ${index + 1}',
             valueText: viewModel.getHandValueString(hand),
             cardWidth: 60,
@@ -459,9 +466,9 @@ class _GameControls extends StatelessWidget {
               Text(
                 'Place Your Bet',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: CasinoColors.gold,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: CasinoColors.gold,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 12),
               ChipSelector(
@@ -473,9 +480,9 @@ class _GameControls extends StatelessWidget {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Deal button
         PlayButton(
           onPressed: viewModel.startNewGame,
@@ -489,7 +496,7 @@ class _GameControls extends StatelessWidget {
 
   Widget _buildGameActionControls(BlackjackViewModel viewModel) {
     final actions = viewModel.availableActions;
-    
+
     return Column(
       children: [
         // Basic strategy hint
@@ -505,24 +512,25 @@ class _GameControls extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const FaIcon(FontAwesomeIcons.brain, 
+                const FaIcon(FontAwesomeIcons.brain,
                     color: CasinoColors.emerald, size: 16),
                 const SizedBox(width: 8),
                 Text(
                   'Basic Strategy: ${_getActionName(viewModel.basicStrategyAction)}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: CasinoColors.emerald,
-                    fontWeight: FontWeight.bold,
-                  ),
+                        color: CasinoColors.emerald,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 const Spacer(),
                 GestureDetector(
                   onTap: viewModel.toggleAutoPlayBasicStrategy,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: viewModel.autoPlayBasicStrategy 
-                          ? CasinoColors.emerald 
+                      color: viewModel.autoPlayBasicStrategy
+                          ? CasinoColors.emerald
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: CasinoColors.emerald),
@@ -530,8 +538,8 @@ class _GameControls extends StatelessWidget {
                     child: Text(
                       'AUTO',
                       style: TextStyle(
-                        color: viewModel.autoPlayBasicStrategy 
-                            ? Colors.black 
+                        color: viewModel.autoPlayBasicStrategy
+                            ? Colors.black
                             : CasinoColors.emerald,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -542,7 +550,7 @@ class _GameControls extends StatelessWidget {
               ],
             ),
           ),
-        
+
         // Action buttons
         Wrap(
           spacing: 12,
@@ -551,7 +559,7 @@ class _GameControls extends StatelessWidget {
             if (actions.contains(BlackjackAction.hit))
               GlassButton(
                 onPressed: viewModel.hit,
-                style: GlassButtonStyle.filled,
+                style: GlassButtonStyle.primary,
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -561,7 +569,6 @@ class _GameControls extends StatelessWidget {
                   ],
                 ),
               ),
-            
             if (actions.contains(BlackjackAction.stand))
               GlassButton(
                 onPressed: viewModel.stand,
@@ -575,7 +582,6 @@ class _GameControls extends StatelessWidget {
                   ],
                 ),
               ),
-            
             if (actions.contains(BlackjackAction.doubleDown))
               GlassButton(
                 onPressed: viewModel.doubleDown,
@@ -589,7 +595,6 @@ class _GameControls extends StatelessWidget {
                   ],
                 ),
               ),
-            
             if (actions.contains(BlackjackAction.split))
               GlassButton(
                 onPressed: viewModel.split,
@@ -603,7 +608,6 @@ class _GameControls extends StatelessWidget {
                   ],
                 ),
               ),
-            
             if (actions.contains(BlackjackAction.surrender))
               GlassButton(
                 onPressed: viewModel.surrender,

@@ -3,6 +3,14 @@ import 'dart:math' as math;
 import '../roulette_engine.dart';
 import '../../../ui/theme/app_theme.dart';
 
+/// Animation states for the roulette wheel
+enum RouletteAnimationState {
+  idle,
+  spinning,
+  slowing,
+  stopped,
+}
+
 /// Animated spinning roulette wheel widget
 class RouletteWheel extends StatefulWidget {
   final double rotation;
@@ -12,7 +20,7 @@ class RouletteWheel extends StatefulWidget {
   final double size;
   final RouletteType type;
   final VoidCallback? onTap;
-  
+
   const RouletteWheel({
     super.key,
     required this.rotation,
@@ -36,12 +44,12 @@ class _RouletteWheelState extends State<RouletteWheel>
   @override
   void initState() {
     super.initState();
-    
+
     _glowController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _glowAnimation = Tween<double>(
       begin: 0.3,
       end: 1.0,
@@ -54,7 +62,7 @@ class _RouletteWheelState extends State<RouletteWheel>
   @override
   void didUpdateWidget(RouletteWheel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.animationState != oldWidget.animationState) {
       if (widget.animationState == RouletteAnimationState.celebrating) {
         _glowController.repeat(reverse: true);
@@ -89,19 +97,19 @@ class _RouletteWheelState extends State<RouletteWheel>
               children: [
                 // Outer rim
                 _buildOuterRim(),
-                
+
                 // Rotating wheel
                 Transform.rotate(
                   angle: widget.rotation * math.pi / 180,
                   child: _buildWheel(),
                 ),
-                
+
                 // Center hub
                 _buildCenterHub(),
-                
+
                 // Ball
                 _buildBall(),
-                
+
                 // Win glow effect
                 if (widget.animationState == RouletteAnimationState.celebrating)
                   _buildWinGlow(),
@@ -179,7 +187,7 @@ class _RouletteWheelState extends State<RouletteWheel>
   Widget _buildBall() {
     final ballSize = widget.size * 0.03;
     final ballRadius = widget.size * 0.35;
-    
+
     return Transform.rotate(
       angle: widget.ballRotation * math.pi / 180,
       child: Transform.translate(
@@ -237,37 +245,72 @@ class RouletteWheelPainter extends CustomPainter {
   final RouletteType type;
   final RouletteNumber? winningNumber;
   final RouletteAnimationState animationState;
-  
+
   RouletteWheelPainter({
     required this.type,
     this.winningNumber,
     required this.animationState,
   });
-  
+
   static const List<int> _europeanLayout = [
-    0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10,
-    5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+    0,
+    32,
+    15,
+    19,
+    4,
+    21,
+    2,
+    25,
+    17,
+    34,
+    6,
+    27,
+    13,
+    36,
+    11,
+    30,
+    8,
+    23,
+    10,
+    5,
+    24,
+    16,
+    33,
+    1,
+    20,
+    14,
+    31,
+    9,
+    22,
+    18,
+    29,
+    7,
+    28,
+    12,
+    35,
+    3,
+    26
   ];
-  
+
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
     final numbers = _europeanLayout;
-    
+
     // Draw background circle
     final backgroundPaint = Paint()
       ..color = CasinoColors.darkBackground
       ..style = PaintingStyle.fill;
-    
+
     canvas.drawCircle(center, radius, backgroundPaint);
-    
+
     // Draw number sectors
     for (int i = 0; i < numbers.length; i++) {
       final number = numbers[i];
       final startAngle = (i * 2 * math.pi / numbers.length) - (math.pi / 2);
       final sweepAngle = 2 * math.pi / numbers.length;
-      
+
       _drawSector(
         canvas,
         center,
@@ -278,23 +321,24 @@ class RouletteWheelPainter extends CustomPainter {
         _getNumberColor(number),
       );
     }
-    
+
     // Draw separator lines
     _drawSeparatorLines(canvas, center, radius, numbers.length);
-    
+
     // Highlight winning number
-    if (winningNumber != null && animationState == RouletteAnimationState.celebrating) {
+    if (winningNumber != null &&
+        animationState == RouletteAnimationState.celebrating) {
       _highlightWinningNumber(canvas, center, radius, numbers);
     }
   }
-  
-  void _drawSector(Canvas canvas, Offset center, double radius, double startAngle,
-      double sweepAngle, int number, Color color) {
+
+  void _drawSector(Canvas canvas, Offset center, double radius,
+      double startAngle, double sweepAngle, int number, Color color) {
     // Draw sector background
     final sectorPaint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-    
+
     final path = Path();
     path.moveTo(center.dx, center.dy);
     path.arcTo(
@@ -304,21 +348,21 @@ class RouletteWheelPainter extends CustomPainter {
       false,
     );
     path.close();
-    
+
     canvas.drawPath(path, sectorPaint);
-    
+
     // Draw number text
     _drawNumberText(canvas, center, radius, startAngle, sweepAngle, number);
   }
-  
+
   void _drawNumberText(Canvas canvas, Offset center, double radius,
       double startAngle, double sweepAngle, int number) {
     final textAngle = startAngle + sweepAngle / 2;
     final textRadius = radius * 0.75;
-    
+
     final textX = center.dx + textRadius * math.cos(textAngle);
     final textY = center.dy + textRadius * math.sin(textAngle);
-    
+
     final textPainter = TextPainter(
       text: TextSpan(
         text: number.toString(),
@@ -331,78 +375,101 @@ class RouletteWheelPainter extends CustomPainter {
       textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
     );
-    
+
     textPainter.layout();
-    
+
     // Rotate text to be upright
     canvas.save();
     canvas.translate(textX, textY);
-    
+
     // Adjust rotation so text is always readable
     double rotationAngle = textAngle + math.pi / 2;
     if (rotationAngle > math.pi / 2 && rotationAngle < 3 * math.pi / 2) {
       rotationAngle += math.pi;
     }
-    
+
     canvas.rotate(rotationAngle);
-    textPainter.paint(canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
+    textPainter.paint(
+        canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
     canvas.restore();
   }
-  
-  void _drawSeparatorLines(Canvas canvas, Offset center, double radius, int segments) {
+
+  void _drawSeparatorLines(
+      Canvas canvas, Offset center, double radius, int segments) {
     final linePaint = Paint()
       ..color = CasinoColors.gold
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
-    
+
     for (int i = 0; i < segments; i++) {
       final angle = (i * 2 * math.pi / segments) - (math.pi / 2);
       final startX = center.dx + (radius * 0.7) * math.cos(angle);
       final startY = center.dy + (radius * 0.7) * math.sin(angle);
       final endX = center.dx + (radius * 0.9) * math.cos(angle);
       final endY = center.dy + (radius * 0.9) * math.sin(angle);
-      
+
       canvas.drawLine(Offset(startX, startY), Offset(endX, endY), linePaint);
     }
   }
-  
-  void _highlightWinningNumber(Canvas canvas, Offset center, double radius, List<int> numbers) {
+
+  void _highlightWinningNumber(
+      Canvas canvas, Offset center, double radius, List<int> numbers) {
     if (winningNumber == null) return;
-    
+
     final numberIndex = numbers.indexOf(winningNumber!.number);
     if (numberIndex == -1) return;
-    
-    final startAngle = (numberIndex * 2 * math.pi / numbers.length) - (math.pi / 2);
+
+    final startAngle =
+        (numberIndex * 2 * math.pi / numbers.length) - (math.pi / 2);
     final sweepAngle = 2 * math.pi / numbers.length;
-    
+
     // Draw highlight glow
     final glowPaint = Paint()
       ..color = CasinoColors.gold.withOpacity(0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8.0
       ..maskFilter = const MaskFilter.blur(BlurStyle.outer, 10);
-    
+
     final path = Path();
     path.addArc(
       Rect.fromCircle(center: center, radius: radius * 0.9),
       startAngle,
       sweepAngle,
     );
-    
+
     canvas.drawPath(path, glowPaint);
   }
-  
+
   Color _getNumberColor(int number) {
     if (number == 0) return CasinoColors.emerald;
-    
-    const redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+
+    const redNumbers = [
+      1,
+      3,
+      5,
+      7,
+      9,
+      12,
+      14,
+      16,
+      18,
+      19,
+      21,
+      23,
+      25,
+      27,
+      30,
+      32,
+      34,
+      36
+    ];
     return redNumbers.contains(number) ? CasinoColors.ruby : Colors.black;
   }
-  
+
   @override
   bool shouldRepaint(RouletteWheelPainter oldDelegate) {
     return winningNumber != oldDelegate.winningNumber ||
-           animationState != oldDelegate.animationState;
+        animationState != oldDelegate.animationState;
   }
 }
 
@@ -412,7 +479,7 @@ class RouletteNumberDisplay extends StatelessWidget {
   final bool isHighlighted;
   final double size;
   final VoidCallback? onTap;
-  
+
   const RouletteNumberDisplay({
     super.key,
     required this.number,
@@ -424,7 +491,7 @@ class RouletteNumberDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rouletteNumber = RouletteNumber(number);
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -433,7 +500,9 @@ class RouletteNumberDisplay extends StatelessWidget {
         decoration: BoxDecoration(
           color: _getBackgroundColor(rouletteNumber.color),
           border: Border.all(
-            color: isHighlighted ? CasinoColors.gold : Colors.white.withOpacity(0.3),
+            color: isHighlighted
+                ? CasinoColors.gold
+                : Colors.white.withOpacity(0.3),
             width: isHighlighted ? 3 : 1,
           ),
           borderRadius: BorderRadius.circular(8),
@@ -454,7 +523,7 @@ class RouletteNumberDisplay extends StatelessWidget {
       ),
     );
   }
-  
+
   Color _getBackgroundColor(RouletteColor color) {
     switch (color) {
       case RouletteColor.red:
@@ -471,7 +540,7 @@ class RouletteNumberDisplay extends StatelessWidget {
 class RecentNumbersDisplay extends StatelessWidget {
   final List<int> recentNumbers;
   final int? highlightedNumber;
-  
+
   const RecentNumbersDisplay({
     super.key,
     required this.recentNumbers,
@@ -496,9 +565,9 @@ class RecentNumbersDisplay extends StatelessWidget {
           Text(
             'Recent Numbers',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: CasinoColors.gold,
-              fontWeight: FontWeight.bold,
-            ),
+                  color: CasinoColors.gold,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -522,7 +591,7 @@ class RecentNumbersDisplay extends StatelessWidget {
 class HotColdNumbers extends StatelessWidget {
   final List<MapEntry<int, int>> hotNumbers;
   final List<MapEntry<int, int>> coldNumbers;
-  
+
   const HotColdNumbers({
     super.key,
     required this.hotNumbers,
@@ -553,7 +622,7 @@ class HotColdNumbers extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildNumberList(
     BuildContext context,
     String title,
@@ -576,30 +645,33 @@ class HotColdNumbers extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: accentColor,
-              fontWeight: FontWeight.bold,
-            ),
+                  color: accentColor,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 12),
-          ...numbers.map((entry) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                RouletteNumberDisplay(
-                  number: entry.key,
-                  size: 30,
-                ),
-                Text(
-                  '${entry.value}x',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: accentColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          )).toList(),
+          ...numbers
+              .map((entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        RouletteNumberDisplay(
+                          number: entry.key,
+                          size: 30,
+                        ),
+                        Text(
+                          '${entry.value}x',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: accentColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ))
+              .toList(),
         ],
       ),
     );

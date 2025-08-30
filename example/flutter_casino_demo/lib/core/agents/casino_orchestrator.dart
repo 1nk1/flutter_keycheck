@@ -2,7 +2,7 @@ import 'dart:async';
 import 'agents.dart';
 
 /// Orchestrator that coordinates all agents in the casino system
-/// 
+///
 /// This class demonstrates how to properly initialize, coordinate, and manage
 /// the lifecycle of all agents in the system. It provides a high-level interface
 /// for the application to interact with the agent-based architecture.
@@ -144,7 +144,8 @@ class CasinoOrchestrator {
       );
 
       await _gameEngine.startGame(gameId);
-      final gameResult = await _gameEngine.executeRound(gameId, roundParameters: gameParameters);
+      final gameResult = await _gameEngine.executeRound(gameId,
+          roundParameters: gameParameters);
 
       // Process winnings if any
       if (gameResult.winAmount > 0) {
@@ -163,7 +164,9 @@ class CasinoOrchestrator {
 
       // Record action
       _contextManager.recordAction(
-        gameResult.isWin ? GameActionType.winProcessed : GameActionType.spinExecuted,
+        gameResult.isWin
+            ? GameActionType.winProcessed
+            : GameActionType.spinExecuted,
         actionData: gameResult.toJson(),
       );
 

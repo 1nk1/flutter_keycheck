@@ -6,17 +6,17 @@ import 'base_agent.dart';
 /// Agent responsible for generating reports and statistics analysis
 class ReportGeneratorAgent extends BaseAgentImpl {
   static const String _agentTypeId = 'ReportGenerator';
-  
+
   // Report storage
   final Map<String, GeneratedReport> _reports = {};
   final Map<String, ReportTemplate> _templates = {};
-  
+
   // Statistics aggregation
   final List<GameSession> _sessionHistory = [];
   final Map<String, List<double>> _gamePerformanceData = {};
-  
+
   // Stream controllers
-  final StreamController<ReportUpdate> _reportUpdateController = 
+  final StreamController<ReportUpdate> _reportUpdateController =
       StreamController<ReportUpdate>.broadcast();
 
   @override
@@ -29,7 +29,8 @@ class ReportGeneratorAgent extends BaseAgentImpl {
   List<GeneratedReport> get allReports => List.unmodifiable(_reports.values);
 
   /// Available report templates
-  List<ReportTemplate> get availableTemplates => List.unmodifiable(_templates.values);
+  List<ReportTemplate> get availableTemplates =>
+      List.unmodifiable(_templates.values);
 
   @override
   Future<void> onInitialize() async {
@@ -44,16 +45,16 @@ class ReportGeneratorAgent extends BaseAgentImpl {
   /// Add game session data for analysis
   void addGameSession(GameSession session) {
     validateActive();
-    
+
     _sessionHistory.add(session);
-    
+
     // Update performance data
     final gameType = session.gameType;
     if (!_gamePerformanceData.containsKey(gameType)) {
       _gamePerformanceData[gameType] = [];
     }
     _gamePerformanceData[gameType]!.add(session.netResult);
-    
+
     _emitReportUpdate(ReportUpdateType.sessionDataAdded, {
       'sessionId': session.sessionId,
       'gameType': session.gameType,
@@ -62,56 +63,57 @@ class ReportGeneratorAgent extends BaseAgentImpl {
   }
 
   /// Generate report using a template
-  Future<String> generateReport(String templateId, {
+  Future<String> generateReport(
+    String templateId, {
     DateTime? startDate,
     DateTime? endDate,
     Map<String, dynamic>? parameters,
   }) async {
     validateActive();
-    
+
     final template = _templates[templateId];
     if (template == null) {
-      throw AgentException('Report template not found: $templateId', 
+      throw AgentException('Report template not found: $templateId',
           agentType: agentType, agentId: agentId);
     }
-    
+
     final reportId = _generateReportId();
     final filteredSessions = _filterSessions(startDate, endDate);
-    
+
     GeneratedReport report;
-    
+
     try {
       switch (template.type) {
         case ReportType.sessionSummary:
           report = await _generateSessionSummaryReport(
-            reportId, template, filteredSessions, parameters);
+              reportId, template, filteredSessions, parameters);
           break;
         case ReportType.gamePerformance:
           report = await _generateGamePerformanceReport(
-            reportId, template, filteredSessions, parameters);
+              reportId, template, filteredSessions, parameters);
           break;
         case ReportType.financialSummary:
           report = await _generateFinancialSummaryReport(
-            reportId, template, filteredSessions, parameters);
+              reportId, template, filteredSessions, parameters);
           break;
         case ReportType.playerBehavior:
           report = await _generatePlayerBehaviorReport(
-            reportId, template, filteredSessions, parameters);
+              reportId, template, filteredSessions, parameters);
           break;
         case ReportType.custom:
           report = await _generateCustomReport(
-            reportId, template, filteredSessions, parameters);
+              reportId, template, filteredSessions, parameters);
           break;
       }
-      
+
       _reports[reportId] = report;
-      
+
       _emitReportUpdate(ReportUpdateType.reportGenerated, {
         'reportId': reportId,
         'templateId': templateId,
         'reportType': template.type.name,
       });
-      
+
       return reportId;
     } catch (error, stackTrace) {
       handleError(error, stackTrace);
@@ -127,24 +129,24 @@ class ReportGeneratorAgent extends BaseAgentImpl {
   /// Delete a report
   bool deleteReport(String reportId) {
     validateActive();
-    
+
     final existed = _reports.remove(reportId) != null;
-    
+
     if (existed) {
       _emitReportUpdate(ReportUpdateType.reportDeleted, {
         'reportId': reportId,
       });
     }
-    
+
     return existed;
   }
 
   /// Create custom report template
   void createReportTemplate(ReportTemplate template) {
     validateActive();
-    
+
     _templates[template.id] = template;
-    
+
     _emitReportUpdate(ReportUpdateType.templateCreated, {
       'templateId': template.id,
       'templateName': template.name,
@@ -165,29 +167,37 @@ class ReportGeneratorAgent extends BaseAgentImpl {
         'gameTypeStats': <String, dynamic>{},
       };
     }
-    
+
     final totalSessions = _sessionHistory.length;
-    final totalGamesPlayed = _sessionHistory.fold<int>(0, (sum, session) => sum + session.gamesPlayed);
-    final totalWinnings = _sessionHistory.fold<double>(0, (sum, session) => sum + session.totalWinnings);
-    final totalBets = _sessionHistory.fold<double>(0, (sum, session) => sum + session.totalBets);
-    final averageSessionDuration = _sessionHistory.fold<int>(0, (sum, session) => sum + session.duration.inMinutes) / totalSessions;
-    
+    final totalGamesPlayed = _sessionHistory.fold<int>(
+        0, (sum, session) => sum + session.gamesPlayed);
+    final totalWinnings = _sessionHistory.fold<double>(
+        0, (sum, session) => sum + session.totalWinnings);
+    final totalBets = _sessionHistory.fold<double>(
+        0, (sum, session) => sum + session.totalBets);
+    final averageSessionDuration = _sessionHistory.fold<int>(
+            0, (sum, session) => sum + session.duration.inMinutes) /
+        totalSessions;
+
     final overallRTP = totalBets == 0 ? 0.0 : totalWinnings / totalBets;
-    
+
     final gameTypeStats = <String, dynamic>{};
     for (final gameType in _gamePerformanceData.keys) {
       final gameResults = _gamePerformanceData[gameType]!;
-      final gameSessions = _sessionHistory.where((s) => s.gameType == gameType).toList();
-      
+      final gameSessions =
+          _sessionHistory.where((s) => s.gameType == gameType).toList();
+
       gameTypeStats[gameType] = {
         'sessions': gameSessions.length,
-        'averageResult': gameResults.isEmpty ? 0.0 : gameResults.reduce((a, b) => a + b) / gameResults.length,
+        'averageResult': gameResults.isEmpty
+            ? 0.0
+            : gameResults.reduce((a, b) => a + b) / gameResults.length,
         'bestResult': gameResults.isEmpty ? 0.0 : gameResults.reduce(math.max),
         'worstResult': gameResults.isEmpty ? 0.0 : gameResults.reduce(math.min),
         'volatility': _calculateVolatility(gameResults),
       };
     }
-    
+
     return {
       'totalSessions': totalSessions,
       'totalGamesPlayed': totalGamesPlayed,
@@ -203,10 +213,10 @@ class ReportGeneratorAgent extends BaseAgentImpl {
   String exportReportAsJson(String reportId) {
     final report = _reports[reportId];
     if (report == null) {
-      throw AgentException('Report not found: $reportId', 
+      throw AgentException('Report not found: $reportId',
           agentType: agentType, agentId: agentId);
     }
-    
+
     return jsonEncode(report.toJson());
   }
 
@@ -214,22 +224,23 @@ class ReportGeneratorAgent extends BaseAgentImpl {
   String exportReportAsCsv(String reportId) {
     final report = _reports[reportId];
     if (report == null) {
-      throw AgentException('Report not found: $reportId', 
+      throw AgentException('Report not found: $reportId',
           agentType: agentType, agentId: agentId);
     }
-    
+
     final csv = StringBuffer();
-    
+
     // Add header
     csv.writeln('Report: ${report.title}');
     csv.writeln('Generated: ${report.generatedAt.toIso8601String()}');
-    csv.writeln('Period: ${report.startDate?.toIso8601String() ?? 'N/A'} - ${report.endDate?.toIso8601String() ?? 'N/A'}');
+    csv.writeln(
+        'Period: ${report.startDate?.toIso8601String() ?? 'N/A'} - ${report.endDate?.toIso8601String() ?? 'N/A'}');
     csv.writeln('');
-    
+
     // Add data sections
     for (final section in report.sections) {
       csv.writeln('Section: ${section.title}');
-      
+
       if (section.data is Map<String, dynamic>) {
         final data = section.data as Map<String, dynamic>;
         for (final entry in data.entries) {
@@ -241,10 +252,10 @@ class ReportGeneratorAgent extends BaseAgentImpl {
           csv.writeln(item.toString());
         }
       }
-      
+
       csv.writeln('');
     }
-    
+
     return csv.toString();
   }
 
@@ -255,19 +266,24 @@ class ReportGeneratorAgent extends BaseAgentImpl {
     Map<String, dynamic>? parameters,
   ) async {
     final sections = <ReportSection>[];
-    
+
     // Overview section
     sections.add(ReportSection(
       title: 'Session Overview',
       data: {
         'Total Sessions': sessions.length,
-        'Total Games Played': sessions.fold<int>(0, (sum, s) => sum + s.gamesPlayed),
-        'Average Session Duration (minutes)': sessions.isEmpty ? 0 : 
-            sessions.fold<int>(0, (sum, s) => sum + s.duration.inMinutes) / sessions.length,
-        'Total Play Time (hours)': sessions.fold<int>(0, (sum, s) => sum + s.duration.inMinutes) / 60.0,
+        'Total Games Played':
+            sessions.fold<int>(0, (sum, s) => sum + s.gamesPlayed),
+        'Average Session Duration (minutes)': sessions.isEmpty
+            ? 0
+            : sessions.fold<int>(0, (sum, s) => sum + s.duration.inMinutes) /
+                sessions.length,
+        'Total Play Time (hours)':
+            sessions.fold<int>(0, (sum, s) => sum + s.duration.inMinutes) /
+                60.0,
       },
     ));
-    
+
     // Game type breakdown
     final gameTypeBreakdown = <String, dynamic>{};
     for (final session in sessions) {
@@ -279,18 +295,19 @@ class ReportGeneratorAgent extends BaseAgentImpl {
           'totalBets': 0.0,
         };
       }
-      
+
       gameTypeBreakdown[session.gameType]!['sessions'] += 1;
       gameTypeBreakdown[session.gameType]!['totalGames'] += session.gamesPlayed;
-      gameTypeBreakdown[session.gameType]!['totalWinnings'] += session.totalWinnings;
+      gameTypeBreakdown[session.gameType]!['totalWinnings'] +=
+          session.totalWinnings;
       gameTypeBreakdown[session.gameType]!['totalBets'] += session.totalBets;
     }
-    
+
     sections.add(ReportSection(
       title: 'Game Type Breakdown',
       data: gameTypeBreakdown,
     ));
-    
+
     return GeneratedReport(
       id: reportId,
       templateId: template.id,
@@ -310,24 +327,28 @@ class ReportGeneratorAgent extends BaseAgentImpl {
     Map<String, dynamic>? parameters,
   ) async {
     final sections = <ReportSection>[];
-    
+
     // Performance metrics by game type
     final performanceByGame = <String, dynamic>{};
-    
+
     for (final gameType in _gamePerformanceData.keys) {
       final gameResults = _gamePerformanceData[gameType]!;
-      final gameSessions = sessions.where((s) => s.gameType == gameType).toList();
-      
+      final gameSessions =
+          sessions.where((s) => s.gameType == gameType).toList();
+
       if (gameResults.isNotEmpty && gameSessions.isNotEmpty) {
         final winSessions = gameSessions.where((s) => s.netResult > 0).length;
         final lossSessions = gameSessions.where((s) => s.netResult < 0).length;
-        
+
         performanceByGame[gameType] = {
           'Total Sessions': gameSessions.length,
           'Win Sessions': winSessions,
           'Loss Sessions': lossSessions,
-          'Win Rate': gameSessions.isEmpty ? 0.0 : winSessions / gameSessions.length * 100,
-          'Average Result': gameResults.reduce((a, b) => a + b) / gameResults.length,
+          'Win Rate': gameSessions.isEmpty
+              ? 0.0
+              : winSessions / gameSessions.length * 100,
+          'Average Result':
+              gameResults.reduce((a, b) => a + b) / gameResults.length,
           'Best Result': gameResults.reduce(math.max),
           'Worst Result': gameResults.reduce(math.min),
           'Volatility': _calculateVolatility(gameResults),
@@ -335,22 +356,26 @@ class ReportGeneratorAgent extends BaseAgentImpl {
         };
       }
     }
-    
+
     sections.add(ReportSection(
       title: 'Game Performance Analysis',
       data: performanceByGame,
     ));
-    
+
     // Trending analysis
     if (sessions.length >= 5) {
       final recentSessions = sessions.take(sessions.length ~/ 2).toList();
       final olderSessions = sessions.skip(sessions.length ~/ 2).toList();
-      
-      final recentAvg = recentSessions.isEmpty ? 0.0 : 
-          recentSessions.fold<double>(0, (sum, s) => sum + s.netResult) / recentSessions.length;
-      final olderAvg = olderSessions.isEmpty ? 0.0 :
-          olderSessions.fold<double>(0, (sum, s) => sum + s.netResult) / olderSessions.length;
-      
+
+      final recentAvg = recentSessions.isEmpty
+          ? 0.0
+          : recentSessions.fold<double>(0, (sum, s) => sum + s.netResult) /
+              recentSessions.length;
+      final olderAvg = olderSessions.isEmpty
+          ? 0.0
+          : olderSessions.fold<double>(0, (sum, s) => sum + s.netResult) /
+              olderSessions.length;
+
       sections.add(ReportSection(
         title: 'Performance Trends',
         data: {
@@ -361,7 +386,7 @@ class ReportGeneratorAgent extends BaseAgentImpl {
         },
       ));
     }
-    
+
     return GeneratedReport(
       id: reportId,
       templateId: template.id,
@@ -381,11 +406,12 @@ class ReportGeneratorAgent extends BaseAgentImpl {
     Map<String, dynamic>? parameters,
   ) async {
     final sections = <ReportSection>[];
-    
-    final totalWinnings = sessions.fold<double>(0, (sum, s) => sum + s.totalWinnings);
+
+    final totalWinnings =
+        sessions.fold<double>(0, (sum, s) => sum + s.totalWinnings);
     final totalBets = sessions.fold<double>(0, (sum, s) => sum + s.totalBets);
     final netResult = sessions.fold<double>(0, (sum, s) => sum + s.netResult);
-    
+
     // Financial overview
     sections.add(ReportSection(
       title: 'Financial Overview',
@@ -394,19 +420,27 @@ class ReportGeneratorAgent extends BaseAgentImpl {
         'Total Bets': totalBets,
         'Net Result': netResult,
         'Overall RTP': totalBets == 0 ? 0.0 : (totalWinnings / totalBets) * 100,
-        'Average Bet Size': sessions.isEmpty ? 0.0 : totalBets / sessions.fold<int>(0, (sum, s) => sum + s.gamesPlayed),
-        'Largest Win': sessions.isEmpty ? 0.0 : sessions.map((s) => s.largestWin).reduce(math.max),
-        'Largest Loss': sessions.isEmpty ? 0.0 : sessions.map((s) => s.largestLoss).reduce(math.max),
+        'Average Bet Size': sessions.isEmpty
+            ? 0.0
+            : totalBets /
+                sessions.fold<int>(0, (sum, s) => sum + s.gamesPlayed),
+        'Largest Win': sessions.isEmpty
+            ? 0.0
+            : sessions.map((s) => s.largestWin).reduce(math.max),
+        'Largest Loss': sessions.isEmpty
+            ? 0.0
+            : sessions.map((s) => s.largestLoss).reduce(math.max),
       },
     ));
-    
+
     // Monthly breakdown (if data spans multiple months)
     if (sessions.isNotEmpty) {
       final monthlyData = <String, Map<String, dynamic>>{};
-      
+
       for (final session in sessions) {
-        final monthKey = '${session.startTime.year}-${session.startTime.month.toString().padLeft(2, '0')}';
-        
+        final monthKey =
+            '${session.startTime.year}-${session.startTime.month.toString().padLeft(2, '0')}';
+
         if (!monthlyData.containsKey(monthKey)) {
           monthlyData[monthKey] = {
             'sessions': 0,
@@ -415,19 +449,19 @@ class ReportGeneratorAgent extends BaseAgentImpl {
             'netResult': 0.0,
           };
         }
-        
+
         monthlyData[monthKey]!['sessions'] += 1;
         monthlyData[monthKey]!['winnings'] += session.totalWinnings;
         monthlyData[monthKey]!['bets'] += session.totalBets;
         monthlyData[monthKey]!['netResult'] += session.netResult;
       }
-      
+
       sections.add(ReportSection(
         title: 'Monthly Breakdown',
         data: monthlyData,
       ));
     }
-    
+
     return GeneratedReport(
       id: reportId,
       templateId: template.id,
@@ -447,45 +481,53 @@ class ReportGeneratorAgent extends BaseAgentImpl {
     Map<String, dynamic>? parameters,
   ) async {
     final sections = <ReportSection>[];
-    
+
     if (sessions.isNotEmpty) {
       // Playing patterns
       final hourlyActivity = <int, int>{};
       final dailyActivity = <int, int>{};
-      
+
       for (final session in sessions) {
         final hour = session.startTime.hour;
         final weekday = session.startTime.weekday;
-        
+
         hourlyActivity[hour] = (hourlyActivity[hour] ?? 0) + 1;
         dailyActivity[weekday] = (dailyActivity[weekday] ?? 0) + 1;
       }
-      
+
       sections.add(ReportSection(
         title: 'Playing Patterns',
         data: {
-          'Most Active Hour': hourlyActivity.entries.reduce((a, b) => a.value > b.value ? a : b).key,
-          'Most Active Day': _getDayName(dailyActivity.entries.reduce((a, b) => a.value > b.value ? a : b).key),
+          'Most Active Hour': hourlyActivity.entries
+              .reduce((a, b) => a.value > b.value ? a : b)
+              .key,
+          'Most Active Day': _getDayName(dailyActivity.entries
+              .reduce((a, b) => a.value > b.value ? a : b)
+              .key),
           'Hourly Activity': hourlyActivity,
-          'Daily Activity': dailyActivity.map((k, v) => MapEntry(_getDayName(k), v)),
+          'Daily Activity':
+              dailyActivity.map((k, v) => MapEntry(_getDayName(k), v)),
         },
       ));
-      
+
       // Session behavior
-      final sessionDurations = sessions.map((s) => s.duration.inMinutes).toList();
-      final averageSessionLength = sessionDurations.reduce((a, b) => a + b) / sessionDurations.length;
-      
+      final sessionDurations =
+          sessions.map((s) => s.duration.inMinutes).toList();
+      final averageSessionLength =
+          sessionDurations.reduce((a, b) => a + b) / sessionDurations.length;
+
       sections.add(ReportSection(
         title: 'Session Behavior',
         data: {
           'Average Session Length (minutes)': averageSessionLength,
           'Shortest Session (minutes)': sessionDurations.reduce(math.min),
           'Longest Session (minutes)': sessionDurations.reduce(math.max),
-          'Session Length Variance': _calculateVariance(sessionDurations.map((d) => d.toDouble()).toList()),
+          'Session Length Variance': _calculateVariance(
+              sessionDurations.map((d) => d.toDouble()).toList()),
         },
       ));
     }
-    
+
     return GeneratedReport(
       id: reportId,
       templateId: template.id,
@@ -565,7 +607,7 @@ class ReportGeneratorAgent extends BaseAgentImpl {
         parameters: {},
       ),
     ];
-    
+
     for (final template in templates) {
       _templates[template.id] = template;
     }
@@ -573,31 +615,43 @@ class ReportGeneratorAgent extends BaseAgentImpl {
 
   double _calculateVolatility(List<double> values) {
     if (values.length < 2) return 0.0;
-    
+
     final mean = values.reduce((a, b) => a + b) / values.length;
-    final variance = values.map((v) => math.pow(v - mean, 2)).reduce((a, b) => a + b) / values.length;
-    
+    final variance =
+        values.map((v) => math.pow(v - mean, 2)).reduce((a, b) => a + b) /
+            values.length;
+
     return math.sqrt(variance);
   }
 
   double _calculateVariance(List<double> values) {
     if (values.length < 2) return 0.0;
-    
+
     final mean = values.reduce((a, b) => a + b) / values.length;
-    return values.map((v) => math.pow(v - mean, 2)).reduce((a, b) => a + b) / values.length;
+    return values.map((v) => math.pow(v - mean, 2)).reduce((a, b) => a + b) /
+        values.length;
   }
 
   double _calculateRTP(List<GameSession> sessions) {
     if (sessions.isEmpty) return 0.0;
-    
-    final totalWinnings = sessions.fold<double>(0, (sum, s) => sum + s.totalWinnings);
+
+    final totalWinnings =
+        sessions.fold<double>(0, (sum, s) => sum + s.totalWinnings);
     final totalBets = sessions.fold<double>(0, (sum, s) => sum + s.totalBets);
-    
+
     return totalBets == 0 ? 0.0 : (totalWinnings / totalBets) * 100;
   }
 
   String _getDayName(int weekday) {
-    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const dayNames = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
     return dayNames[weekday - 1];
   }
 

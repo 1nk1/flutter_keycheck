@@ -12,7 +12,7 @@ class PlayingCardWidget extends StatefulWidget {
   final double height;
   final VoidCallback? onTap;
   final bool showAnimation;
-  
+
   const PlayingCardWidget({
     super.key,
     this.card,
@@ -32,24 +32,24 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
     with TickerProviderStateMixin {
   late AnimationController _flipController;
   late AnimationController _highlightController;
-  
+
   late Animation<double> _flipAnimation;
   late Animation<double> _highlightAnimation;
 
   @override
   void initState() {
     super.initState();
-    
+
     _flipController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _highlightController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _flipAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -57,7 +57,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
       parent: _flipController,
       curve: Curves.easeInOut,
     ));
-    
+
     _highlightAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -70,9 +70,9 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
   @override
   void didUpdateWidget(PlayingCardWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Handle card flip animation
-    if (widget.card != null && 
+    if (widget.card != null &&
         oldWidget.card?.isHidden != widget.card?.isHidden &&
         widget.showAnimation) {
       if (widget.card!.isHidden) {
@@ -81,7 +81,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
         _flipController.forward();
       }
     }
-    
+
     // Handle highlight animation
     if (widget.isHighlighted != oldWidget.isHighlighted) {
       if (widget.isHighlighted) {
@@ -97,7 +97,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
     if (widget.card == null) {
       return _buildEmptySlot();
     }
-    
+
     return GestureDetector(
       onTap: widget.onTap,
       child: AnimatedBuilder(
@@ -121,7 +121,8 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
                   ),
                   if (widget.isHighlighted)
                     BoxShadow(
-                      color: CasinoColors.gold.withOpacity(0.6 * _highlightAnimation.value),
+                      color: CasinoColors.gold
+                          .withOpacity(0.6 * _highlightAnimation.value),
                       blurRadius: 8,
                       spreadRadius: 2,
                     ),
@@ -144,7 +145,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
   Widget _buildCardFace() {
     final card = widget.card!;
     final isHidden = widget.isHidden || card.isHidden;
-    
+
     return Container(
       width: widget.width,
       height: widget.height,
@@ -152,9 +153,8 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: widget.isHighlighted 
-              ? CasinoColors.gold 
-              : Colors.grey.shade400,
+          color:
+              widget.isHighlighted ? CasinoColors.gold : Colors.grey.shade400,
           width: widget.isHighlighted ? 2 : 1,
         ),
       ),
@@ -188,7 +188,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
               ),
             ),
           ),
-          
+
           // Center logo
           const Center(
             child: Icon(
@@ -205,7 +205,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
   Widget _buildCardFront(PlayingCard card) {
     final isRed = card.suit.isRed;
     final suitColor = isRed ? Colors.red : Colors.black;
-    
+
     return Padding(
       padding: const EdgeInsets.all(4),
       child: Stack(
@@ -236,7 +236,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
               ],
             ),
           ),
-          
+
           // Bottom-right rank and suit (upside down)
           Positioned(
             bottom: 2,
@@ -266,7 +266,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
               ),
             ),
           ),
-          
+
           // Center suit symbol(s)
           Center(
             child: _buildCenterPattern(card, suitColor),
@@ -280,7 +280,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
     if (card.isFaceCard) {
       return _buildFaceCardCenter(card, suitColor);
     }
-    
+
     if (card.rank == CardRank.ace) {
       return Text(
         card.suit.symbol,
@@ -291,13 +291,13 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
         ),
       );
     }
-    
+
     return _buildNumberCardCenter(card, suitColor);
   }
 
   Widget _buildFaceCardCenter(PlayingCard card, Color suitColor) {
     String faceSymbol;
-    
+
     switch (card.rank) {
       case CardRank.jack:
         faceSymbol = 'J';
@@ -311,7 +311,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
       default:
         faceSymbol = card.rank.symbol;
     }
-    
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -337,7 +337,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
 
   Widget _buildNumberCardCenter(PlayingCard card, Color suitColor) {
     final value = card.rank.value;
-    
+
     if (value <= 1 || value > 10) {
       return Text(
         card.suit.symbol,
@@ -347,7 +347,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
         ),
       );
     }
-    
+
     // Create pattern based on card value
     return _buildSuitPattern(value, card.suit.symbol, suitColor);
   }
@@ -355,7 +355,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
   Widget _buildSuitPattern(int count, String suitSymbol, Color color) {
     final symbols = <Widget>[];
     final symbolSize = widget.width * 0.12;
-    
+
     for (int i = 0; i < count && i < 10; i++) {
       symbols.add(
         Text(
@@ -368,7 +368,7 @@ class _PlayingCardWidgetState extends State<PlayingCardWidget>
         ),
       );
     }
-    
+
     if (count <= 3) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -444,7 +444,7 @@ class HandDisplayWidget extends StatelessWidget {
   final String? valueText;
   final double cardWidth;
   final double cardSpacing;
-  
+
   const HandDisplayWidget({
     super.key,
     required this.hand,
@@ -459,7 +459,7 @@ class HandDisplayWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Column(
       children: [
         // Label and value
@@ -467,12 +467,12 @@ class HandDisplayWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: isActive 
+              color: isActive
                   ? CasinoColors.gold.withOpacity(0.2)
                   : theme.casinoColors.glassBackground,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isActive 
+                color: isActive
                     ? CasinoColors.gold
                     : theme.casinoColors.glassBorder,
                 width: 1,
@@ -485,7 +485,7 @@ class HandDisplayWidget extends StatelessWidget {
                   Text(
                     label!,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isActive 
+                      color: isActive
                           ? CasinoColors.gold
                           : theme.casinoColors.textPrimary,
                       fontWeight: FontWeight.bold,
@@ -497,18 +497,16 @@ class HandDisplayWidget extends StatelessWidget {
                   Text(
                     valueText!,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isActive 
-                          ? CasinoColors.gold
-                          : CasinoColors.gold,
+                      color: isActive ? CasinoColors.gold : CasinoColors.gold,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
               ],
             ),
           ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Cards
         SizedBox(
           height: cardWidth * 1.4, // Card aspect ratio
@@ -516,7 +514,7 @@ class HandDisplayWidget extends StatelessWidget {
             children: hand.cards.asMap().entries.map((entry) {
               final index = entry.key;
               final card = entry.value;
-              
+
               return Positioned(
                 left: index * cardSpacing,
                 child: PlayingCardWidget(
@@ -540,7 +538,7 @@ class CardDealAnimation extends StatefulWidget {
   final Widget child;
   final bool isDealing;
   final Duration delay;
-  
+
   const CardDealAnimation({
     super.key,
     required this.child,
@@ -561,12 +559,12 @@ class _CardDealAnimationState extends State<CardDealAnimation>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, -2),
       end: Offset.zero,
@@ -574,7 +572,7 @@ class _CardDealAnimationState extends State<CardDealAnimation>
       parent: _controller,
       curve: Curves.elasticOut,
     ));
-    
+
     _scaleAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -582,7 +580,7 @@ class _CardDealAnimationState extends State<CardDealAnimation>
       parent: _controller,
       curve: Curves.elasticOut,
     ));
-    
+
     Future.delayed(widget.delay, () {
       if (mounted) _controller.forward();
     });
@@ -591,7 +589,7 @@ class _CardDealAnimationState extends State<CardDealAnimation>
   @override
   void didUpdateWidget(CardDealAnimation oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.isDealing && !oldWidget.isDealing) {
       _controller.reset();
       Future.delayed(widget.delay, () {

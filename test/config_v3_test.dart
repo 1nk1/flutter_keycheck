@@ -35,7 +35,8 @@ void main() {
     });
 
     test('should load v3 configuration from YAML', () {
-      final configFile = File(path.join(tempDir.path, '.flutter_keycheck.yaml'));
+      final configFile =
+          File(path.join(tempDir.path, '.flutter_keycheck.yaml'));
       configFile.writeAsStringSync('''
 keys: keys/expected.yaml
 path: ./src
@@ -106,7 +107,8 @@ quality_thresholds:
 
     test('should maintain backward compatibility', () {
       // Test that v2 configuration still works
-      final configFile = File(path.join(tempDir.path, '.flutter_keycheck.yaml'));
+      final configFile =
+          File(path.join(tempDir.path, '.flutter_keycheck.yaml'));
       configFile.writeAsStringSync('''
 keys: keys/expected.yaml
 path: ./

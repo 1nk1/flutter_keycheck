@@ -12,7 +12,7 @@ import '../../core/agents/agents.dart';
 class RouletteScreen extends StatelessWidget {
   final bool demoMode;
   final int startingBalance;
-  
+
   const RouletteScreen({
     super.key,
     this.demoMode = false,
@@ -30,10 +30,10 @@ class RouletteScreen extends StatelessWidget {
             name: 'Roulette Game Engine',
           ),
         );
-        
+
         final viewModel = RouletteViewModel(engine: engine);
         viewModel.initialize(startingBalance, demoMode: demoMode);
-        
+
         return viewModel;
       },
       child: const _RouletteScreenContent(),
@@ -57,14 +57,15 @@ class _RouletteScreenContent extends StatelessWidget {
             Consumer<RouletteViewModel>(
               builder: (context, viewModel, child) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: viewModel.isDemoMode 
+                    color: viewModel.isDemoMode
                         ? CasinoColors.emerald.withOpacity(0.2)
                         : CasinoColors.gold.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: viewModel.isDemoMode 
+                      color: viewModel.isDemoMode
                           ? CasinoColors.emerald
                           : CasinoColors.gold,
                       width: 1,
@@ -73,11 +74,11 @@ class _RouletteScreenContent extends StatelessWidget {
                   child: Text(
                     viewModel.isDemoMode ? 'DEMO' : 'LIVE',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: viewModel.isDemoMode 
-                          ? CasinoColors.emerald
-                          : CasinoColors.gold,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: viewModel.isDemoMode
+                              ? CasinoColors.emerald
+                              : CasinoColors.gold,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 );
               },
@@ -159,7 +160,7 @@ class _RouletteScreenContent extends StatelessWidget {
           child: Stack(
             children: [
               const _GameContent(),
-              
+
               // Overlays
               Consumer<RouletteViewModel>(
                 builder: (context, viewModel, child) {
@@ -167,10 +168,10 @@ class _RouletteScreenContent extends StatelessWidget {
                     children: [
                       // Statistics overlay
                       if (viewModel.showStatistics) _StatisticsOverlay(),
-                      
+
                       // History overlay
                       if (viewModel.showBetHistory) _HistoryOverlay(),
-                      
+
                       // Settings overlay
                       if (viewModel.showSettings) _SettingsOverlay(),
                     ],
@@ -205,17 +206,17 @@ class _RouletteScreenContent extends StatelessWidget {
               Text(
                 'Reset Statistics',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Theme.of(context).casinoColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: Theme.of(context).casinoColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 8),
               Text(
                 'This will reset all game statistics.\nAre you sure?',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).casinoColors.textSecondary,
-                ),
+                      color: Theme.of(context).casinoColors.textSecondary,
+                    ),
               ),
               const SizedBox(height: 24),
               Row(
@@ -231,7 +232,7 @@ class _RouletteScreenContent extends StatelessWidget {
                       viewModel.resetStats();
                       Navigator.pop(context);
                     },
-                    style: GlassButtonStyle.filled,
+                    style: GlassButtonStyle.primary,
                     child: const Text('Reset'),
                   ),
                 ],
@@ -253,9 +254,9 @@ class _GameContent extends StatelessWidget {
       children: [
         // Game header
         const _GameHeader(),
-        
+
         const SizedBox(height: 16),
-        
+
         // Main game area
         Expanded(
           child: Row(
@@ -265,9 +266,9 @@ class _GameContent extends StatelessWidget {
                 flex: 2,
                 child: _BettingTable(),
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // Wheel and controls
               const Expanded(
                 flex: 1,
@@ -326,7 +327,7 @@ class _StatCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
-  
+
   const _StatCard({
     required this.title,
     required this.value,
@@ -337,7 +338,7 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Column(
       children: [
         FaIcon(icon, color: color, size: 20),
@@ -370,14 +371,14 @@ class _BettingTable extends StatelessWidget {
         children: [
           // Chip selector
           const _ChipSelector(),
-          
+
           const SizedBox(height: 16),
-          
+
           // Betting grid
           Expanded(child: _BettingGrid()),
-          
+
           const SizedBox(height: 16),
-          
+
           // Outside bets
           const _OutsideBets(),
         ],
@@ -399,9 +400,9 @@ class _ChipSelector extends StatelessWidget {
             Text(
               'Select Chip Value',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: CasinoColors.gold,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: CasinoColors.gold,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 12),
             ChipSelector(
@@ -457,7 +458,7 @@ class _NumberBetButton extends StatelessWidget {
   final VoidCallback onTap;
   final bool hasChips;
   final int chipCount;
-  
+
   const _NumberBetButton({
     required this.number,
     required this.onTap,
@@ -468,7 +469,7 @@ class _NumberBetButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rouletteNumber = RouletteNumber(number);
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -523,7 +524,7 @@ class _NumberBetButton extends StatelessWidget {
       ),
     );
   }
-  
+
   Color _getBackgroundColor(RouletteColor color) {
     switch (color) {
       case RouletteColor.red:
@@ -549,12 +550,12 @@ class _OutsideBets extends StatelessWidget {
             Text(
               'Outside Bets',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: CasinoColors.gold,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: CasinoColors.gold,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 12),
-            
+
             // Color and even/odd bets
             Row(
               children: [
@@ -599,9 +600,9 @@ class _OutsideBets extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Range bets
             Row(
               children: [
@@ -639,7 +640,7 @@ class _OutsideBetButton extends StatelessWidget {
   final VoidCallback onTap;
   final bool hasChips;
   final int chipCount;
-  
+
   const _OutsideBetButton({
     required this.label,
     required this.color,
@@ -730,23 +731,24 @@ class _WheelArea extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Recent numbers
             RecentNumbersDisplay(
               recentNumbers: viewModel.getRecentNumbers(count: 8),
               highlightedNumber: viewModel.lastResult?.winningNumber.number,
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Action buttons
             Row(
               children: [
                 Expanded(
                   child: GlassButton(
-                    onPressed: viewModel.hasBets ? viewModel.clearAllBets : null,
+                    onPressed:
+                        viewModel.hasBets ? viewModel.clearAllBets : null,
                     style: GlassButtonStyle.outline,
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -762,8 +764,8 @@ class _WheelArea extends StatelessWidget {
                 Expanded(
                   flex: 2,
                   child: PlayButton(
-                    onPressed: viewModel.hasBets && !viewModel.isSpinning 
-                        ? viewModel.spin 
+                    onPressed: viewModel.hasBets && !viewModel.isSpinning
+                        ? viewModel.spin
                         : null,
                     text: viewModel.isSpinning ? 'SPINNING...' : 'SPIN',
                     icon: FontAwesomeIcons.circleNotch,
@@ -804,16 +806,20 @@ class _StatisticsOverlay extends StatelessWidget {
                         children: [
                           Text(
                             'Statistics',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              color: CasinoColors.gold,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  color: CasinoColors.gold,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           GlassButton(
                             onPressed: () => viewModel.toggleStatistics(),
                             style: GlassButtonStyle.outline,
                             width: 40,
-                            child: const FaIcon(FontAwesomeIcons.xmark, size: 16),
+                            child:
+                                const FaIcon(FontAwesomeIcons.xmark, size: 16),
                           ),
                         ],
                       ),
@@ -828,7 +834,8 @@ class _StatisticsOverlay extends StatelessWidget {
                               ),
                               const SizedBox(height: 20),
                               RecentNumbersDisplay(
-                                recentNumbers: viewModel.getRecentNumbers(count: 20),
+                                recentNumbers:
+                                    viewModel.getRecentNumbers(count: 20),
                               ),
                             ],
                           ),
@@ -868,16 +875,20 @@ class _HistoryOverlay extends StatelessWidget {
                         children: [
                           Text(
                             'Bet History',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              color: CasinoColors.gold,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  color: CasinoColors.gold,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           GlassButton(
                             onPressed: () => viewModel.toggleBetHistory(),
                             style: GlassButtonStyle.outline,
                             width: 40,
-                            child: const FaIcon(FontAwesomeIcons.xmark, size: 16),
+                            child:
+                                const FaIcon(FontAwesomeIcons.xmark, size: 16),
                           ),
                         ],
                       ),
@@ -895,7 +906,8 @@ class _HistoryOverlay extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     children: [
@@ -905,30 +917,48 @@ class _HistoryOverlay extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 12),
                                       Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             'Spin #${index + 1}',
-                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                              color: Theme.of(context).casinoColors.textPrimary,
-                                            ),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color: Theme.of(context)
+                                                      .casinoColors
+                                                      .textPrimary,
+                                                ),
                                           ),
                                           Text(
                                             '${result.timestamp.hour}:${result.timestamp.minute.toString().padLeft(2, '0')}',
-                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              color: Theme.of(context).casinoColors.textSecondary,
-                                            ),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: Theme.of(context)
+                                                      .casinoColors
+                                                      .textSecondary,
+                                                ),
                                           ),
                                         ],
                                       ),
                                     ],
                                   ),
                                   Text(
-                                    result.hasWin ? '+\$${result.totalWin}' : '-\$${result.totalLoss}',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: result.hasWin ? CasinoColors.emerald : CasinoColors.ruby,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    result.hasWin
+                                        ? '+\$${result.totalWin}'
+                                        : '-\$${result.totalLoss}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: result.hasWin
+                                              ? CasinoColors.emerald
+                                              : CasinoColors.ruby,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -970,16 +1000,20 @@ class _SettingsOverlay extends StatelessWidget {
                         children: [
                           Text(
                             'Settings',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              color: CasinoColors.gold,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  color: CasinoColors.gold,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           GlassButton(
                             onPressed: () => viewModel.toggleSettings(),
                             style: GlassButtonStyle.outline,
                             width: 40,
-                            child: const FaIcon(FontAwesomeIcons.xmark, size: 16),
+                            child:
+                                const FaIcon(FontAwesomeIcons.xmark, size: 16),
                           ),
                         ],
                       ),
@@ -1021,7 +1055,7 @@ class _SettingsSwitch extends StatelessWidget {
   final String title;
   final bool value;
   final ValueChanged<bool> onChanged;
-  
+
   const _SettingsSwitch({
     required this.title,
     required this.value,
@@ -1038,8 +1072,8 @@ class _SettingsSwitch extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).casinoColors.textPrimary,
-            ),
+                  color: Theme.of(context).casinoColors.textPrimary,
+                ),
           ),
           Switch(
             value: value,

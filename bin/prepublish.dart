@@ -191,8 +191,7 @@ Future<bool> _validatePubignore() async {
     }
 
     if (!hasRecommended) {
-      print(
-          '⚠️ .pubignore exists but might be missing recommended exclusions');
+      print('⚠️ .pubignore exists but might be missing recommended exclusions');
     }
 
     print('✅ .pubignore validation passed');

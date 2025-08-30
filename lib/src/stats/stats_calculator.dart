@@ -1,5 +1,5 @@
 /// Statistics calculation engine for Flutter KeyCheck
-/// 
+///
 /// Provides comprehensive statistical analysis including file coverage,
 /// key distribution, performance trends, and efficiency scoring.
 library;
@@ -139,27 +139,26 @@ class StatsCalculator {
   }) {
     // Calculate coverage statistics
     final coverage = _calculateCoverageStats(
-      expectedKeys, foundKeys, missingKeys, scannedFiles, keyLocations);
+        expectedKeys, foundKeys, missingKeys, scannedFiles, keyLocations);
 
-    // Calculate distribution statistics  
+    // Calculate distribution statistics
     final distribution = _calculateDistributionStats(
-      foundKeys, extraKeys, keyLocations, scannedFiles);
+        foundKeys, extraKeys, keyLocations, scannedFiles);
 
     // Calculate usage statistics
-    final usage = _calculateUsageStats(
-      foundKeys, keyUsageCounts, keyLocations);
+    final usage = _calculateUsageStats(foundKeys, keyUsageCounts, keyLocations);
 
     // Calculate performance statistics
     final performance = _calculatePerformanceStats(
-      foundKeys, scannedFiles, scanDuration, additionalMetrics);
+        foundKeys, scannedFiles, scanDuration, additionalMetrics);
 
     // Calculate quality statistics
     final quality = _calculateQualityStats(
-      expectedKeys, foundKeys, missingKeys, extraKeys, keyUsageCounts);
+        expectedKeys, foundKeys, missingKeys, extraKeys, keyUsageCounts);
 
     // Calculate trend analysis
     final trends = _calculateTrendStats(
-      expectedKeys, foundKeys, keyUsageCounts, additionalMetrics);
+        expectedKeys, foundKeys, keyUsageCounts, additionalMetrics);
 
     return KeyStatistics(
       coverage: coverage,
@@ -201,7 +200,7 @@ class StatsCalculator {
     for (final file in scannedFiles) {
       final keysInFile = keysByFile[file] ?? [];
       final coverage = _calculateFileCoverageScore(keysInFile, foundKeys);
-      
+
       fileResults.add(FileCoverageResult(
         filePath: file,
         keyCount: keysInFile.length,
@@ -214,7 +213,7 @@ class StatsCalculator {
 
     // Sort by coverage score (descending)
     fileResults.sort((a, b) => b.coverageScore.compareTo(a.coverageScore));
-    
+
     return fileResults;
   }
 
@@ -252,7 +251,7 @@ class StatsCalculator {
     // Identify hotspots and cold spots
     final sortedFiles = byFile.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    
+
     final hotspots = sortedFiles.take(5).map((e) => e.key).toList();
     final coldSpots = sortedFiles.reversed.take(5).map((e) => e.key).toList();
 
@@ -267,16 +266,19 @@ class StatsCalculator {
 
   /// Calculate coverage statistics
   static Map<String, dynamic> _calculateCoverageStats(
-      Set<String> expectedKeys, Set<String> foundKeys, Set<String> missingKeys,
-      List<String>? scannedFiles, Map<String, List<dynamic>>? keyLocations) {
-    
+      Set<String> expectedKeys,
+      Set<String> foundKeys,
+      Set<String> missingKeys,
+      List<String>? scannedFiles,
+      Map<String, List<dynamic>>? keyLocations) {
     final totalExpected = expectedKeys.length;
     final totalFound = foundKeys.length;
     final totalMissing = missingKeys.length;
-    
-    final percentage = totalExpected > 0 ? 
-        ((totalExpected - totalMissing) / totalExpected) * 100 : 100.0;
-    
+
+    final percentage = totalExpected > 0
+        ? ((totalExpected - totalMissing) / totalExpected) * 100
+        : 100.0;
+
     // Calculate file coverage
     int filesWithKeys = 0;
     if (keyLocations != null && scannedFiles != null) {
@@ -295,18 +297,20 @@ class StatsCalculator {
       'missingKeys': totalMissing,
       'filesScanned': scannedFiles?.length ?? 0,
       'filesWithKeys': filesWithKeys,
-      'fileCoverage': scannedFiles != null && scannedFiles.isNotEmpty ?
-          (filesWithKeys / scannedFiles.length) * 100 : 0.0,
+      'fileCoverage': scannedFiles != null && scannedFiles.isNotEmpty
+          ? (filesWithKeys / scannedFiles.length) * 100
+          : 0.0,
     };
   }
 
   /// Calculate distribution statistics
   static Map<String, dynamic> _calculateDistributionStats(
-      Set<String> foundKeys, Set<String> extraKeys,
-      Map<String, List<dynamic>>? keyLocations, List<String>? scannedFiles) {
-    
+      Set<String> foundKeys,
+      Set<String> extraKeys,
+      Map<String, List<dynamic>>? keyLocations,
+      List<String>? scannedFiles) {
     final totalKeys = foundKeys.length + extraKeys.length;
-    
+
     // Calculate keys per file
     final keysByFile = <String, int>{};
     if (keyLocations != null) {
@@ -320,18 +324,20 @@ class StatsCalculator {
       }
     }
 
-    final avgKeysPerFile = keysByFile.isNotEmpty ?
-        keysByFile.values.reduce((a, b) => a + b) / keysByFile.length : 0.0;
-    
-    final maxKeysPerFile = keysByFile.isNotEmpty ?
-        keysByFile.values.reduce(math.max) : 0;
-    
-    final minKeysPerFile = keysByFile.isNotEmpty ?
-        keysByFile.values.reduce(math.min) : 0;
+    final avgKeysPerFile = keysByFile.isNotEmpty
+        ? keysByFile.values.reduce((a, b) => a + b) / keysByFile.length
+        : 0.0;
+
+    final maxKeysPerFile =
+        keysByFile.isNotEmpty ? keysByFile.values.reduce(math.max) : 0;
+
+    final minKeysPerFile =
+        keysByFile.isNotEmpty ? keysByFile.values.reduce(math.min) : 0;
 
     // Calculate distribution variance
-    final variance = keysByFile.isNotEmpty ?
-        _calculateVariance(keysByFile.values.toList()) : 0.0;
+    final variance = keysByFile.isNotEmpty
+        ? _calculateVariance(keysByFile.values.toList())
+        : 0.0;
 
     return {
       'totalKeys': totalKeys,
@@ -339,15 +345,16 @@ class StatsCalculator {
       'maxKeysPerFile': maxKeysPerFile,
       'minKeysPerFile': minKeysPerFile,
       'distributionVariance': variance,
-      'extraKeysRatio': totalKeys > 0 ? (extraKeys.length / totalKeys) * 100 : 0.0,
+      'extraKeysRatio':
+          totalKeys > 0 ? (extraKeys.length / totalKeys) * 100 : 0.0,
     };
   }
 
   /// Calculate usage statistics
   static Map<String, dynamic> _calculateUsageStats(
-      Set<String> foundKeys, Map<String, int>? keyUsageCounts,
+      Set<String> foundKeys,
+      Map<String, int>? keyUsageCounts,
       Map<String, List<dynamic>>? keyLocations) {
-    
     if (keyUsageCounts == null || keyUsageCounts.isEmpty) {
       return {
         'averageUsage': 0.0,
@@ -380,24 +387,32 @@ class StatsCalculator {
 
   /// Calculate performance statistics
   static Map<String, dynamic> _calculatePerformanceStats(
-      Set<String> foundKeys, List<String>? scannedFiles, Duration? scanDuration,
+      Set<String> foundKeys,
+      List<String>? scannedFiles,
+      Duration? scanDuration,
       Map<String, dynamic>? additionalMetrics) {
-    
-    final keysPerSecond = scanDuration != null && scanDuration.inMilliseconds > 0 ?
-        (foundKeys.length * 1000) / scanDuration.inMilliseconds : 0.0;
-    
-    final filesPerSecond = scanDuration != null && scanDuration.inMilliseconds > 0 && scannedFiles != null ?
-        (scannedFiles.length * 1000) / scanDuration.inMilliseconds : 0.0;
+    final keysPerSecond =
+        scanDuration != null && scanDuration.inMilliseconds > 0
+            ? (foundKeys.length * 1000) / scanDuration.inMilliseconds
+            : 0.0;
+
+    final filesPerSecond = scanDuration != null &&
+            scanDuration.inMilliseconds > 0 &&
+            scannedFiles != null
+        ? (scannedFiles.length * 1000) / scanDuration.inMilliseconds
+        : 0.0;
 
     // Performance score based on scanning efficiency
     double performanceScore = 70.0; // Base score
-    
+
     if (keysPerSecond > 1000) {
       performanceScore += 20.0;
-    } else if (keysPerSecond > 500) performanceScore += 15.0;
-    else if (keysPerSecond > 100) performanceScore += 10.0;
+    } else if (keysPerSecond > 500)
+      performanceScore += 15.0;
+    else if (keysPerSecond > 100)
+      performanceScore += 10.0;
     else if (keysPerSecond > 50) performanceScore += 5.0;
-    
+
     if (filesPerSecond > 10) {
       performanceScore += 10.0;
     } else if (filesPerSecond > 5) performanceScore += 5.0;
@@ -413,21 +428,26 @@ class StatsCalculator {
 
   /// Calculate quality statistics
   static Map<String, dynamic> _calculateQualityStats(
-      Set<String> expectedKeys, Set<String> foundKeys, Set<String> missingKeys,
-      Set<String> extraKeys, Map<String, int>? keyUsageCounts) {
-    
+      Set<String> expectedKeys,
+      Set<String> foundKeys,
+      Set<String> missingKeys,
+      Set<String> extraKeys,
+      Map<String, int>? keyUsageCounts) {
     // Base quality score
     double qualityScore = 50.0;
-    
+
     // Coverage component (40%)
-    final coverage = expectedKeys.isEmpty ? 100.0 :
-        ((expectedKeys.length - missingKeys.length) / expectedKeys.length) * 100;
+    final coverage = expectedKeys.isEmpty
+        ? 100.0
+        : ((expectedKeys.length - missingKeys.length) / expectedKeys.length) *
+            100;
     qualityScore += (coverage * 0.4);
-    
+
     // Consistency component (30%)
-    final consistencyScore = _calculateConsistencyScore(foundKeys, keyUsageCounts);
+    final consistencyScore =
+        _calculateConsistencyScore(foundKeys, keyUsageCounts);
     qualityScore += (consistencyScore * 0.3);
-    
+
     // Organization component (30%)
     final organizationScore = _calculateOrganizationScore(foundKeys, extraKeys);
     qualityScore += (organizationScore * 0.3);
@@ -437,67 +457,82 @@ class StatsCalculator {
       'coverage': coverage,
       'consistency': consistencyScore,
       'organization': organizationScore,
-      'reliability': _calculateReliabilityScore(expectedKeys, foundKeys, missingKeys),
+      'reliability':
+          _calculateReliabilityScore(expectedKeys, foundKeys, missingKeys),
     };
   }
 
   /// Calculate trend statistics
   static Map<String, dynamic> _calculateTrendStats(
-      Set<String> expectedKeys, Set<String> foundKeys,
-      Map<String, int>? keyUsageCounts, Map<String, dynamic>? additionalMetrics) {
-    
+      Set<String> expectedKeys,
+      Set<String> foundKeys,
+      Map<String, int>? keyUsageCounts,
+      Map<String, dynamic>? additionalMetrics) {
     // Placeholder for trend analysis - would need historical data
     return {
       'growthRate': 0.0,
       'improvementTrend': 'stable',
       'keyTurnover': 0.0,
       'stabilityScore': 85.0,
-      'predictedCoverage': expectedKeys.isEmpty ? 100.0 :
-          ((expectedKeys.length - (foundKeys.length - expectedKeys.intersection(foundKeys).length)) / expectedKeys.length) * 100,
+      'predictedCoverage': expectedKeys.isEmpty
+          ? 100.0
+          : ((expectedKeys.length -
+                      (foundKeys.length -
+                          expectedKeys.intersection(foundKeys).length)) /
+                  expectedKeys.length) *
+              100,
     };
   }
 
   /// Calculate file coverage score for individual file
-  static double _calculateFileCoverageScore(List<String> keysInFile, Set<String> allFoundKeys) {
+  static double _calculateFileCoverageScore(
+      List<String> keysInFile, Set<String> allFoundKeys) {
     if (keysInFile.isEmpty) return 0.0;
     if (allFoundKeys.isEmpty) return 0.0;
-    
-    final validKeys = keysInFile.where((key) => allFoundKeys.contains(key)).length;
+
+    final validKeys =
+        keysInFile.where((key) => allFoundKeys.contains(key)).length;
     return (validKeys / keysInFile.length) * 100;
   }
 
   /// Check if file is a test file
   static bool _isTestFile(String filePath) {
-    return filePath.contains('/test/') || 
-           filePath.contains('_test.dart') ||
-           filePath.contains('/integration_test/');
+    return filePath.contains('/test/') ||
+        filePath.contains('_test.dart') ||
+        filePath.contains('/integration_test/');
   }
 
   /// Check if file uses KeyConstants pattern
   static bool _hasKeyConstants(String filePath, List<String> keys) {
     return keys.any((key) => key.contains('KeyConstants')) ||
-           filePath.contains('key_constants.dart') ||
-           filePath.contains('keys.dart');
+        filePath.contains('key_constants.dart') ||
+        filePath.contains('keys.dart');
   }
 
   /// Categorize key by naming pattern
   static String _categorizeKey(String key) {
     if (key.toLowerCase().contains('button')) return 'Buttons';
-    if (key.toLowerCase().contains('field') || key.toLowerCase().contains('input')) return 'Input Fields';
-    if (key.toLowerCase().contains('text') || key.toLowerCase().contains('label')) return 'Text Elements';
-    if (key.toLowerCase().contains('screen') || key.toLowerCase().contains('page')) return 'Screens';
-    if (key.toLowerCase().contains('dialog') || key.toLowerCase().contains('modal')) return 'Dialogs';
-    if (key.toLowerCase().contains('menu') || key.toLowerCase().contains('nav')) return 'Navigation';
+    if (key.toLowerCase().contains('field') ||
+        key.toLowerCase().contains('input')) return 'Input Fields';
+    if (key.toLowerCase().contains('text') ||
+        key.toLowerCase().contains('label')) return 'Text Elements';
+    if (key.toLowerCase().contains('screen') ||
+        key.toLowerCase().contains('page')) return 'Screens';
+    if (key.toLowerCase().contains('dialog') ||
+        key.toLowerCase().contains('modal')) return 'Dialogs';
+    if (key.toLowerCase().contains('menu') || key.toLowerCase().contains('nav'))
+      return 'Navigation';
     if (key.toLowerCase().contains('icon')) return 'Icons';
     if (key.toLowerCase().contains('form')) return 'Forms';
-    if (key.toLowerCase().contains('list') || key.toLowerCase().contains('item')) return 'Lists';
+    if (key.toLowerCase().contains('list') ||
+        key.toLowerCase().contains('item')) return 'Lists';
     return 'Other';
   }
 
   /// Calculate variance for a list of numbers
   static double _calculateVariance(List<int> values) {
     if (values.isEmpty) return 0.0;
-    
+
     final mean = values.reduce((a, b) => a + b) / values.length;
     final squaredDiffs = values.map((value) => math.pow(value - mean, 2));
     return squaredDiffs.reduce((a, b) => a + b) / values.length;
@@ -506,99 +541,110 @@ class StatsCalculator {
   /// Calculate usage efficiency score
   static double _calculateUsageEfficiency(List<int> usages) {
     if (usages.isEmpty) return 0.0;
-    
+
     final singleUse = usages.where((u) => u == 1).length;
     final multiUse = usages.where((u) => u > 1).length;
     final total = usages.length;
-    
+
     // Ideal scenario: most keys used once (clean automation)
     final efficiency = total > 0 ? (singleUse / total) * 100 : 0.0;
-    
+
     // Penalize excessive duplication
     if (multiUse > total * 0.3) return efficiency * 0.7;
     if (multiUse > total * 0.2) return efficiency * 0.85;
-    
+
     return efficiency;
   }
 
   /// Calculate consistency score based on naming patterns
-  static double _calculateConsistencyScore(Set<String> foundKeys, Map<String, int>? keyUsageCounts) {
+  static double _calculateConsistencyScore(
+      Set<String> foundKeys, Map<String, int>? keyUsageCounts) {
     if (foundKeys.isEmpty) return 0.0;
-    
+
     double score = 50.0; // Base score
-    
+
     // Check naming pattern consistency
-    final camelCase = foundKeys.where((k) => k.contains(RegExp(r'[a-z][A-Z]'))).length;
+    final camelCase =
+        foundKeys.where((k) => k.contains(RegExp(r'[a-z][A-Z]'))).length;
     final snakeCase = foundKeys.where((k) => k.contains('_')).length;
     final total = foundKeys.length;
-    
+
     final dominantPattern = math.max(camelCase, snakeCase);
     final consistency = dominantPattern / total;
-    
+
     score += consistency * 30.0; // Up to 30 points for consistency
-    
+
     // Check usage pattern consistency
     if (keyUsageCounts != null) {
       final duplicates = keyUsageCounts.values.where((v) => v > 1).length;
       final duplicateRatio = duplicates / keyUsageCounts.length;
-      
+
       if (duplicateRatio < 0.1) {
         score += 20.0;
-      } else if (duplicateRatio < 0.2) score += 10.0;
-      else score += 5.0;
+      } else if (duplicateRatio < 0.2)
+        score += 10.0;
+      else
+        score += 5.0;
     }
-    
+
     return math.min(score, 100.0);
   }
 
   /// Calculate organization score
-  static double _calculateOrganizationScore(Set<String> foundKeys, Set<String> extraKeys) {
+  static double _calculateOrganizationScore(
+      Set<String> foundKeys, Set<String> extraKeys) {
     if (foundKeys.isEmpty) return 0.0;
-    
+
     double score = 60.0; // Base score
-    
+
     // Penalize extra keys (noise)
     final total = foundKeys.length + extraKeys.length;
     if (total > 0) {
       final extraRatio = extraKeys.length / total;
       if (extraRatio < 0.05) {
         score += 20.0;
-      } else if (extraRatio < 0.1) score += 15.0;
-      else if (extraRatio < 0.2) score += 10.0;
-      else score -= 10.0;
+      } else if (extraRatio < 0.1)
+        score += 15.0;
+      else if (extraRatio < 0.2)
+        score += 10.0;
+      else
+        score -= 10.0;
     }
-    
+
     // Check for semantic organization
     final categories = foundKeys.map(_categorizeKey).toSet();
     if (categories.length > 3) {
       score += 20.0; // Good categorization
     } else if (categories.length > 1) score += 10.0;
-    
+
     return math.min(score, 100.0);
   }
 
   /// Calculate reliability score
-  static double _calculateReliabilityScore(
-      Set<String> expectedKeys, Set<String> foundKeys, Set<String> missingKeys) {
-    
+  static double _calculateReliabilityScore(Set<String> expectedKeys,
+      Set<String> foundKeys, Set<String> missingKeys) {
     if (expectedKeys.isEmpty) return 100.0;
-    
-    final coverage = ((expectedKeys.length - missingKeys.length) / expectedKeys.length) * 100;
-    
+
+    final coverage =
+        ((expectedKeys.length - missingKeys.length) / expectedKeys.length) *
+            100;
+
     // High reliability requires high coverage
     if (coverage >= 95.0) return 95.0;
     if (coverage >= 90.0) return 85.0;
     if (coverage >= 80.0) return 75.0;
     if (coverage >= 70.0) return 65.0;
-    
+
     return coverage * 0.6; // Scale down for low coverage
   }
 
   /// Estimate memory usage
-  static double _estimateMemoryUsage(Set<String> foundKeys, List<String>? scannedFiles) {
+  static double _estimateMemoryUsage(
+      Set<String> foundKeys, List<String>? scannedFiles) {
     // Rough estimation based on key count and file count
     final keyMemory = foundKeys.length * 0.1; // ~0.1KB per key
-    final fileMemory = (scannedFiles?.length ?? 0) * 0.5; // ~0.5KB per file processed
+    final fileMemory =
+        (scannedFiles?.length ?? 0) * 0.5; // ~0.5KB per file processed
     return (keyMemory + fileMemory) / 1024; // Convert to MB
   }
 }

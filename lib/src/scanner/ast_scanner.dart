@@ -304,8 +304,10 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
         analysis.widgetCount++;
 
         // Check for key parameter
-        final keyArgs = node.argumentList.arguments.whereType<NamedExpression>()
-            .where((arg) => arg.name.label.name == 'key').toList();
+        final keyArgs = node.argumentList.arguments
+            .whereType<NamedExpression>()
+            .where((arg) => arg.name.label.name == 'key')
+            .toList();
         final keyArg = keyArgs.isNotEmpty ? keyArgs.first : null;
 
         if (keyArg != null) {

@@ -5,8 +5,10 @@ import 'package:flutter_keycheck/src/cli/cli_runner.dart';
 import 'package:flutter_keycheck/src/commands/base_command_v3.dart';
 import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 import 'package:flutter_keycheck/src/models/scan_result.dart';
+import 'package:flutter_keycheck/src/models/scan_snapshot.dart' as snapshot;
 import 'package:flutter_keycheck/src/reporter/reporter_v3.dart';
-import 'package:flutter_keycheck/src/reporter/html_reporter_adapter.dart';
+import 'package:flutter_keycheck/src/reporter/premium_dashboard_reporter.dart';
+import 'package:flutter_keycheck/src/reporter/premium_dashboard_adapter.dart';
 import 'package:path/path.dart' as path;
 
 /// Scan command - builds current snapshot of keys
@@ -63,10 +65,9 @@ class ScanCommandV3 extends BaseCommandV3 {
 
   @override
   ReporterV3 getReporter(String? format) {
-    // Use premium HTML reporter with adapter
+    // Use premium dashboard reporter for HTML
     if (format == 'html') {
-      final darkTheme = argResults!['light-html'] != true;
-      return HtmlReporterAdapter(darkTheme: darkTheme);
+      return PremiumDashboardAdapter();
     }
     // Otherwise use default reporter
     return super.getReporter(format);
@@ -176,12 +177,12 @@ class ScanCommandV3 extends BaseCommandV3 {
 
   Future<void> _saveSnapshot(
       ScanResult result, File file, String projectPath) async {
-    final snapshot = ScanSnapshot(
+    final snap = snapshot.ScanSnapshot(
       timestamp: DateTime.now(),
       projectPath: projectPath,
       scanResult: result,
     );
 
-    await file.writeAsString(snapshot.toJson());
+    await file.writeAsString(snap.toJson());
   }
 }

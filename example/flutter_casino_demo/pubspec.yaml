@@ -1,0 +1,56 @@
+name: flutter_casino_demo
+description: "Premium interactive casino demo with glassmorphism UI"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management & Architecture
+  provider: ^6.1.1
+  get_it: ^7.6.4
+  injectable: ^2.3.2
+  
+  # UI & Animations
+  flutter_animate: ^4.5.0
+  lottie: ^3.0.0
+  flutter_svg: ^2.0.10+1
+  google_fonts: ^6.1.0
+  
+  # Utilities
+  intl: ^0.19.0
+  shared_preferences: ^2.2.2
+  collection: ^1.18.0
+  uuid: ^4.2.1
+  
+  # Sound & Haptics
+  audioplayers: ^5.2.1
+  haptic_feedback: ^0.4.1
+  
+  # Icons
+  cupertino_icons: ^1.0.8
+  font_awesome_flutter: ^10.6.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.7
+  injectable_generator: ^2.4.1
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/sounds/
+    - assets/animations/

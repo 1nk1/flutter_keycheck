@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flutter KeyCheck Report - V2 Original</title>
+  <style>
+    /* V2 Original - Full Glassmorphism Design */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+      color: #fff;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    /* Animated background particles */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      animation: float 20s infinite ease-in-out;
+    }
+    
+    body::before {
+      top: -200px;
+      left: -200px;
+      animation-delay: 0s;
+    }
+    
+    body::after {
+      bottom: -200px;
+      right: -200px;
+      animation-delay: 10s;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(100px, 100px) rotate(120deg); }
+      66% { transform: translate(-100px, 100px) rotate(240deg); }
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .header {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 30px;
+      padding: 3rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+      animation: shimmer 3s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .title {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(255,255,255,0.5);
+    }
+    
+    .subtitle {
+      opacity: 0.9;
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.9);
+    }
+    
+    .version-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    
+    .stat-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-radius: 25px;
+      padding: 2rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at top right, rgba(255,255,255,0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    }
+    
+    .stat-card:hover::before {
+      opacity: 1;
+    }
+    
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+    
+    .stat-value {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #fff, #f0f0f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .stat-label {
+      opacity: 0.8;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    
+    .chart-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-radius: 25px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .chart-title {
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+    
+    canvas {
+      max-width: 100%;
+      height: 350px;
+      background: rgba(0,0,0,0.1);
+      border-radius: 15px;
+      padding: 1rem;
+    }
+    
+    .keys-table {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-radius: 25px;
+      padding: 2rem;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .table-header {
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+    
+    .table-wrapper {
+      overflow-x: auto;
+      margin: -1rem;
+      padding: 1rem;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    
+    th {
+      background: rgba(255,255,255,0.1);
+      padding: 1.2rem;
+      text-align: left;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.9);
+      border-bottom: 2px solid rgba(255,255,255,0.2);
+    }
+    
+    td {
+      padding: 1rem 1.2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.2s;
+    }
+    
+    tr:hover td {
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .badge-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+    }
+    
+    .badge-warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+    }
+    
+    .badge-error {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+    }
+    
+    .code {
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+      background: rgba(0,0,0,0.2);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 4rem;
+      padding: 2rem;
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">Flutter KeyCheck Report</h1>
+      <p class="subtitle">Comprehensive Key Analysis & Validation</p>
+      <span class="version-badge">V2 Original - Full Glassmorphism</span>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-value">15</div>
+        <div class="stat-label">Expected Keys</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value">11</div>
+        <div class="stat-label">Found Keys</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-value">4</div>
+        <div class="stat-label">Missing Keys</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">➕</div>
+        <div class="stat-value">3</div>
+        <div class="stat-label">Extra Keys</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value">73.3%</div>
+        <div class="stat-label">Coverage</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📁</div>
+        <div class="stat-value">10</div>
+        <div class="stat-label">Files Scanned</div>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <h2 class="chart-title">📈 Key Distribution Analysis</h2>
+      <canvas id="chart"></canvas>
+      <script>
+        // In V2, full Canvas-based charts would be rendered here
+        const canvas = document.getElementById('chart');
+        const ctx = canvas.getContext('2d');
+        
+        // Draw simple chart placeholder
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.font = '20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Canvas Chart Visualization', canvas.width/2, canvas.height/2);
+        ctx.font = '14px sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fillText('(Full implementation includes bar charts, pie charts, and line graphs)', canvas.width/2, canvas.height/2 + 30);
+      </script>
+    </div>
+    
+    <div class="keys-table">
+      <h2 class="table-header">🔑 Key Details</h2>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Key Name</th>
+              <th>Status</th>
+              <th>Usage Count</th>
+              <th>Locations</th>
+              <th>Package</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="code">loginButton</span></td>
+              <td><span class="badge badge-success">Found</span></td>
+              <td>1</td>
+              <td>login_screen.dart:45</td>
+              <td>app</td>
+            </tr>
+            <tr>
+              <td><span class="code">emailField</span></td>
+              <td><span class="badge badge-success">Found</span></td>
+              <td>2</td>
+              <td>2 locations</td>
+              <td>app</td>
+            </tr>
+            <tr>
+              <td><span class="code">passwordField</span></td>
+              <td><span class="badge badge-success">Found</span></td>
+              <td>1</td>
+              <td>login_screen.dart:78</td>
+              <td>app</td>
+            </tr>
+            <tr>
+              <td><span class="code">cancelButton</span></td>
+              <td><span class="badge badge-error">Missing</span></td>
+              <td>0</td>
+              <td>Not found</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><span class="code">extraKey1</span></td>
+              <td><span class="badge badge-warning">Extra</span></td>
+              <td>1</td>
+              <td>debug_screen.dart:12</td>
+              <td>app</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>Generated by Flutter KeyCheck v2.0 • Full Glassmorphism Design</p>
+      <p>Report includes Canvas charts, animations, and premium visual effects</p>
+    </div>
+  </div>
+</body>
+</html>

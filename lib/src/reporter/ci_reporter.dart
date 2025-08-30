@@ -144,7 +144,7 @@ class CIReporter extends BaseReporter {
     }
     
     buffer.writeln(_colorize('╭${'─' * 58}╮', AnsiColors.blue));
-    buffer.writeln(_colorize('│' + _center('🔑 FLUTTER KEYCHECK REPORT', 58) + '│', AnsiColors.blue));
+    buffer.writeln(_colorize('│${_center('🔑 FLUTTER KEYCHECK REPORT', 58)}│', AnsiColors.blue));
     buffer.writeln(_colorize('╰${'─' * 58}╯', AnsiColors.blue));
     buffer.writeln();
     
@@ -243,11 +243,7 @@ class CIReporter extends BaseReporter {
       final progressBar = _createProgressBar(score, 20);
       
       buffer.writeln(
-        '  ${enableEmojis ? statusIcon : (passed ? "PASS" : "FAIL")} ' +
-        _colorize(_padRight(name, 15), AnsiColors.white) +
-        _colorize('${score.toStringAsFixed(1)}%'.padLeft(6), statusColor) +
-        ' $progressBar ' +
-        _colorize('(threshold: ${threshold.toStringAsFixed(0)}%)', AnsiColors.dim)
+        '  ${enableEmojis ? statusIcon : (passed ? "PASS" : "FAIL")} ${_colorize(_padRight(name, 15), AnsiColors.white)}${_colorize('${score.toStringAsFixed(1)}%'.padLeft(6), statusColor)} $progressBar ${_colorize('(threshold: ${threshold.toStringAsFixed(0)}%)', AnsiColors.dim)}'
       );
     }
     
@@ -355,8 +351,7 @@ class CIReporter extends BaseReporter {
     
     final performanceScore = stats.performance['score'] ?? 0.0;
     final performanceColor = _getPerformanceColor(performanceScore);
-    buffer.writeln('  ${_colorize('Performance Score:', AnsiColors.white)} ' + 
-                   _colorize('${performanceScore.toStringAsFixed(1)}/100', performanceColor));
+    buffer.writeln('  ${_colorize('Performance Score:', AnsiColors.white)} ${_colorize('${performanceScore.toStringAsFixed(1)}/100', performanceColor)}');
     
     buffer.writeln();
   }
@@ -396,9 +391,9 @@ class CIReporter extends BaseReporter {
         'All validation checks passed! 🎉' : 
         'Issues found - see details above 🔧';
     
-    buffer.writeln(_colorize('│' + _center(enableEmojis ? '$statusEmoji $status' : status, 58) + '│', 
+    buffer.writeln(_colorize('│${_center(enableEmojis ? '$statusEmoji $status' : status, 58)}│', 
                    statusColor + AnsiColors.bold));
-    buffer.writeln(_colorize('│' + _center(message, 58) + '│', AnsiColors.white));
+    buffer.writeln(_colorize('│${_center(message, 58)}│', AnsiColors.white));
     buffer.writeln(_colorize('╰${'─' * 58}╯', AnsiColors.blue));
     
     // Platform-specific closing
@@ -557,7 +552,7 @@ class CIReporter extends BaseReporter {
 
   /// Create GitLab CI collapsible section
   String _gitlabSection(String id, String title) {
-    return '\n\e[0Ksection_start:${DateTime.now().millisecondsSinceEpoch}:$id\r\e[0K$title';
+    return '\ne[0Ksection_start:${DateTime.now().millisecondsSinceEpoch}:$id\re[0K$title';
   }
 
   /// Detect CI platform from environment

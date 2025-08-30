@@ -9,7 +9,7 @@ void main() {
     test('should create correct reporter types', () {
       expect(ReporterFactory.create('human'), isA<HumanReporter>());
       expect(ReporterFactory.create('json'), isA<JsonReporter>());
-      expect(ReporterFactory.create('html'), isA<HtmlReporter>());
+      expect(ReporterFactory.create('html'), isA<OptimizedHtmlReporter>());
       expect(ReporterFactory.create('markdown'), isA<MarkdownReporter>());
       expect(ReporterFactory.create('junit'), isA<JUnitReporter>());
       expect(ReporterFactory.create('unknown'), isA<HumanReporter>()); // Default

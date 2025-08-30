@@ -504,11 +504,11 @@ class MetricsCollector {
     final recommendations = <String>[];
     
     if (_missingKeys > 0) {
-      recommendations.add('Add ${_missingKeys} missing keys to improve coverage');
+      recommendations.add('Add $_missingKeys missing keys to improve coverage');
     }
     
     if (_duplicateKeys > 0) {
-      recommendations.add('Review ${_duplicateKeys} duplicate keys for optimization');
+      recommendations.add('Review $_duplicateKeys duplicate keys for optimization');
     }
     
     if (_errors.isNotEmpty) {

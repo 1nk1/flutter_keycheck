@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flutter KeyCheck Report - /home/adj/projects/flutter_keycheck</title>
+    <style>
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Light theme colors */
+    --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --bg-secondary: rgba(255, 255, 255, 0.25);
+    --bg-glass: rgba(255, 255, 255, 0.15);
+    --bg-card: rgba(255, 255, 255, 0.1);
+    --text-primary: #2d3748;
+    --text-secondary: #4a5568;
+    --text-muted: #718096;
+    --border-color: rgba(255, 255, 255, 0.18);
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --success-color: #48bb78;
+    --warning-color: #ed8936;
+    --error-color: #f56565;
+    --info-color: #4299e1;
+    
+    /* Dark theme colors */
+    --dark-bg-primary: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    --dark-bg-secondary: rgba(45, 55, 72, 0.95);
+    --dark-bg-glass: rgba(45, 55, 72, 0.25);
+    --dark-bg-card: rgba(45, 55, 72, 0.15);
+    --dark-text-primary: #f7fafc;
+    --dark-text-secondary: #e2e8f0;
+    --dark-text-muted: #a0aec0;
+    --dark-border-color: rgba(255, 255, 255, 0.1);
+    --dark-shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    min-height: 100vh;
+    transition: all 0.3s ease;
+}
+
+.dark-theme {
+    --bg-primary: var(--dark-bg-primary);
+    --bg-secondary: var(--dark-bg-secondary);
+    --bg-glass: var(--dark-bg-glass);
+    --bg-card: var(--dark-bg-card);
+    --text-primary: var(--dark-text-primary);
+    --text-secondary: var(--dark-text-secondary);
+    --text-muted: var(--dark-text-muted);
+    --border-color: var(--dark-border-color);
+    --shadow-color: var(--dark-shadow-color);
+}
+
+.app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Glassmorphism components */
+.glass-card {
+    background: var(--bg-glass);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px var(--shadow-color);
+    padding: 24px;
+    margin-bottom: 24px;
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px var(--shadow-color);
+}
+
+.glass-header {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border-radius: 25px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px var(--shadow-color);
+    padding: 32px;
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+/* Header styles */
+.header-title {
+    font-size: 2.5em;
+    font-weight: 700;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header-subtitle {
+    font-size: 1.2em;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1.1em;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+}
+
+.status-passed {
+    background: linear-gradient(135deg, rgba(72, 187, 120, 0.2), rgba(72, 187, 120, 0.1));
+    color: var(--success-color);
+}
+
+.status-failed {
+    background: linear-gradient(135deg, rgba(245, 101, 101, 0.2), rgba(245, 101, 101, 0.1));
+    color: var(--error-color);
+}
+
+/* Dashboard grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.metric-card {
+    background: var(--bg-glass);
+    backdrop-filter: blur(15px);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.metric-card:hover::before {
+    opacity: 1;
+}
+
+.metric-value {
+    font-size: 2.5em;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.metric-label {
+    font-size: 0.95em;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.metric-change {
+    font-size: 0.85em;
+    margin-top: 8px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.change-positive {
+    background: rgba(72, 187, 120, 0.1);
+    color: var(--success-color);
+}
+
+.change-negative {
+    background: rgba(245, 101, 101, 0.1);
+    color: var(--error-color);
+}
+
+/* Progress bars */
+.progress-container {
+    margin: 16px 0;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.9em;
+    color: var(--text-secondary);
+}
+
+.progress-bar {
+    height: 8px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px var(--shadow-color);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 10px;
+    transition: width 0.8s ease;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Quality gates */
+.quality-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.quality-gate {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.quality-gate:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+.gate-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.gate-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.gate-status {
+    font-size: 1.2em;
+}
+
+.gate-score {
+    font-size: 1.5em;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+/* Tables */
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+.data-table th,
+.data-table td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+    background: var(--bg-card);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.data-table tbody tr {
+    background: var(--bg-glass);
+    transition: background-color 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+    background: var(--bg-card);
+}
+
+/* Charts container */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: 24px 0;
+    padding: 16px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.chart-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+/* Issues styling */
+.issue-item {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.issue-critical {
+    border-left-color: var(--error-color);
+    background: rgba(245, 101, 101, 0.05);
+}
+
+.issue-warning {
+    border-left-color: var(--warning-color);
+    background: rgba(237, 137, 54, 0.05);
+}
+
+.issue-info {
+    border-left-color: var(--info-color);
+    background: rgba(66, 153, 225, 0.05);
+}
+
+.issue-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.issue-description {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+/* Recommendations */
+.recommendation-item {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--info-color);
+    transition: all 0.3s ease;
+}
+
+.recommendation-item:hover {
+    transform: translateX(4px);
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 32px;
+    margin-top: 48px;
+    background: var(--bg-glass);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+/* Theme toggle */
+.theme-toggle {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: var(--bg-glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .app-container {
+        padding: 16px;
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .header-title {
+        font-size: 2em;
+    }
+    
+    .glass-card {
+        padding: 16px;
+    }
+    
+    .quality-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .metric-value {
+        font-size: 2em;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 12px 8px;
+        font-size: 0.9em;
+    }
+}
+
+/* Utility classes */
+.text-success { color: var(--success-color); }
+.text-warning { color: var(--warning-color); }
+.text-error { color: var(--error-color); }
+.text-info { color: var(--info-color); }
+.text-muted { color: var(--text-muted); }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+.d-flex { display: flex; }
+.align-items-center { align-items: center; }
+.justify-content-between { justify-content: space-between; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 1rem; }
+</style>
+
+</head>
+<body class="dark-theme" data-theme="dark">
+    <div class="app-container">
+        <div class="glass-header">
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-icon">🌙</span>
+    </div>
+    
+    <h1 class="header-title">🔑 Flutter KeyCheck Report</h1>
+    <p class="header-subtitle">/home/adj/projects/flutter_keycheck</p>
+    <p class="text-muted mb-3">Generated on 2025-08-30T18:21:11.761002</p>
+    
+    <div class="status-badge status-passed">
+        <span>✅</span>
+        <span>All Checks Passed</span>
+    </div>
+    
+    <div class="progress-container">
+        <div class="progress-label">
+            <span>Overall Quality Score</span>
+            <span>83.5/100</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 83.52%"></div>
+        </div>
+    </div>
+</div>
+
+        <div class="glass-card">
+    <h2 class="mb-3">📊 Dashboard Overview</h2>
+    
+    <div class="dashboard-grid">
+        <div class="metric-card">
+            <div class="metric-value">100.0%</div>
+            <div class="metric-label">Test Coverage</div>
+            <div class="metric-change change-positive">
+                📈 Good
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-value">0</div>
+            <div class="metric-label">Expected Keys</div>
+            <div class="metric-change change-positive">📋 Total Target</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-value">15</div>
+            <div class="metric-label">Found Keys</div>
+            <div class="metric-change change-positive">
+                ✅ Complete
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-value">0</div>
+            <div class="metric-label">Missing Keys</div>
+            <div class="metric-change change-positive">
+                🎯 Perfect
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-value">84</div>
+            <div class="metric-label">Quality Score</div>
+            <div class="metric-change change-positive">
+                ⭐ Very Good
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-value">200ms</div>
+            <div class="metric-label">Scan Time</div>
+            <div class="metric-change change-positive">⚡ Performance</div>
+        </div>
+    </div>
+</div>
+
+        <div class="glass-card">
+    <h2 class="mb-3">🎯 Quality Gates</h2>
+    <div class="quality-grid">
+        <div class="quality-gate">
+    <div class="gate-header">
+        <span class="gate-name">🎯 Coverage</span>
+        <span class="gate-status">✅</span>
+    </div>
+    <div class="gate-score text-success">
+        100.0%
+    </div>
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: 100.0%"></div>
+    </div>
+    <div class="text-muted text-center" style="font-size: 0.8em; margin-top: 8px;">
+        Threshold: 80%
+    </div>
+</div>
+
+<div class="quality-gate">
+    <div class="gate-header">
+        <span class="gate-name">📁 Organization</span>
+        <span class="gate-status">✅</span>
+    </div>
+    <div class="gate-score text-success">
+        85.0%
+    </div>
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: 85.0%"></div>
+    </div>
+    <div class="text-muted text-center" style="font-size: 0.8em; margin-top: 8px;">
+        Threshold: 70%
+    </div>
+</div>
+
+<div class="quality-gate">
+    <div class="gate-header">
+        <span class="gate-name">🔄 Consistency</span>
+        <span class="gate-status">✅</span>
+    </div>
+    <div class="gate-score text-success">
+        77.6%
+    </div>
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: 77.6%"></div>
+    </div>
+    <div class="text-muted text-center" style="font-size: 0.8em; margin-top: 8px;">
+        Threshold: 75%
+    </div>
+</div>
+
+<div class="quality-gate">
+    <div class="gate-header">
+        <span class="gate-name">⚡ Efficiency</span>
+        <span class="gate-status">❌</span>
+    </div>
+    <div class="gate-score text-error">
+        40.0%
+    </div>
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: 40.0%"></div>
+    </div>
+    <div class="text-muted text-center" style="font-size: 0.8em; margin-top: 8px;">
+        Threshold: 70%
+    </div>
+</div>
+
+<div class="quality-gate">
+    <div class="gate-header">
+        <span class="gate-name">🔧 Maintainability</span>
+        <span class="gate-status">✅</span>
+    </div>
+    <div class="gate-score text-success">
+        100.0%
+    </div>
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: 100.0%"></div>
+    </div>
+    <div class="text-muted text-center" style="font-size: 0.8em; margin-top: 8px;">
+        Threshold: 65%
+    </div>
+</div>
+
+    </div>
+</div>
+
+        <div class="glass-card">
+    <h2 class="mb-3">🚨 Issues Analysis</h2>
+    <h3 class="text-warning mb-2">🟡 Warning: Extra Keys (15)</h3>
+<div class="issue-item issue-warning">
+    <div class="issue-header">
+        <span>⚠️</span>
+        <span>slotsGameCard</span>
+    </div>
+    <div class="issue-description">This key was found but is not in the expected keys list</div>
+</div>
+
+<div class="issue-item issue-warning">
+    <div class="issue-header">
+        <span>⚠️</span>
+        <span>rouletteGameCard</span>
+    </div>
+    <div class="issue-description">This key was found but is not in the expected keys list</div>
+</div>
+
+<div class="issue-item issue-warning">
+    <div class="issue-header">
+        <span>⚠️</span>
+        <span>blackjackGameCard</span>
+    </div>
+    <div class="issue-description">This key was found but is not in the expected keys list</div>
+</div>
+
+<div class="issue-item issue-warning">
+    <div class="issue-header">
+        <span>⚠️</span>
+        <span>demoModeCard</span>
+    </div>
+    <div class="issue-description">This key was found but is not in the expected keys list</div>
+</div>
+
+<div class="issue-item issue-warning">
+    <div class="issue-header">
+        <span>⚠️</span>
+        <span>spinButton</span>
+    </div>
+    <div class="issue-description">This key was found but is not in the expected keys list</div>
+</div>
+
+<div class="issue-item issue-warning">
+    <div class="issue-header">
+        <span>⚠️</span>
+        <span>redBet</span>
+    </div>
+    <div class="issue-description">This key was found but is not in the expected keys list</div>
+</div>
+
+<div class="issue-item issue-warning">
+    <div class="issue-header">
+        <span>⚠️</span>
+        <span>blackBet</span>
+    </div>
+    <div class="issue-description">This key was found but is not in the expected keys list</div>
+</div>
+
+<div class="issue-item issue-warning">
+    <div class="issue-header">
+        <span>⚠️</span>
+        <span>spinRouletteButton</span>
+    </div>
+    <div class="issue-description">This key was found but is not in the expected keys list</div>
+</div>
+
+<div class="issue-item issue-warning">
+    <div class="issue-header">
+        <span>⚠️</span>
+        <span>dealButton</span>
+    </div>
+    <div class="issue-description">This key was found but is not in the expected keys list</div>
+</div>
+
+<div class="issue-item issue-warning">
+    <div class="issue-header">
+        <span>⚠️</span>
+        <span>hitButton</span>
+    </div>
+    <div class="issue-description">This key was found but is not in the expected keys list</div>
+</div>
+
+<p class="text-muted">... and 5 more extra keys</p>
+
+</div>
+
+        <div class="glass-card">
+    <h2 class="mb-3">📈 Detailed Statistics</h2>
+    
+    <div class="mb-4">
+        <h3 class="mb-2">Coverage Analysis</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Coverage Percentage</td>
+                    <td>100.0%</td>
+                    <td class="text-success">🎯 Excellent</td>
+                </tr>
+                <tr>
+                    <td>Files Scanned</td>
+                    <td>29</td>
+                    <td class="text-info">📄 Analyzed</td>
+                </tr>
+                <tr>
+                    <td>Files with Keys</td>
+                    <td>1</td>
+                    <td class="text-info">🔑 Active</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+        <div class="mb-4">
+        <h3 class="mb-2">Key Distribution</h3>
+        <div class="chart-container">
+            <canvas id="distributionChart" class="chart-canvas"></canvas>
+        </div>
+    </div>
+    
+
+    <div class="mb-4">
+        <h3 class="mb-2">Performance Metrics</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                    <th>Rating</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Scan Time</td>
+                    <td>200ms</td>
+                    <td class="text-info">👍 Good</td>
+                </tr>
+                <tr>
+                    <td>Keys per Second</td>
+                    <td>75.0</td>
+                    <td class="text-info">⚡ Speed</td>
+                </tr>
+                <tr>
+                    <td>Performance Score</td>
+                    <td>85.0/100</td>
+                    <td class="text-success">🏆 Excellent</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+        <div class="glass-card">
+    <h2 class="mb-3">📁 File Coverage Analysis</h2>
+    
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>File Path</th>
+                <th>Key Count</th>
+                <th>Coverage</th>
+                <th>Status</th>
+                <th>Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+    <td>/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/main.dart</td>
+    <td>28</td>
+    <td>100.0%</td>
+    <td class="text-success">🎯 Excellent</td>
+    <td>📄 Source</td>
+</tr>
+
+<tr>
+    <td>/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/screens/home_screen.dart</td>
+    <td>0</td>
+    <td>0.0%</td>
+    <td class="text-error">🔧 Poor</td>
+    <td>📄 Source</td>
+</tr>
+
+<tr>
+    <td>/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/blackjack/widgets/playing_card.dart</td>
+    <td>0</td>
+    <td>0.0%</td>
+    <td class="text-error">🔧 Poor</td>
+    <td>📄 Source</td>
+</tr>
+
+<tr>
+    <td>/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/blackjack/blackjack_engine.dart</td>
+    <td>0</td>
+    <td>0.0%</td>
+    <td class="text-error">🔧 Poor</td>
+    <td>📄 Source</td>
+</tr>
+
+<tr>
+    <td>/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/blackjack/blackjack_viewmodel.dart</td>
+    <td>0</td>
+    <td>0.0%</td>
+    <td class="text-error">🔧 Poor</td>
+    <td>📄 Source</td>
+</tr>
+
+<tr>
+    <td>/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/blackjack/blackjack_screen.dart</td>
+    <td>0</td>
+    <td>0.0%</td>
+    <td class="text-error">🔧 Poor</td>
+    <td>📄 Source</td>
+</tr>
+
+<tr>
+    <td>/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/slots/slots_engine.dart</td>
+    <td>0</td>
+    <td>0.0%</td>
+    <td class="text-error">🔧 Poor</td>
+    <td>📄 Source</td>
+</tr>
+
+<tr>
+    <td>/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/slots/widgets/reel_widget.dart</td>
+    <td>0</td>
+    <td>0.0%</td>
+    <td class="text-error">🔧 Poor</td>
+    <td>📄 Source</td>
+</tr>
+
+<tr>
+    <td>/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/slots/slots_screen.dart</td>
+    <td>0</td>
+    <td>0.0%</td>
+    <td class="text-error">🔧 Poor</td>
+    <td>📄 Source</td>
+</tr>
+
+<tr>
+    <td>/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/slots/slots_viewmodel.dart</td>
+    <td>0</td>
+    <td>0.0%</td>
+    <td class="text-error">🔧 Poor</td>
+    <td>📄 Source</td>
+</tr>
+
+        </tbody>
+    </table>
+    
+    <p class="text-muted text-center">... and 19 more files</p>
+</div>
+
+        <div class="glass-card">
+    <h2 class="mb-3">💡 Recommendations</h2>
+    <div class="recommendation-item">
+    <div class="d-flex align-items-center gap-2">
+        <span>💡</span>
+        <span>🧹 Remove 15 unused/extra keys to reduce noise</span>
+    </div>
+</div>
+
+<div class="recommendation-item">
+    <div class="d-flex align-items-center gap-2">
+        <span>💡</span>
+        <span>⚡ Optimize key usage patterns for better automation efficiency</span>
+    </div>
+</div>
+
+</div>
+
+        <div class="footer">
+    <p class="text-muted">
+        Report generated by <strong>Flutter KeyCheck v3.x</strong><br>
+        2025-08-30T18:21:11.761002
+    </p>
+</div>
+
+    </div>
+    
+    <script>
+        // Embed report data
+        window.reportData = {"timestamp":"2025-08-30T18:21:11.761002","projectPath":"/home/adj/projects/flutter_keycheck","coverage":100.0,"expectedKeys":0,"foundKeys":15,"missingKeys":0,"extraKeys":15,"passed":true,"quality":{"coverage":100.0,"organization":85.0,"consistency":77.6,"efficiency":40.0,"maintainability":100.0,"overall":83.52,"recommendations":["🧹 Remove 15 unused/extra keys to reduce noise","⚡ Optimize key usage patterns for better automation efficiency"],"metrics":{"expectedCount":0,"foundCount":15,"missingCount":0,"extraCount":15,"coveragePercentage":100.0,"averageUsage":1.8666666666666667,"maxUsage":2,"duplicateKeys":13,"filesWithKeys":1,"totalFiles":29,"keyDistribution":0.034482758620689655,"scanTimeMs":200,"keysPerSecond":75.0,"camelCaseCount":15,"snakeCaseCount":0,"kebabCaseCount":0,"avgLength":12.666666666666666,"semanticCount":9,"consistencyPattern":"camelCase"}},"stats":{"coverage":{"percentage":100.0,"expectedKeys":0,"foundKeys":15,"missingKeys":0,"filesScanned":29,"filesWithKeys":1,"fileCoverage":3.4482758620689653},"distribution":{"totalKeys":30,"avgKeysPerFile":28.0,"maxKeysPerFile":28,"minKeysPerFile":28,"distributionVariance":0.0,"extraKeysRatio":50.0},"usage":{"averageUsage":1.8666666666666667,"maxUsage":2,"minUsage":1,"duplicateKeys":13,"uniqueKeys":2,"usageVariance":0.1155555555555555,"efficiencyScore":9.333333333333334},"performance":{"scanTimeMs":200,"keysPerSecond":75.0,"filesPerSecond":145.0,"score":85.0,"memoryEstimateMB":0.015625},"quality":{"score":100.0,"coverage":100.0,"consistency":85.0,"organization":60.0,"reliability":100.0},"trends":{"growthRate":0.0,"improvementTrend":"stable","keyTurnover":0.0,"stabilityScore":85.0,"predictedCoverage":100.0}},"fileCoverage":[{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/main.dart","keyCount":28,"keys":["slotsGameCard","slotsGameCard","rouletteGameCard","rouletteGameCard","blackjackGameCard","blackjackGameCard","demoModeCard","demoModeCard","spinButton","spinButton","redBet","blackBet","spinRouletteButton","spinRouletteButton","dealButton","dealButton","hitButton","hitButton","standButton","standButton","newGameButton","newGameButton","runDemoButton","runDemoButton","decreaseBetButton","decreaseBetButton","increaseBetButton","increaseBetButton"],"coverageScore":100.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/screens/home_screen.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/blackjack/widgets/playing_card.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/blackjack/blackjack_engine.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/blackjack/blackjack_viewmodel.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/blackjack/blackjack_screen.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/slots/slots_engine.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/slots/widgets/reel_widget.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/slots/slots_screen.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/slots/slots_viewmodel.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/roulette/roulette_engine.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/roulette/roulette_viewmodel.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/roulette/widgets/roulette_wheel.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/games/roulette/roulette_screen.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/core/agents/report_generator_agent.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/core/agents/agents.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/core/agents/casino_orchestrator.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/core/agents/resource_manager_agent.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/core/agents/game_engine_agent.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/core/agents/context_manager_agent.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/core/agents/base_agent.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/core/agents/config_manager_agent.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/ui/widgets/glassmorphic/chip_widget.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/ui/widgets/glassmorphic/animated_background.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/ui/widgets/glassmorphic/glass_card.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/ui/widgets/glassmorphic/glassmorphic.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/ui/widgets/glassmorphic/glass_container.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/ui/widgets/glassmorphic/glass_button.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false},{"filePath":"/home/adj/projects/flutter_keycheck/example/flutter_casino_demo/lib/ui/theme/app_theme.dart","keyCount":0,"keys":[],"coverageScore":0.0,"isTestFile":false,"hasKeyConstants":false}],"scanDuration":200};
+        
+        // Theme toggle functionality
+function toggleTheme() {
+    const body = document.body;
+    const icon = document.getElementById('theme-icon');
+    const currentTheme = body.getAttribute('data-theme');
+    
+    if (currentTheme === 'dark') {
+        body.className = 'light-theme';
+        body.setAttribute('data-theme', 'light');
+        icon.textContent = '🌙';
+    } else {
+        body.className = 'dark-theme';
+        body.setAttribute('data-theme', 'dark');
+        icon.textContent = '☀️';
+    }
+}
+
+// Chart rendering functionality
+function initCharts() {
+    const distributionCanvas = document.getElementById('distributionChart');
+    if (!distributionCanvas) return;
+    
+    const ctx = distributionCanvas.getContext('2d');
+    const data = window.reportData;
+    
+    if (!data || !data.stats || !data.stats.distribution) return;
+    
+    drawDistributionChart(ctx, data.stats.distribution);
+}
+
+function drawDistributionChart(ctx, distribution) {
+    const canvas = ctx.canvas;
+    const width = canvas.width = canvas.offsetWidth;
+    const height = canvas.height = canvas.offsetHeight;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+    
+    // Chart data
+    const categories = Object.keys(distribution.byCategory || {});
+    const values = Object.values(distribution.byCategory || {});
+    
+    if (categories.length === 0) {
+        ctx.fillStyle = '#666';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('No data available', width / 2, height / 2);
+        return;
+    }
+    
+    // Colors for chart segments
+    const colors = [
+        '#667eea', '#764ba2', '#f093fb', '#f5576c',
+        '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
+        '#ffecd2', '#fcb69f', '#a8edea', '#fed6e3'
+    ];
+    
+    // Calculate total
+    const total = values.reduce((sum, val) => sum + val, 0);
+    
+    // Draw pie chart
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) / 3;
+    
+    let currentAngle = -Math.PI / 2;
+    
+    categories.forEach((category, index) => {
+        const value = values[index];
+        const angle = (value / total) * 2 * Math.PI;
+        
+        // Draw slice
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + angle);
+        ctx.closePath();
+        
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.fill();
+        
+        // Draw label
+        const labelAngle = currentAngle + angle / 2;
+        const labelX = centerX + Math.cos(labelAngle) * (radius + 30);
+        const labelY = centerY + Math.sin(labelAngle) * (radius + 30);
+        
+        ctx.fillStyle = '#333';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(category, labelX, labelY);
+        ctx.fillText(`${value}`, labelX, labelY + 15);
+        
+        currentAngle += angle;
+    });
+}
+
+// Initialize animations
+function initAnimations() {
+    // Animate progress bars
+    const progressBars = document.querySelectorAll('.progress-fill');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 500);
+    });
+    
+    // Animate metric cards
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+}
+
+// Export functionality
+function exportReport(format) {
+    if (format === 'json') {
+        const data = JSON.stringify(window.reportData, null, 2);
+        downloadFile(data, 'flutter-keycheck-report.json', 'application/json');
+    } else if (format === 'csv') {
+        // Convert to CSV format
+        const csv = convertToCSV(window.reportData);
+        downloadFile(csv, 'flutter-keycheck-report.csv', 'text/csv');
+    }
+}
+
+function downloadFile(content, filename, contentType) {
+    const blob = new Blob([content], { type: contentType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function convertToCSV(data) {
+    // Simple CSV conversion for basic metrics
+    let csv = 'Metric,Value\n';
+    csv += `Coverage,${data.coverage}%\n`;
+    csv += `Expected Keys,${data.expectedKeys}\n`;
+    csv += `Found Keys,${data.foundKeys}\n`;
+    csv += `Missing Keys,${data.missingKeys}\n`;
+    csv += `Extra Keys,${data.extraKeys}\n`;
+    return csv;
+}
+
+// Initialize everything when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initAnimations();
+    setTimeout(initCharts, 100);
+});
+
+// Handle window resize for responsive charts
+window.addEventListener('resize', function() {
+    setTimeout(initCharts, 100);
+});
+
+    </script>
+</body>
+</html>

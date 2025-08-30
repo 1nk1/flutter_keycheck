@@ -3,7 +3,6 @@ library;
 
 import 'dart:io';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as path;
 
@@ -153,7 +152,7 @@ class CacheManager {
   late final File _indexFile;
   late final File _statsFile;
   
-  Map<String, CachedScanResult> _memoryCache = {};
+  final Map<String, CachedScanResult> _memoryCache = {};
   Map<String, String> _fileIndex = {}; // filePath -> cacheKey mapping
   DateTime _lastCleanup = DateTime.now();
   int _cacheHits = 0;

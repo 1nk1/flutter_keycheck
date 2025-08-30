@@ -7,9 +7,14 @@
 .pub/
 build/
 
+.bmad-core
+.bmad-infrastructure-devops
+
 .claude
 .claude.local.md
 
+package-lock.json
+package.json
 # IDEs
 .idea/
 .vscode/

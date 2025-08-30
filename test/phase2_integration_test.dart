@@ -2,11 +2,10 @@
 library;
 
 import 'package:test/test.dart';
-import '../lib/src/reporter/base_reporter.dart';
-import '../lib/src/reporter/html_reporter.dart';
-import '../lib/src/reporter/ci_reporter.dart';
-import '../lib/src/quality/quality_scorer.dart';
-import '../lib/src/stats/stats_calculator.dart';
+import 'package:flutter_keycheck/src/reporter/base_reporter.dart';
+import 'package:flutter_keycheck/src/reporter/ci_reporter.dart';
+import 'package:flutter_keycheck/src/quality/quality_scorer.dart';
+import 'package:flutter_keycheck/src/stats/stats_calculator.dart';
 
 void main() {
   group('Phase 2 Premium Reporting Integration Tests', () {

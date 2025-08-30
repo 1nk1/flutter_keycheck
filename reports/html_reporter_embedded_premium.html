@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flutter KeyCheck - V3 Embedded Report</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .no-premium {
+      background: #fee;
+      color: #c00;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    
+    .feature-matrix {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    
+    .feature-matrix th {
+      background: #f0f0f0;
+      padding: 10px;
+      text-align: left;
+    }
+    
+    .feature-matrix td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .not-supported {
+      color: #999;
+      text-decoration: line-through;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="no-premium">❌ NO PREMIUM SUPPORT</div>
+    <h1>Flutter KeyCheck V3 Embedded - Minimal Implementation</h1>
+    <p>Basic HTML report without any premium features</p>
+    
+    <table class="feature-matrix">
+      <thead>
+        <tr>
+          <th>Premium Feature</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="not-supported">QualityScorer</td><td>❌ Not available</td></tr>
+        <tr><td class="not-supported">StatsCalculator</td><td>❌ Not available</td></tr>
+        <tr><td class="not-supported">Glassmorphism</td><td>❌ Not available</td></tr>
+        <tr><td class="not-supported">Canvas Charts</td><td>❌ Not available</td></tr>
+        <tr><td class="not-supported">Dark Theme</td><td>❌ Not available</td></tr>
+        <tr><td class="not-supported">Responsive Design</td><td>❌ Basic only</td></tr>
+        <tr><td class="not-supported">Quality Metrics</td><td>❌ Not available</td></tr>
+        <tr><td class="not-supported">Animations</td><td>❌ Not available</td></tr>
+      </tbody>
+    </table>
+    
+    <div style="background: #f9f9f9; padding: 15px; margin-top: 20px; border-radius: 4px;">
+      <h3>Implementation Notes</h3>
+      <ul>
+        <li>Embedded in 5000+ line reporter_v3.dart file</li>
+        <li>No premium feature support</li>
+        <li>Minimal HTML/CSS only</li>
+        <li>Unknown analyzer 5.x.x compatibility</li>
+        <li>Basic functionality only</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

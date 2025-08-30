@@ -81,17 +81,15 @@ class KeyDetectorVisitor extends RecursiveAstVisitor<void> {
     final typeName = node.constructorName.type;
     
     // Check for Key constructors
-    if (typeName is NamedType) {
-      final name = typeName.name2.lexeme;
-      if (name == 'Key' || 
-          name == 'ValueKey' || 
-          name == 'ObjectKey' ||
-          name == 'GlobalKey' ||
-          name == 'UniqueKey') {
-        _extractKeyFromNode(node);
-      }
+    final name = typeName.name2.lexeme;
+    if (name == 'Key' || 
+        name == 'ValueKey' || 
+        name == 'ObjectKey' ||
+        name == 'GlobalKey' ||
+        name == 'UniqueKey') {
+      _extractKeyFromNode(node);
     }
-
+  
     super.visitInstanceCreationExpression(node);
   }
 
@@ -105,8 +103,8 @@ class KeyDetectorVisitor extends RecursiveAstVisitor<void> {
         keyValue = _extractStringValue(args.first);
       }
     } else if (node is InstanceCreationExpression) {
-      final args = node.argumentList?.arguments;
-      if (args != null && args.isNotEmpty) {
+      final args = node.argumentList.arguments;
+      if (args.isNotEmpty) {
         keyValue = _extractStringValue(args.first);
       }
     }

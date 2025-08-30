@@ -5,6 +5,8 @@ import 'package:flutter_keycheck/src/cli/cli_runner.dart';
 import 'package:flutter_keycheck/src/commands/base_command_v3.dart';
 import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 import 'package:flutter_keycheck/src/models/scan_result.dart';
+import 'package:flutter_keycheck/src/reporter/reporter_v3.dart';
+import 'package:flutter_keycheck/src/reporter/html_reporter_adapter.dart';
 import 'package:path/path.dart' as path;
 
 /// Scan command - builds current snapshot of keys
@@ -51,7 +53,23 @@ class ScanCommandV3 extends BaseCommandV3 {
       ..addOption(
         'filter',
         help: 'Filter packages by pattern (for monorepo)',
+      )
+      ..addFlag(
+        'light-html',
+        help: 'Generate lightweight HTML report without heavy effects',
+        defaultsTo: false,
       );
+  }
+
+  @override
+  ReporterV3 getReporter(String? format) {
+    // Use premium HTML reporter with adapter
+    if (format == 'html') {
+      final darkTheme = argResults!['light-html'] != true;
+      return HtmlReporterAdapter(darkTheme: darkTheme);
+    }
+    // Otherwise use default reporter
+    return super.getReporter(format);
   }
 
   @override

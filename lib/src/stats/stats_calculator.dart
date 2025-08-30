@@ -392,13 +392,15 @@ class StatsCalculator {
     // Performance score based on scanning efficiency
     double performanceScore = 70.0; // Base score
     
-    if (keysPerSecond > 1000) performanceScore += 20.0;
-    else if (keysPerSecond > 500) performanceScore += 15.0;
+    if (keysPerSecond > 1000) {
+      performanceScore += 20.0;
+    } else if (keysPerSecond > 500) performanceScore += 15.0;
     else if (keysPerSecond > 100) performanceScore += 10.0;
     else if (keysPerSecond > 50) performanceScore += 5.0;
     
-    if (filesPerSecond > 10) performanceScore += 10.0;
-    else if (filesPerSecond > 5) performanceScore += 5.0;
+    if (filesPerSecond > 10) {
+      performanceScore += 10.0;
+    } else if (filesPerSecond > 5) performanceScore += 5.0;
 
     return {
       'scanTimeMs': scanDuration?.inMilliseconds ?? 0,
@@ -540,8 +542,9 @@ class StatsCalculator {
       final duplicates = keyUsageCounts.values.where((v) => v > 1).length;
       final duplicateRatio = duplicates / keyUsageCounts.length;
       
-      if (duplicateRatio < 0.1) score += 20.0;
-      else if (duplicateRatio < 0.2) score += 10.0;
+      if (duplicateRatio < 0.1) {
+        score += 20.0;
+      } else if (duplicateRatio < 0.2) score += 10.0;
       else score += 5.0;
     }
     
@@ -558,16 +561,18 @@ class StatsCalculator {
     final total = foundKeys.length + extraKeys.length;
     if (total > 0) {
       final extraRatio = extraKeys.length / total;
-      if (extraRatio < 0.05) score += 20.0;
-      else if (extraRatio < 0.1) score += 15.0;
+      if (extraRatio < 0.05) {
+        score += 20.0;
+      } else if (extraRatio < 0.1) score += 15.0;
       else if (extraRatio < 0.2) score += 10.0;
       else score -= 10.0;
     }
     
     // Check for semantic organization
     final categories = foundKeys.map(_categorizeKey).toSet();
-    if (categories.length > 3) score += 20.0; // Good categorization
-    else if (categories.length > 1) score += 10.0;
+    if (categories.length > 3) {
+      score += 20.0; // Good categorization
+    } else if (categories.length > 1) score += 10.0;
     
     return math.min(score, 100.0);
   }

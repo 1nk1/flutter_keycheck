@@ -138,8 +138,9 @@ class QualityScorer {
       final totalFiles = scannedFiles.length;
       if (totalFiles > 0) {
         final distributionRatio = filesWithKeys / totalFiles;
-        if (distributionRatio > 0.8) score += 15.0; // Well distributed
-        else if (distributionRatio > 0.5) score += 10.0;
+        if (distributionRatio > 0.8) {
+          score += 15.0; // Well distributed
+        } else if (distributionRatio > 0.5) score += 10.0;
         else if (distributionRatio > 0.3) score += 5.0;
       }
     }
@@ -165,16 +166,13 @@ class QualityScorer {
           .where((entry) => entry.value > 1)
           .length;
       
-      final singleUseKeys = keyUsageCounts.entries
-          .where((entry) => entry.value == 1)
-          .length;
-      
       if (multiUseKeys == 0) {
         score += 20.0; // No duplicates, good consistency
       } else {
         final duplicateRatio = multiUseKeys / keyUsageCounts.length;
-        if (duplicateRatio < 0.1) score += 15.0;
-        else if (duplicateRatio < 0.2) score += 10.0;
+        if (duplicateRatio < 0.1) {
+          score += 15.0;
+        } else if (duplicateRatio < 0.2) score += 10.0;
         else if (duplicateRatio < 0.3) score += 5.0;
       }
     }
@@ -195,8 +193,9 @@ class QualityScorer {
     // Penalty for extra keys (noise)
     if (extraKeys.isNotEmpty) {
       final extraRatio = extraKeys.length / (foundKeys.length + extraKeys.length);
-      if (extraRatio > 0.3) score -= 30.0;
-      else if (extraRatio > 0.2) score -= 20.0;
+      if (extraRatio > 0.3) {
+        score -= 30.0;
+      } else if (extraRatio > 0.2) score -= 20.0;
       else if (extraRatio > 0.1) score -= 10.0;
       else score -= 5.0;
     } else {
@@ -210,8 +209,9 @@ class QualityScorer {
           expectedFound.map((key) => keyUsageCounts[key] ?? 0)
               .reduce((a, b) => a + b) / expectedFound.length;
       
-      if (averageUsage > 2.0) score += 15.0; // Keys are well used
-      else if (averageUsage > 1.5) score += 10.0;
+      if (averageUsage > 2.0) {
+        score += 15.0; // Keys are well used
+      } else if (averageUsage > 1.5) score += 10.0;
       else if (averageUsage > 1.0) score += 5.0;
     }
     
@@ -256,8 +256,9 @@ class QualityScorer {
     
     if (foundKeys.isNotEmpty) {
       final clarityRatio = clearNames / foundKeys.length;
-      if (clarityRatio > 0.8) score += 20.0;
-      else if (clarityRatio > 0.6) score += 15.0;
+      if (clarityRatio > 0.8) {
+        score += 20.0;
+      } else if (clarityRatio > 0.6) score += 15.0;
       else if (clarityRatio > 0.4) score += 10.0;
     }
     
@@ -296,7 +297,7 @@ class QualityScorer {
             .where((e) => e.value > 1)
             .length;
         if (duplicates > 0) {
-          recommendations.add('🔍 Review ${duplicates} duplicate keys for potential consolidation');
+          recommendations.add('🔍 Review $duplicates duplicate keys for potential consolidation');
         }
       }
     }

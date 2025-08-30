@@ -227,7 +227,7 @@ class PerformanceProfiler {
 
     try {
       // Get current process memory usage
-      final result = Process.runSync('ps', ['-o', 'rss=', '-p', '${pid}']);
+      final result = Process.runSync('ps', ['-o', 'rss=', '-p', '$pid']);
       if (result.exitCode == 0) {
         final rssKB = int.tryParse(result.stdout.toString().trim()) ?? 0;
         _memoryUsageMB = rssKB / 1024.0; // Convert KB to MB

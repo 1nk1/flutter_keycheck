@@ -89,9 +89,9 @@ class ReporterFactory {
       case 'html':
         return html.HtmlReporter();
       case 'html-premium':
-        return html.HtmlReporter(darkTheme: false, includeCharts: true, responsive: true);
+        return html.HtmlReporter(darkTheme: false);
       case 'html-dark':
-        return html.HtmlReporter(darkTheme: true, includeCharts: true, responsive: true);
+        return html.HtmlReporter(darkTheme: true);
       case 'ci':
         return ci.CIReporter.autoDetect();
       case 'ci-verbose':
@@ -128,7 +128,7 @@ class HumanReporter extends BaseReporter {
   String generate(ReportData data) {
     final buffer = StringBuffer();
     
-    buffer.writeln('\n' + '=' * 60);
+    buffer.writeln('\n${'=' * 60}');
     buffer.writeln('Flutter KeyCheck Report');
     buffer.writeln('=' * 60);
     buffer.writeln('Project: ${data.projectPath}');
@@ -178,7 +178,7 @@ class HumanReporter extends BaseReporter {
       }
     }
     
-    buffer.writeln('\n' + '=' * 60);
+    buffer.writeln('\n${'=' * 60}');
     
     return buffer.toString();
   }

@@ -7,8 +7,6 @@ import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 import 'package:flutter_keycheck/src/models/scan_result.dart';
 import 'package:flutter_keycheck/src/models/scan_snapshot.dart' as snapshot;
 import 'package:flutter_keycheck/src/reporter/reporter_v3.dart';
-import 'package:flutter_keycheck/src/reporter/premium_dashboard_reporter.dart';
-import 'package:flutter_keycheck/src/reporter/premium_dashboard_adapter.dart';
 import 'package:path/path.dart' as path;
 
 /// Scan command - builds current snapshot of keys
@@ -65,9 +63,9 @@ class ScanCommandV3 extends BaseCommandV3 {
 
   @override
   ReporterV3 getReporter(String? format) {
-    // Use premium dashboard reporter for HTML
+    // Use the HtmlReporter from reporter_v3.dart for HTML reports
     if (format == 'html') {
-      return PremiumDashboardAdapter();
+      return HtmlReporter();
     }
     // Otherwise use default reporter
     return super.getReporter(format);

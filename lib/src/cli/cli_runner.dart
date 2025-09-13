@@ -1,9 +1,44 @@
+/// Release & Telemetry Analyst Agent for Claude Code (optional but useful)
+///
+/// Mission: Track real-world usage, performance, and success metrics of flutter_keycheck, 
+/// feeding insights back into roadmap.
+///
+/// Primary Responsibilities:
+/// - Collect anonymized usage (opt-in), performance benchmarks, failure patterns
+/// - Recommend rule tuning and autofix coverage expansion
+/// - Correlate CI timings with repo size and dependency graphs
+///
+/// Inputs:
+/// - Opt-in telemetry, CI artifacts metadata, repo characteristics
+///
+/// Outputs:
+/// - reports/telemetry/metrics.json, trend dashboards, recommendations
+///
+/// Hooks & Triggers:
+/// - post-command: append timing and counts
+/// - session-end: aggregate and compress metrics
+///
+/// MCP Tools:
+/// - metrics_collect, trend_analysis, usage_stats, memory_compress
+///
+/// KPIs:
+/// - Clear, statistically significant guidance for rule changes every sprint
+/// - ≤ 1% overhead for telemetry collection
+///
+/// Safeguards:
+/// - Strict privacy (no code content, aggregate only)
+/// - Easy opt-out flag
+///
 import 'dart:async';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:flutter_keycheck/src/commands/scan_command_v3.dart';
 import 'package:flutter_keycheck/src/commands/validate_command_v3.dart';
+import 'package:flutter_keycheck/src/commands/diff_command.dart';
+import 'package:flutter_keycheck/src/commands/report_command.dart';
+import 'package:flutter_keycheck/src/commands/sync_command.dart';
+import 'package:flutter_keycheck/src/commands/fix_command.dart';
 
 /// Exception for configuration errors
 class ConfigException implements Exception {
@@ -45,6 +80,10 @@ class CliRunner extends CommandRunner<int> {
     // Add commands
     addCommand(ScanCommandV3());
     addCommand(ValidateCommandV3());
+    addCommand(DiffCommand());
+    addCommand(ReportCommand());
+    addCommand(SyncCommand());
+    addCommand(FixCommand());
   }
 
   @override

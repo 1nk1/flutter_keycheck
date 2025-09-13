@@ -7,8 +7,40 @@ import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 import 'package:flutter_keycheck/src/models/scan_result.dart';
 import 'package:flutter_keycheck/src/models/scan_snapshot.dart' as snapshot;
 import 'package:flutter_keycheck/src/reporter/reporter_v3.dart';
+// Premium dashboard adapter removed
 import 'package:path/path.dart' as path;
 
+/// CI/CD Compliance Officer Agent for Claude Code
+///
+/// Mission: Run flutter_keycheck as a quality gate in CI, block regressions,
+/// annotate PRs/MRs, and manage releases.
+///
+/// Primary Responsibilities:
+/// - Inject checks into GitHub/GitLab pipelines
+/// - Fail builds on configured severity thresholds (missing critical keys, dupes)
+/// - Auto-post annotations and changelog fragments
+///
+/// Inputs:
+/// - CI env vars, thresholds (KEYCHECK_FAIL_ON=critical), repo slug
+///
+/// Outputs:
+/// - Status checks, PR comments, artifacts: reports/**, CHANGELOG.md entries
+///
+/// Hooks & Triggers:
+/// - pre-command: security validation before executing repo actions
+/// - session-end: generate CI summary card
+///
+/// MCP Tools:
+/// - github_pr_manage, github_release_coord, pipeline_create, log_analysis
+///
+/// KPIs:
+/// - Median CI overhead ≤ 60s
+/// - 100% PRs annotated on violations
+///
+/// Safeguards:
+/// - "Soft-fail" mode for first week on new rules
+/// - Retry policy for flaky CI environments
+///
 /// Scan command - builds current snapshot of keys
 class ScanCommandV3 extends BaseCommandV3 {
   @override
@@ -27,8 +59,8 @@ class ScanCommandV3 extends BaseCommandV3 {
       )
       ..addOption(
         'report',
-        help: 'Report format (json, junit, md, html, text, ci, gitlab)',
-        allowed: ['json', 'junit', 'md', 'html', 'text', 'ci', 'gitlab'],
+        help: 'Report format (json, junit, md, html, executive, text, ci, gitlab)',
+        allowed: ['json', 'junit', 'md', 'html', 'executive', 'dashboard', 'text', 'ci', 'gitlab'],
         defaultsTo: 'json',
       )
       ..addFlag(
@@ -63,11 +95,6 @@ class ScanCommandV3 extends BaseCommandV3 {
 
   @override
   ReporterV3 getReporter(String? format) {
-    // Use the HtmlReporter from reporter_v3.dart for HTML reports
-    if (format == 'html') {
-      return HtmlReporter();
-    }
-    // Otherwise use default reporter
     return super.getReporter(format);
   }
 

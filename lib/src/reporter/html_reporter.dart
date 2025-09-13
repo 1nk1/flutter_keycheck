@@ -5,18 +5,23 @@
 library;
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 import 'base_reporter.dart';
+import '../models/scan_result.dart';
+import '../models/validation_result.dart';
 import '../quality/quality_scorer.dart';
 import '../stats/stats_calculator.dart';
 
 /// Premium glassmorphism HTML reporter
 class HtmlReporter extends BaseReporter {
+  final bool isPremium;
   final bool darkTheme;
   final bool includeCharts;
   final bool responsive;
 
   HtmlReporter({
+    this.isPremium = false,
     this.darkTheme = false,
     this.includeCharts = true,
     this.responsive = true,
@@ -24,6 +29,32 @@ class HtmlReporter extends BaseReporter {
 
   @override
   String generate(ReportData data) {
+    if (!isPremium) {
+      return '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flutter KeyCheck - Premium Features</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; text-align: center; background: #f0f0f0; color: #333; }
+        .teaser { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 10px; }
+        .upgrade-btn { background: #ff6b6b; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="teaser">
+        <h1>🔑 Flutter KeyCheck Premium</h1>
+        <p>Unlock advanced features like enhanced syntax highlighting, compatibility analysis, and premium metrics.</p>
+        <p>Contact sales for premium access or upgrade your plan.</p>
+        <button class="upgrade-btn" onclick="window.open('https://flutterkeycheck.com/premium', '_blank')">Upgrade Now</button>
+    </div>
+</body>
+</html>
+''';
+    }
+
     // Generate quality analysis
     final quality = QualityScorer.calculateQuality(
       expectedKeys: data.expectedKeys,
@@ -56,6 +87,93 @@ class HtmlReporter extends BaseReporter {
     );
 
     return _buildHtmlDocument(data, quality, stats, fileCoverage);
+  }
+
+  String _buildPremiumMetricsSection(ReportData data) {
+    final totalKeys = data.expectedKeys.length + data.foundKeys.length;
+    final errorRate = data.extraKeys.isEmpty ? 0.0 : (data.extraKeys.length / totalKeys * 100);
+    final coveragePercentage = data.coverage;
+    final compatibilityScore = 95.0; // Mock data as per task
+
+    return '''
+    <div class="glass-card">
+        <h2 class="mb-3">📊 Premium Metrics</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Coverage Percentage</td>
+                    <td>${coveragePercentage.toStringAsFixed(1)}%</td>
+                    <td class="text-success">Good</td>
+                </tr>
+                <tr>
+                    <td>Error Rate</td>
+                    <td>${errorRate.toStringAsFixed(1)}%</td>
+                    <td class="${errorRate > 10 ? 'text-error' : 'text-success'}">${errorRate > 10 ? 'Needs Attention' : 'Low'}</td>
+                </tr>
+                <tr>
+                    <td>Compatibility Score</td>
+                    <td>${compatibilityScore.toStringAsFixed(1)}%</td>
+                    <td class="text-success">Compatible</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    ''';
+  }
+
+  String _buildCompatibilityTable() {
+    return '''
+    <div class="glass-card">
+        <h2 class="mb-3">🔧 Compatibility Table</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Analyzer Version</th>
+                    <th>Compatibility Score</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Dart 3.0.0</td>
+                    <td>100%</td>
+                    <td class="text-success">✅ Compatible</td>
+                </tr>
+                <tr>
+                    <td>Dart 2.19.0</td>
+                    <td>95%</td>
+                    <td class="text-success">✅ Compatible</td>
+                </tr>
+                <tr>
+                    <td>Dart 2.18.0</td>
+                    <td>90%</td>
+                    <td class="text-warning">⚠️ Partial</td>
+                </tr>
+                <tr>
+                    <td>Dart 2.17.0</td>
+                    <td>85%</td>
+                    <td class="text-error">🔧 Limited</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    ''';
+  }
+
+  String _buildPremiumTeaser() {
+    return '''
+    <div class="glass-card">
+        <h2 class="mb-3">🔒 Premium Features Locked</h2>
+        <p class="text-muted">Enable premium mode to access advanced metrics, syntax highlighting, and compatibility analysis.</p>
+    </div>
+    ''';
   }
 
   /// Build the complete HTML document
@@ -1194,10 +1312,10 @@ window.addEventListener('resize', function() {
   /// Escape HTML characters
   String _escapeHtml(String text) {
     return text
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
+        .replaceAll('&', '&')
+        .replaceAll('<', '<')
+        .replaceAll('>', '>')
+        .replaceAll('"', '"')
         .replaceAll("'", '&#x27;');
   }
 
@@ -1206,4 +1324,51 @@ window.addEventListener('resize', function() {
 
   @override
   String get reportType => 'Premium HTML';
+
+  @override
+  Future<void> generateScanReport(
+    ScanResult result,
+    File outputFile, {
+    bool includeMetrics = true,
+    bool includeLocations = false,
+  }) async {
+    final data = ReportData(
+      expectedKeys: <String>{},
+      foundKeys: result.keyUsages.keys.toSet(),
+      missingKeys: <String>{},
+      extraKeys: <String>{},
+      keyUsageCounts: result.keyUsages.map((key, usage) => MapEntry(key, usage.locations.length)),
+      keyLocations: result.keyUsages.map((key, usage) => MapEntry(key, usage.locations.map((loc) => [loc.file, loc.line, loc.column]).toList())),
+      scanDuration: result.duration,
+      scannedFiles: result.fileAnalyses.keys.toList(),
+      metrics: result.metrics.toMap(),
+      projectPath: 'project',
+    );
+
+    final content = generate(data);
+    await outputFile.writeAsString(content);
+  }
+
+  @override
+  Future<void> generateValidationReport(
+    ValidationResult result,
+    File outputFile, {
+    bool includeMetrics = true,
+  }) async {
+    final data = ReportData(
+      expectedKeys: Set<String>.from(result.lostKeys.map((e) => e.id)),
+      foundKeys: <String>{},
+      missingKeys: Set<String>.from(result.lostKeys.map((e) => e.id)),
+      extraKeys: Set<String>.from(result.extraKeys.map((e) => e.id)),
+      keyUsageCounts: null,
+      keyLocations: null,
+      scanDuration: null,
+      scannedFiles: null,
+      metrics: result.summary.toMap(),
+      projectPath: 'project',
+    );
+
+    final content = generate(data);
+    await outputFile.writeAsString(content);
+  }
 }

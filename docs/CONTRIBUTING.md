@@ -17,8 +17,15 @@ Thank you for your interest in contributing to Flutter KeyCheck! This document p
 # Install dependencies
 dart pub get
 
-# Run tests
+# Run all tests
 dart test
+
+# Run with coverage
+dart test --coverage
+
+# Run specific test suites
+dart run test/comprehensive_validation_test.dart
+dart run test/run_quality_assurance_tests.dart
 
 # Check formatting
 dart format --output=none --set-exit-if-changed .
@@ -28,7 +35,32 @@ dart analyze --fatal-infos
 
 # Run the CLI locally
 dart run bin/flutter_keycheck.dart --help
+
+# Test script (comprehensive)
+./scripts/run_tests.sh
+./scripts/run_tests.sh --coverage  # With coverage report
 ```
+
+### AI-Assisted Development
+
+The project supports AI-assisted development through MCP (Model Context Protocol) integration:
+
+```bash
+# Check for required AI development tools
+npm list -g | grep qdrant  # Vector database for semantic search
+npm list -g | grep context7  # Documentation context provider
+
+# MCP servers are configured in .kilocode/mcp.json
+# - context7: Library documentation integration
+# - memory: Persistent knowledge graphs
+# - qdrant: Vector search capabilities (optional)
+```
+
+The AI integration enhances development workflows with:
+- Automated documentation updates
+- Context-aware code suggestions
+- Semantic code analysis
+- Knowledge graph maintenance
 
 ## 🔄 Version Policy
 
@@ -79,6 +111,28 @@ Before releasing a new version:
 - Test files go in `test/` directory
 - Use descriptive test names
 
+### Test Categories
+
+1. **Unit Tests**: Core functionality validation
+   ```bash
+   dart test
+   ```
+
+2. **Integration Tests**: End-to-end workflow validation
+   ```bash
+   dart run test/comprehensive_validation_test.dart
+   ```
+
+3. **Quality Assurance**: HTML cleanliness, syntax highlighting
+   ```bash
+   dart run test/run_quality_assurance_tests.dart
+   ```
+
+4. **Performance Tests**: Benchmarking and optimization
+   ```bash
+   dart test test/performance_baseline.dart
+   ```
+
 Example test structure:
 ```dart
 void main() {
@@ -86,13 +140,20 @@ void main() {
     test('should detect ValueKey patterns', () {
       // Test implementation
     });
-    
+
     test('should handle KeyConstants patterns', () {
       // Test implementation
     });
   });
 }
 ```
+
+### Running Tests in CI/CD
+
+The project includes comprehensive CI/CD testing:
+- GitHub Actions: `.github/workflows/ci.yml`
+- Test scripts: `scripts/run_tests.sh`
+- Quality gates: Coverage thresholds, performance benchmarks
 
 ### Updating Golden Baseline or Performance Thresholds
 
@@ -107,7 +168,7 @@ When legitimate changes require updating the golden baseline or performance thre
    ```bash
    # Run snapshot tests
    dart test test/golden_workspace/snapshot_test.dart
-   
+
    # Run performance tests
    dart test test/golden_workspace/performance_test.dart
    ```
@@ -121,7 +182,7 @@ When legitimate changes require updating the golden baseline or performance thre
    ```bash
    git add test/golden_workspace/
    git commit -m "chore(baseline): update golden snapshot and perf thresholds
-   
+
    - Reason for update: [explain why baseline needs to change]
    - Schema changes: [if applicable]
    - Performance impact: [if applicable]

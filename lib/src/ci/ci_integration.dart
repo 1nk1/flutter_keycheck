@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:path/path.dart' as path;
 import '../models/scan_result.dart';
-import '../reporter/coverage_reporter.dart';
+// Coverage reporter removed
 
 /// Helper functions for safe type casting
 double _asDouble(dynamic value, double defaultValue) {

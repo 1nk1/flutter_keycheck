@@ -10,7 +10,7 @@ class IncrementalTestWidget extends StatelessWidget {
           key: Key('incremental_key_1'),
           child: Text('Added for incremental scan'),
         ),
-        ElevatedButton(
+        ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
           key: Key('incremental_button'),
           onPressed: () {},
           child: Text('Test Button'),

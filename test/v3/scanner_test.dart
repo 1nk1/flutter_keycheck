@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:flutter_keycheck/src/scanner/ast_scanner_v3.dart';
 import 'package:flutter_keycheck/src/config/config_v3.dart';
+import '../test_constants.dart';
 
 void main() {
   group('AST Scanner v3', () {
@@ -39,7 +40,7 @@ class MyApp extends StatelessWidget {
           title: Text('Test App'),
         ),
         body: Center(
-          child: ElevatedButton(
+          child: ElevatedButton(key: Key("elevated_btn_${RANDOM}"),
             key: ValueKey('main_button'),
             onPressed: () {},
             child: Text('Click Me'),
@@ -105,7 +106,7 @@ import 'package:flutter/material.dart';
 class ButtonWithHandler extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return ElevatedButton(key: Key("elevated_btn_${RANDOM}"),
       key: ValueKey('button_with_handler'),
       onPressed: () {
         print('Button pressed');
@@ -144,10 +145,10 @@ class NoKeysScreen extends StatelessWidget {
       children: [
         Container(),
         Text('Text 1'),
-        ElevatedButton(onPressed: () {}, child: Text('Button 1')),
+        ElevatedButton(key: Key("elevated_btn_${RANDOM}"), onPressed: () {}, child: Text('Button 1')),
         Container(),
         Text('Text 2'),
-        ElevatedButton(onPressed: () {}, child: Text('Button 2')),
+        ElevatedButton(key: Key("elevated_btn_${RANDOM}"), onPressed: () {}, child: Text('Button 2')),
         Container(),
         Text('Text 3'),
         Container(), // Extra widget to ensure > 5 widgets

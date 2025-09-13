@@ -118,7 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Critical**: Fixed analyzer errors (0/50 → 50/50 pub points)
-- **CLI**: Minimal CLI with only scan/validate commands  
+- **CLI**: Minimal CLI with only scan/validate commands
 - **pub.dev**: Target 140+/160 points with clean analysis
 - **Platform**: Added Android/iOS/Web support (6/6 platforms)
 
@@ -268,7 +268,7 @@ This release transforms Flutter KeyCheck into an enterprise-grade analysis tool 
 
 ### Changed
 - **BREAKING**: Unified CLI to single `bin/flutter_keycheck.dart` binary (removed all v2/v3 variants)
-- **BREAKING**: Primary command is now `validate` with `ci-validate` alias (old direct invocation deprecated)
+- **BREAKING**: Primary command is now `validate` (old direct invocation deprecated)
 - **BREAKING**: Exit codes standardized for CI/CD reliability (see exit code contract above)
 - Restructured commands with subcommands pattern for better organization
 - Enhanced configuration with `include_only` and `tracked_keys` fields for granular control
@@ -303,7 +303,7 @@ Complete CLI redesign with subcommands, deterministic exit codes, and v1.0 schem
 
 ### ⚠️ BREAKING: Deleted Legacy Binaries
 - **Removed**: `bin/flutter_keycheck_v2.dart`
-- **Removed**: `bin/flutter_keycheck_v3.dart`  
+- **Removed**: `bin/flutter_keycheck_v3.dart`
 - **Removed**: `bin/flutter_keycheck_v3_complete.dart`
 - **Removed**: `bin/flutter_keycheck_v3_integrated.dart`
 - **Removed**: `bin/flutter_keycheck_v3_proper.dart`
@@ -314,7 +314,7 @@ Complete CLI redesign with subcommands, deterministic exit codes, and v1.0 schem
 #### CLI Migration to Subcommands
 - **Old**: `flutter_keycheck --keys file.yaml --strict`
 - **New**: `flutter_keycheck validate --strict`
-- Primary command is now `validate` (with `ci-validate` alias)
+- Primary command is now `validate`
 - All functionality moved to explicit subcommands
 
 #### Exit Codes Standardized
@@ -336,7 +336,7 @@ Complete CLI redesign with subcommands, deterministic exit codes, and v1.0 schem
 - **scan**: Build current snapshot with AST parsing and key↔handler linking
 - **baseline**: Create/update/delete baselines for tracking changes
 - **diff**: Compare snapshots to detect key drift
-- **validate**: Primary validation command (ci-validate alias available)
+- **validate**: Primary validation command
 - **sync**: Sync with external key registries (git, API)
 - **report**: Generate various report formats
 

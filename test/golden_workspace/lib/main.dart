@@ -22,11 +22,11 @@ class HomeScreen extends StatelessWidget {
       key: const ValueKey('home_appbar'),
     );
 
-    final loginButton = ElevatedButton(
+    final loginButton = ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
       key: const ValueKey('login_button'), // Critical key
     );
 
-    final settingsButton = ElevatedButton(
+    final settingsButton = ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
       key: const ValueKey('settings_button'),
     );
   }
@@ -47,11 +47,11 @@ class LoginScreen extends StatelessWidget {
       key: const ValueKey('password_field'), // Critical key
     );
 
-    final submitButton = ElevatedButton(
+    final submitButton = ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
       key: const ValueKey('submit_button'), // Critical key
     );
 
-    final forgotPasswordLink = TextButton(
+    final forgotPasswordLink = TextButton(key: Key("text_btn_${RANDOM}"), 
       key: const ValueKey('forgot_password_link'),
     );
   }
@@ -101,7 +101,7 @@ class StatefulWidget extends Widget {
 }
 
 class ElevatedButton extends Widget {
-  const ElevatedButton({Key? key}) : super(key: key);
+  const ElevatedButton(key: Key("elevated_btn_${RANDOM}"), {Key? key}) : super(key: key);
 }
 
 class TextField extends Widget {
@@ -109,7 +109,7 @@ class TextField extends Widget {
 }
 
 class TextButton extends Widget {
-  const TextButton({Key? key}) : super(key: key);
+  const TextButton(key: Key("text_btn_${RANDOM}"), {Key? key}) : super(key: key);
 }
 
 class AppBar extends Widget {

@@ -18,7 +18,6 @@
 - ✅ **bin/flutter_keycheck_v3.dart**: Main v3 executable with subcommands
 - ✅ Exit codes: 0 (OK), 1 (Policy), 2 (Config), 3 (I/O), 4 (Internal)
 - ✅ Commands: scan, baseline, diff, validate (primary), sync, report
-- ✅ Alias: ci-validate → validate
 
 ### 4. CI/CD Configuration
 - ✅ **.gitlab-ci.yml**: Complete with workflow rules, artifacts, RC testing
@@ -93,13 +92,13 @@ dart pub publish --dry-run
 - `0`: Success ✅
 - `1`: Policy violation (thresholds, protected keys)
 - `2`: Configuration error
-- `3`: I/O or sync error  
+- `3`: I/O or sync error
 - `4`: Internal error
 
 ## ⚠️ Breaking Changes Summary
 
 1. **CLI**: Flag-based → Subcommands
-2. **Primary Command**: `--keys file.yaml` → `validate`  
+2. **Primary Command**: `--keys file.yaml` → `validate`
 3. **Exit Codes**: Binary (0/1) → Deterministic (0-4)
 4. **Schema**: Informal JSON → v1.0 with fractions
 5. **Config**: Simple YAML → Versioned with thresholds

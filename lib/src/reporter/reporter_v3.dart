@@ -3,7 +3,40 @@ import 'dart:io';
 
 import 'package:flutter_keycheck/src/models/scan_result.dart';
 import 'package:flutter_keycheck/src/models/validation_result.dart';
+import 'package:flutter_keycheck/src/reporter/executive_dashboard_reporter_adapter.dart';
+import 'package:flutter_keycheck/src/reporter/premium_dashboard_reporter.dart';
 
+/// Documentation & DX Curator Agent for Claude Code
+///
+/// Mission: Keep developer experience smooth: updated docs, migration guides,
+/// and IDE integration instructions.
+///
+/// Primary Responsibilities:
+/// - Auto-update /docs when rules/features change
+/// - Maintain "Getting Started", "Migration to v3", "CI Gate Setup"
+/// - Sync with VSCode WebView/extension docs and examples
+///
+/// Inputs:
+/// - Change events from other agents, policy deltas, CLI flags
+///
+/// Outputs:
+/// - /docs/*.md, examples/, tutorial snippets, animated GIFs (optional)
+///
+/// Hooks & Triggers:
+/// - post-edit: regenerate docs sections referencing updated rules
+/// - session-end: emit session summary for release notes
+///
+/// MCP Tools:
+/// - post-edit, memory_persist, doc_auto_gen (via workflow), memory_export
+///
+/// KPIs:
+/// - Doc freshness lag ≤ 1 commit
+/// - Onboarding time reduced by ≥ 30%
+///
+/// Safeguards:
+/// - Content linting; avoid breaking external links
+/// - Versioned docs for compatibility
+///
 /// Base reporter class for v3
 abstract class ReporterV3 {
   /// Create reporter based on format
@@ -18,6 +51,11 @@ abstract class ReporterV3 {
         return MarkdownReporter();
       case 'html':
         return HtmlReporter();
+      case 'premium-html':
+        return PremiumReporter();
+      case 'executive':
+      case 'dashboard':
+        return ExecutiveDashboardReporterAdapter();
       case 'text':
         return TextReporter();
       case 'ci':
@@ -687,7 +725,7 @@ class HtmlReporter extends ReporterV3 {
       * {
         color-scheme: dark;
       }
-      
+
       body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         background: linear-gradient(135deg, #0c0f1a 0%, #1a1f35 100%);
@@ -697,7 +735,7 @@ class HtmlReporter extends ReporterV3 {
         min-height: 100vh;
         overflow-x: hidden;
       }
-      
+
       /* Dark Theme Layout */
       .sidebar {
         position: fixed;
@@ -714,11 +752,11 @@ class HtmlReporter extends ReporterV3 {
         align-items: center;
         padding: 20px 12px;
       }
-      
+
       .sidebar-header {
         margin-bottom: 30px;
       }
-      
+
       .sidebar-logo {
         width: 40px;
         height: 40px;
@@ -728,7 +766,7 @@ class HtmlReporter extends ReporterV3 {
         align-items: center;
         justify-content: center;
       }
-      
+
       .sidebar-nav {
         display: flex;
         flex-direction: column;
@@ -736,7 +774,7 @@ class HtmlReporter extends ReporterV3 {
         width: 100%;
         align-items: center;
       }
-      
+
       .sidebar-nav-item {
         width: 50px;
         height: 50px;
@@ -751,13 +789,13 @@ class HtmlReporter extends ReporterV3 {
         border: 1px solid rgba(51, 65, 85, 0.5);
         margin: 8px 0;
       }
-      
+
       .sidebar-nav-item:hover, .sidebar-nav-item.active {
         background: rgba(59, 130, 246, 0.2);
         color: #60a5fa;
         border-color: rgba(59, 130, 246, 0.5);
       }
-      
+
       .header {
         position: fixed;
         top: 0;
@@ -773,13 +811,13 @@ class HtmlReporter extends ReporterV3 {
         padding: 0 30px;
         z-index: 999;
       }
-      
+
       .header-left {
         display: flex;
         align-items: center;
         gap: 20px;
       }
-      
+
       .brand {
         display: flex;
         align-items: center;
@@ -787,31 +825,31 @@ class HtmlReporter extends ReporterV3 {
         font-size: 20px;
         font-weight: 700;
       }
-      
+
       .brand-flutter {
         color: #60a5fa;
       }
-      
+
       .brand-keycheck {
         color: #e2e8f0;
       }
-      
+
       .brand-separator {
         color: #475569;
         margin: 0 10px;
       }
-      
+
       .page-title {
         color: #cbd5e1;
         font-size: 18px;
         font-weight: 500;
       }
-      
+
       .header-right {
         display: flex;
         gap: 12px;
       }
-      
+
       .header-btn {
         padding: 8px 16px;
         background: rgba(51, 65, 85, 0.5);
@@ -825,30 +863,30 @@ class HtmlReporter extends ReporterV3 {
         gap: 8px;
         font-size: 14px;
       }
-      
+
       .header-btn:hover {
         background: rgba(51, 65, 85, 0.8);
         border-color: rgba(59, 130, 246, 0.5);
       }
-      
+
       .main-content {
         margin-left: 80px;
         margin-top: 60px;
         padding: 30px;
         min-height: calc(100vh - 60px);
       }
-      
+
       .content-section {
         max-width: 1400px;
         margin: 0 auto;
         animation: fadeIn 0.3s ease-in-out;
       }
-      
+
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
       }
-      
+
       .dashboard-header {
         background: rgba(30, 41, 59, 0.4);
         backdrop-filter: blur(20px);
@@ -860,20 +898,20 @@ class HtmlReporter extends ReporterV3 {
         justify-content: space-between;
         align-items: center;
       }
-      
+
       .dashboard-title-section h2 {
         color: #f1f5f9;
         font-size: 28px;
         font-weight: 700;
         margin: 0 0 8px 0;
       }
-      
+
       .dashboard-subtitle {
         color: #94a3b8;
         font-size: 16px;
         margin: 0;
       }
-      
+
       .last-updated {
         color: #64748b;
         font-size: 14px;
@@ -881,19 +919,19 @@ class HtmlReporter extends ReporterV3 {
         align-items: center;
         gap: 8px;
       }
-      
+
       .last-updated-time {
         color: #94a3b8;
         font-weight: 500;
       }
-      
+
       .metrics-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 20px;
         margin-bottom: 30px;
       }
-      
+
       .metric-card, .glass-card {
         background: rgba(30, 41, 59, 0.4);
         backdrop-filter: blur(20px);
@@ -902,35 +940,35 @@ class HtmlReporter extends ReporterV3 {
         padding: 24px;
         transition: all 0.2s ease;
       }
-      
+
       .metric-card:hover, .glass-card:hover {
         border-color: rgba(59, 130, 246, 0.4);
         transform: translateY(-2px);
       }
-      
+
       .export-btn {
         position: relative;
         overflow: hidden;
       }
-      
+
       .export-btn:hover {
         background: rgba(30, 41, 59, 0.6);
         transform: translateY(-3px);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
       }
-      
+
       .export-btn:active {
         transform: translateY(-1px);
         transition: all 0.1s ease;
       }
-      
+
       .metric-header {
         display: flex;
         align-items: center;
         gap: 16px;
         margin-bottom: 16px;
       }
-      
+
       .metric-icon {
         width: 48px;
         height: 48px;
@@ -940,7 +978,7 @@ class HtmlReporter extends ReporterV3 {
         align-items: center;
         justify-content: center;
       }
-      
+
       .metric-info h3 {
         color: #cbd5e1;
         font-size: 14px;
@@ -949,25 +987,25 @@ class HtmlReporter extends ReporterV3 {
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
-      
+
       .metric-value {
         color: #f1f5f9;
         font-size: 28px;
         font-weight: 700;
         margin: 0;
       }
-      
+
       .metric-footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
-      
+
       .metric-label {
         color: #64748b;
         font-size: 12px;
       }
-      
+
       .metric-change {
         font-size: 12px;
         font-weight: 600;
@@ -975,10 +1013,10 @@ class HtmlReporter extends ReporterV3 {
         align-items: center;
         gap: 4px;
       }
-      
+
       .metric-change.positive { color: #10b981; }
       .metric-change.negative { color: #ef4444; }
-      
+
       .keys-section {
         background: rgba(30, 41, 59, 0.4);
         backdrop-filter: blur(20px);
@@ -987,7 +1025,7 @@ class HtmlReporter extends ReporterV3 {
         padding: 30px;
         margin-bottom: 30px;
       }
-      
+
       .keys-header {
         display: flex;
         justify-content: space-between;
@@ -996,24 +1034,24 @@ class HtmlReporter extends ReporterV3 {
         flex-wrap: wrap;
         gap: 16px;
       }
-      
+
       .keys-title {
         color: #f1f5f9;
         font-size: 20px;
         font-weight: 600;
         margin: 0;
       }
-      
+
       .keys-controls {
         display: flex;
         gap: 12px;
         align-items: center;
       }
-      
+
       .search-container, .filter-container {
         position: relative;
       }
-      
+
       .search-input, .filter-select {
         background: rgba(51, 65, 85, 0.5);
         border: 1px solid rgba(51, 65, 85, 0.7);
@@ -1023,11 +1061,11 @@ class HtmlReporter extends ReporterV3 {
         font-size: 14px;
         min-width: 160px;
       }
-      
+
       .search-input {
         padding-left: 40px; /* Make room for search icon */
       }
-      
+
       .search-icon {
         position: absolute;
         left: 12px;
@@ -1037,7 +1075,7 @@ class HtmlReporter extends ReporterV3 {
         font-size: 14px;
         pointer-events: none;
       }
-      
+
       .filter-select {
         appearance: none !important; /* Remove default dropdown arrow */
         -webkit-appearance: none !important;
@@ -1048,36 +1086,36 @@ class HtmlReporter extends ReporterV3 {
         background-size: 0 !important;
         cursor: pointer;
       }
-      
+
       .filter-select::-ms-expand {
         display: none; /* Remove arrow in IE */
       }
-      
+
       .search-input:focus, .filter-select:focus {
         outline: none;
         border-color: rgba(59, 130, 246, 0.5);
         background: rgba(51, 65, 85, 0.7);
       }
-      
+
       .search-input::placeholder {
         color: #64748b;
       }
-      
+
       .keys-table-container {
         border-radius: 12px;
         overflow: hidden;
         border: 1px solid rgba(51, 65, 85, 0.3);
       }
-      
+
       .keys-table {
         width: 100%;
         border-collapse: collapse;
       }
-      
+
       .keys-table thead {
         background: rgba(15, 23, 42, 0.8);
       }
-      
+
       .keys-table th {
         padding: 16px 20px;
         text-align: left;
@@ -1088,62 +1126,62 @@ class HtmlReporter extends ReporterV3 {
         letter-spacing: 0.5px;
         border-bottom: 1px solid rgba(51, 65, 85, 0.5);
       }
-      
+
       .keys-table tbody tr {
         background: rgba(30, 41, 59, 0.2);
         border-bottom: 1px solid rgba(51, 65, 85, 0.2);
         transition: all 0.2s ease;
       }
-      
+
       .keys-table tbody tr:hover {
         background: rgba(59, 130, 246, 0.05);
         border-color: rgba(59, 130, 246, 0.2);
       }
-      
+
       .keys-table td {
         padding: 16px 20px;
         color: #e2e8f0;
       }
-      
+
       .key-name {
         font-family: 'JetBrains Mono', 'Fira Code', monospace;
         color: #f1f5f9;
         font-weight: 500;
       }
-      
+
       .category-container {
         display: flex;
         align-items: center;
         gap: 8px;
       }
-      
+
       .category-dot {
         width: 8px;
         height: 8px;
         border-radius: 50%;
       }
-      
+
       .category-dot.widget { background: #3b82f6; }
       .category-dot.handler { background: #f59e0b; }
       .category-dot.test { background: #10b981; }
       .category-dot.navigation { background: #8b5cf6; }
-      
+
       .category-label {
         color: #cbd5e1;
         font-size: 14px;
         font-weight: 500;
       }
-      
+
       .category-icon {
         font-size: 12px;
         margin-left: 4px;
       }
-      
+
       .category-icon.widget { color: #3b82f6; }
       .category-icon.handler { color: #f59e0b; }
       .category-icon.test { color: #10b981; }
       .category-icon.navigation { color: #8b5cf6; }
-      
+
       .status-badge {
         padding: 6px 12px;
         border-radius: 6px;
@@ -1153,19 +1191,19 @@ class HtmlReporter extends ReporterV3 {
         letter-spacing: 0.5px;
         border: 1px solid;
       }
-      
+
       .status-badge.active {
         background: rgba(16, 185, 129, 0.1);
         color: #10b981;
         border-color: rgba(16, 185, 129, 0.3);
       }
-      
+
       .status-badge.inactive {
         background: rgba(156, 163, 175, 0.1);
         color: #9ca3af;
         border-color: rgba(156, 163, 175, 0.3);
       }
-      
+
       .locations-btn {
         background: rgba(59, 130, 246, 0.1);
         border: 1px solid rgba(59, 130, 246, 0.3);
@@ -1180,23 +1218,23 @@ class HtmlReporter extends ReporterV3 {
         gap: 6px;
         transition: all 0.2s ease;
       }
-      
+
       .locations-btn:hover {
         background: rgba(59, 130, 246, 0.2);
         border-color: rgba(59, 130, 246, 0.5);
       }
-      
+
       .no-locations {
         color: #64748b;
         font-style: italic;
         font-size: 14px;
       }
-      
+
       .action-buttons {
         display: flex;
         gap: 8px;
       }
-      
+
       .action-btn {
         width: 32px;
         height: 32px;
@@ -1210,13 +1248,13 @@ class HtmlReporter extends ReporterV3 {
         justify-content: center;
         transition: all 0.2s ease;
       }
-      
+
       .action-btn:hover {
         background: rgba(59, 130, 246, 0.2);
         border-color: rgba(59, 130, 246, 0.5);
         color: #60a5fa;
       }
-      
+
       .pagination {
         display: flex;
         justify-content: space-between;
@@ -1225,22 +1263,22 @@ class HtmlReporter extends ReporterV3 {
         padding-top: 24px;
         border-top: 1px solid rgba(51, 65, 85, 0.3);
       }
-      
+
       .pagination-info {
         color: #64748b;
         font-size: 14px;
       }
-      
+
       .pagination-info-highlight {
         color: #e2e8f0;
         font-weight: 600;
       }
-      
+
       .pagination-controls {
         display: flex;
         gap: 8px;
       }
-      
+
       .pagination-btn {
         width: 36px;
         height: 36px;
@@ -1255,29 +1293,29 @@ class HtmlReporter extends ReporterV3 {
         transition: all 0.2s ease;
         font-size: 14px;
       }
-      
+
       .pagination-btn:hover:not(:disabled) {
         background: rgba(59, 130, 246, 0.2);
         border-color: rgba(59, 130, 246, 0.5);
         color: #60a5fa;
       }
-      
+
       .pagination-btn.active {
         background: rgba(59, 130, 246, 0.3);
         border-color: rgba(59, 130, 246, 0.6);
         color: #f1f5f9;
       }
-      
+
       .pagination-btn:disabled {
         opacity: 0.4;
         cursor: not-allowed;
       }
-      
+
       /* Duplicate Keys Table Styles */
       .duplicate-keys-section {
         margin-top: 32px;
       }
-      
+
       .duplicate-keys-section .section-header {
         display: flex;
         align-items: center;
@@ -1286,13 +1324,13 @@ class HtmlReporter extends ReporterV3 {
         padding-bottom: 16px;
         border-bottom: 1px solid rgba(51, 65, 85, 0.3);
       }
-      
+
       .duplicate-keys-section h3 {
         color: #f1f5f9;
         font-size: 18px;
         margin: 0;
       }
-      
+
       .duplicate-count {
         background: rgba(251, 146, 60, 0.2);
         color: #fb923c;
@@ -1301,11 +1339,11 @@ class HtmlReporter extends ReporterV3 {
         font-size: 12px;
         font-weight: 500;
       }
-      
+
       .duplicate-keys-table-container {
         overflow-x: auto;
       }
-      
+
       .duplicate-keys-table {
         width: 100%;
         border-collapse: collapse;
@@ -1313,11 +1351,11 @@ class HtmlReporter extends ReporterV3 {
         border-radius: 8px;
         overflow: hidden;
       }
-      
+
       .duplicate-keys-table thead {
         background: rgba(51, 65, 85, 0.7);
       }
-      
+
       .duplicate-keys-table th {
         padding: 16px 20px;
         text-align: left;
@@ -1326,67 +1364,67 @@ class HtmlReporter extends ReporterV3 {
         font-size: 14px;
         border-bottom: 1px solid rgba(51, 65, 85, 0.5);
       }
-      
+
       .duplicate-keys-table tbody tr {
         border-bottom: 1px solid rgba(51, 65, 85, 0.2);
         transition: background-color 0.2s ease;
       }
-      
+
       .duplicate-keys-table tbody tr:hover {
         background: rgba(51, 65, 85, 0.3);
       }
-      
+
       .duplicate-keys-table td {
         padding: 16px 20px;
         color: #e2e8f0;
         vertical-align: top;
       }
-      
+
       .key-name-cell {
         display: flex;
         flex-direction: column;
         gap: 4px;
       }
-      
+
       .key-name-cell .key-name {
         font-family: 'JetBrains Mono', 'Fira Code', monospace;
         color: #f1f5f9;
         font-weight: 500;
       }
-      
+
       .key-name-cell .key-category {
         font-size: 12px;
         color: #64748b;
       }
-      
+
       .reference-count {
         font-weight: 600;
         padding: 4px 8px;
         border-radius: 4px;
         font-size: 12px;
       }
-      
+
       .reference-count.low {
         background: rgba(34, 197, 94, 0.2);
         color: #22c55e;
       }
-      
+
       .reference-count.medium {
         background: rgba(251, 146, 60, 0.2);
         color: #fb923c;
       }
-      
+
       .reference-count.high {
         background: rgba(239, 68, 68, 0.2);
         color: #ef4444;
       }
-      
+
       .locations-summary {
         display: flex;
         flex-direction: column;
         gap: 2px;
       }
-      
+
       .location-item {
         font-family: 'JetBrains Mono', 'Fira Code', monospace;
         font-size: 12px;
@@ -1397,14 +1435,14 @@ class HtmlReporter extends ReporterV3 {
         display: inline-block;
         max-width: fit-content;
       }
-      
+
       .more-locations {
         font-size: 12px;
         color: #64748b;
         font-style: italic;
         margin-top: 2px;
       }
-      
+
       .impact-badge {
         font-weight: 500;
         padding: 4px 8px;
@@ -1412,27 +1450,27 @@ class HtmlReporter extends ReporterV3 {
         font-size: 12px;
         text-transform: uppercase;
       }
-      
+
       .impact-badge.low {
         background: rgba(34, 197, 94, 0.2);
         color: #22c55e;
       }
-      
+
       .impact-badge.medium {
         background: rgba(251, 146, 60, 0.2);
         color: #fb923c;
       }
-      
+
       .impact-badge.high {
         background: rgba(239, 68, 68, 0.2);
         color: #ef4444;
       }
-      
+
       .duplicate-actions {
         display: flex;
         gap: 8px;
       }
-      
+
       /* Modal Styles */
       .modal {
         position: fixed;
@@ -1447,13 +1485,13 @@ class HtmlReporter extends ReporterV3 {
         justify-content: center;
         z-index: 10000;
       }
-      
+
       .modal-container {
         max-width: 80vw;
         max-height: 80vh;
         width: 900px;
       }
-      
+
       .modal-content {
         background: rgba(15, 23, 42, 0.95);
         backdrop-filter: blur(20px);
@@ -1464,7 +1502,7 @@ class HtmlReporter extends ReporterV3 {
         max-width: 90vw;
         width: 900px;
       }
-      
+
       .modal-header {
         display: flex;
         justify-content: space-between;
@@ -1473,7 +1511,7 @@ class HtmlReporter extends ReporterV3 {
         border-bottom: 1px solid rgba(51, 65, 85, 0.3);
         background: rgba(30, 41, 59, 0.5);
       }
-      
+
       .modal-title {
         color: #f1f5f9;
         font-size: 16px;
@@ -1484,7 +1522,7 @@ class HtmlReporter extends ReporterV3 {
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-      
+
       .close-btn {
         width: 36px;
         height: 36px;
@@ -1498,19 +1536,19 @@ class HtmlReporter extends ReporterV3 {
         justify-content: center;
         transition: all 0.2s ease;
       }
-      
+
       .close-btn:hover {
         background: rgba(239, 68, 68, 0.2);
         border-color: rgba(239, 68, 68, 0.5);
         color: #f87171;
       }
-      
+
       .modal-body {
         padding: 24px 30px;
         max-height: 60vh;
         overflow-y: auto;
       }
-      
+
       .location-item {
         background: rgba(30, 41, 59, 0.3);
         border: 1px solid rgba(51, 65, 85, 0.3);
@@ -1518,7 +1556,7 @@ class HtmlReporter extends ReporterV3 {
         margin-bottom: 16px;
         overflow: hidden;
       }
-      
+
       .location-header {
         display: flex;
         justify-content: space-between;
@@ -1527,35 +1565,35 @@ class HtmlReporter extends ReporterV3 {
         background: rgba(15, 23, 42, 0.6);
         border-bottom: 1px solid rgba(51, 65, 85, 0.2);
       }
-      
+
       .location-info {
         display: flex;
         flex-direction: column;
         gap: 6px;
       }
-      
+
       .file-info {
         display: flex;
         align-items: center;
         gap: 8px;
       }
-      
+
       .file-icon {
         color: #60a5fa;
       }
-      
+
       .file-path {
         font-family: 'JetBrains Mono', 'Fira Code', monospace;
         color: #f1f5f9;
         font-weight: 500;
         font-size: 14px;
       }
-      
+
       .line-info {
         color: #64748b;
         font-size: 12px;
       }
-      
+
       .location-btn {
         background: rgba(59, 130, 246, 0.1);
         border: 1px solid rgba(59, 130, 246, 0.3);
@@ -1570,12 +1608,12 @@ class HtmlReporter extends ReporterV3 {
         gap: 6px;
         transition: all 0.2s ease;
       }
-      
+
       .location-btn:hover {
         background: rgba(59, 130, 246, 0.2);
         border-color: rgba(59, 130, 246, 0.5);
       }
-      
+
       .code-container {
         background: rgba(7, 10, 18, 0.8);
         border-top: 1px solid rgba(51, 65, 85, 0.2);
@@ -1584,19 +1622,19 @@ class HtmlReporter extends ReporterV3 {
         line-height: 1.5;
         overflow-x: auto;
       }
-      
+
       .code-line {
         display: flex;
         padding: 0 16px;
         min-height: 24px;
         align-items: center;
       }
-      
+
       .code-line.highlighted-line {
         background: rgba(59, 130, 246, 0.1);
         border-left: 3px solid #3b82f6;
       }
-      
+
       .code-line-number {
         width: 40px;
         color: #64748b;
@@ -1606,7 +1644,7 @@ class HtmlReporter extends ReporterV3 {
         flex-shrink: 0;
         user-select: none;
       }
-      
+
       .highlighted-key {
         background: rgba(245, 158, 11, 0.3);
         color: #fbbf24;
@@ -1614,72 +1652,72 @@ class HtmlReporter extends ReporterV3 {
         border-radius: 4px;
         font-weight: 600;
       }
-      
+
       /* Enhanced Code syntax highlighting for Dart/Flutter - Material Theme */
-      .dart-keyword { 
-        color: #c792ea; 
-        font-weight: 700; 
+      .dart-keyword {
+        color: #c792ea;
+        font-weight: 700;
         text-shadow: 0 0 2px rgba(199, 146, 234, 0.3);
       }
-      .dart-type { 
-        color: #82aaff; 
+      .dart-type {
+        color: #82aaff;
         font-weight: 600;
         text-shadow: 0 0 2px rgba(130, 170, 255, 0.3);
       }
-      .dart-function { 
-        color: #82d4ff; 
-        font-weight: 500; 
+      .dart-function {
+        color: #82d4ff;
+        font-weight: 500;
         text-decoration: none;
       }
-      .dart-function:hover { 
-        color: #a5e3ff; 
+      .dart-function:hover {
+        color: #a5e3ff;
         text-decoration: underline;
         cursor: pointer;
       }
-      .dart-string { 
-        color: #c3e88d; 
+      .dart-string {
+        color: #c3e88d;
         font-weight: 400;
         background: rgba(195, 232, 141, 0.1);
         padding: 1px 2px;
         border-radius: 2px;
       }
-      .dart-comment { 
-        color: #546e7a; 
-        font-style: italic; 
+      .dart-comment {
+        color: #546e7a;
+        font-style: italic;
         opacity: 0.85;
         background: rgba(84, 110, 122, 0.08);
         padding: 1px 3px;
         border-radius: 3px;
       }
-      .dart-number { 
-        color: #f78c6c; 
+      .dart-number {
+        color: #f78c6c;
         font-weight: 500;
         background: rgba(247, 140, 108, 0.15);
         padding: 1px 3px;
         border-radius: 2px;
       }
-      .dart-operator { 
-        color: #89ddff; 
+      .dart-operator {
+        color: #89ddff;
         font-weight: 600;
         text-shadow: 0 0 2px rgba(137, 221, 255, 0.4);
       }
-      .punctuation { 
-        color: #89ddff; 
+      .punctuation {
+        color: #89ddff;
         opacity: 0.8;
       }
-      .dart-variable { 
-        color: #eeffff; 
+      .dart-variable {
+        color: #eeffff;
         font-weight: 400;
       }
-      .dart-annotation { 
-        color: #ffcb6b; 
+      .dart-annotation {
+        color: #ffcb6b;
         font-weight: 600;
         background: rgba(255, 203, 107, 0.15);
         padding: 1px 4px;
         border-radius: 3px;
         border: 1px solid rgba(255, 203, 107, 0.3);
       }
-      
+
       /* Better code container styling */
       .code-container {
         background: linear-gradient(135deg, rgba(7, 10, 18, 0.95), rgba(15, 20, 30, 0.9));
@@ -1690,7 +1728,7 @@ class HtmlReporter extends ReporterV3 {
         overflow-x: auto;
         border-radius: 0 0 12px 12px;
       }
-      
+
       .code-line {
         display: flex;
         padding: 4px 20px;
@@ -1698,17 +1736,17 @@ class HtmlReporter extends ReporterV3 {
         align-items: flex-start;
         transition: background-color 0.1s ease;
       }
-      
+
       .code-line:hover {
         background: rgba(59, 130, 246, 0.05);
       }
-      
+
       .code-line.highlighted-line {
         background: linear-gradient(90deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
         border-left: 3px solid #3b82f6;
         padding-left: 13px;
       }
-      
+
       .code-line-number {
         width: 45px;
         color: #64748b;
@@ -1721,47 +1759,47 @@ class HtmlReporter extends ReporterV3 {
         line-height: 1.6;
         padding-top: 1px;
       }
-      
+
       .highlighted-line .code-line-number {
         color: #60a5fa;
         font-weight: 600;
       }
-      
+
       /* Glassmorphism effects */
       .glass-morphism {
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
       }
-      
+
       /* Custom animations */
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
       }
-      
+
       .animate-fade-in {
         animation: fadeIn 0.3s ease-out;
       }
-      
+
       /* Custom scrollbar for dark theme */
       .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
       }
-      
+
       .custom-scrollbar::-webkit-scrollbar-track {
         background: rgba(51, 65, 85, 0.3);
         border-radius: 3px;
       }
-      
+
       .custom-scrollbar::-webkit-scrollbar-thumb {
         background: rgba(148, 163, 184, 0.5);
         border-radius: 3px;
       }
-      
+
       .custom-scrollbar::-webkit-scrollbar-thumb:hover {
         background: rgba(148, 163, 184, 0.7);
       }
-      
+
       /* Enhanced code container with header */
       .code-header {
         display: flex;
@@ -1774,14 +1812,14 @@ class HtmlReporter extends ReporterV3 {
         color: #94a3b8;
         border-radius: 6px 6px 0 0;
       }
-      
+
       .code-language {
         font-weight: 600;
         color: #60a5fa;
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
-      
+
       .code-copy-btn {
         background: rgba(59, 130, 246, 0.1);
         border: 1px solid rgba(59, 130, 246, 0.3);
@@ -1792,39 +1830,39 @@ class HtmlReporter extends ReporterV3 {
         font-size: 11px;
         transition: all 0.2s ease;
       }
-      
+
       .code-copy-btn:hover {
         background: rgba(59, 130, 246, 0.2);
         border-color: rgba(59, 130, 246, 0.5);
         color: #93c5fd;
         transform: translateY(-1px);
       }
-      
+
       .code-copy-btn.copied {
         background: rgba(34, 197, 94, 0.2);
         border-color: rgba(34, 197, 94, 0.5);
         color: #4ade80;
       }
-      
+
       /* Enhanced location buttons */
       .location-btn.secondary {
         background: rgba(75, 85, 99, 0.4);
         border-color: rgba(75, 85, 99, 0.6);
         color: #9ca3af;
       }
-      
+
       .location-btn.secondary:hover {
         background: rgba(75, 85, 99, 0.6);
         border-color: rgba(75, 85, 99, 0.8);
         color: #d1d5db;
       }
-      
+
       .location-actions {
         display: flex;
         gap: 8px;
         align-items: center;
       }
-      
+
       .detector-info {
         background: rgba(99, 102, 241, 0.15);
         color: #a5b4fc;
@@ -1835,7 +1873,7 @@ class HtmlReporter extends ReporterV3 {
         text-transform: uppercase;
         letter-spacing: 0.3px;
       }
-      
+
       /* Toast notifications */
       .toast {
         position: fixed;
@@ -1853,26 +1891,26 @@ class HtmlReporter extends ReporterV3 {
         -webkit-backdrop-filter: blur(10px);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
       }
-      
+
       .toast.show {
         transform: translateX(0);
       }
-      
+
       .toast-success {
         background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(21, 128, 61, 0.9));
         border: 1px solid rgba(34, 197, 94, 0.3);
       }
-      
+
       .toast-error {
         background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(185, 28, 28, 0.9));
         border: 1px solid rgba(239, 68, 68, 0.3);
       }
-      
+
       .toast-info {
         background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 0.9));
         border: 1px solid rgba(59, 130, 246, 0.3);
       }
-      
+
       /* Keyboard shortcuts */
       .keyboard-shortcuts {
         position: fixed;
@@ -1889,18 +1927,18 @@ class HtmlReporter extends ReporterV3 {
         opacity: 0.7;
         transition: opacity 0.2s ease;
       }
-      
+
       .keyboard-shortcuts:hover {
         opacity: 1;
       }
-      
+
       .keyboard-shortcut {
         display: flex;
         justify-content: space-between;
         margin: 2px 0;
         min-width: 200px;
       }
-      
+
       .shortcut-key {
         background: rgba(51, 65, 85, 0.8);
         padding: 2px 6px;
@@ -1916,13 +1954,13 @@ class HtmlReporter extends ReporterV3 {
         padding: 24px 32px;
         border-radius: 16px;
       }
-      
+
       .section-title-wrapper {
         display: flex;
         align-items: center;
         gap: 16px;
       }
-      
+
       .section-icon {
         width: 48px;
         height: 48px;
@@ -1934,14 +1972,14 @@ class HtmlReporter extends ReporterV3 {
         color: #60a5fa;
         font-size: 20px;
       }
-      
+
       .section-title-content h2 {
         margin: 0 0 8px 0;
         font-size: 28px;
         font-weight: 700;
         color: #e2e8f0;
       }
-      
+
       .section-subtitle {
         margin: 0;
         color: #94a3b8;
@@ -1955,32 +1993,32 @@ class HtmlReporter extends ReporterV3 {
         gap: 24px;
         margin-bottom: 32px;
       }
-      
+
       .analysis-card {
         padding: 24px;
         border-radius: 16px;
       }
-      
+
       .analysis-header {
         display: flex;
         align-items: center;
         gap: 12px;
         margin-bottom: 20px;
       }
-      
+
       .analysis-header h3 {
         margin: 0;
         font-size: 18px;
         font-weight: 600;
         color: #e2e8f0;
       }
-      
+
       .quality-score {
         display: flex;
         align-items: center;
         gap: 20px;
       }
-      
+
       .score-circle {
         width: 80px;
         height: 80px;
@@ -1991,7 +2029,7 @@ class HtmlReporter extends ReporterV3 {
         justify-content: center;
         position: relative;
       }
-      
+
       .score-circle::before {
         content: '';
         position: absolute;
@@ -2000,7 +2038,7 @@ class HtmlReporter extends ReporterV3 {
         background: #1e293b;
         border-radius: 50%;
       }
-      
+
       .score-text {
         position: relative;
         z-index: 1;
@@ -2008,82 +2046,82 @@ class HtmlReporter extends ReporterV3 {
         font-weight: 700;
         color: #10b981;
       }
-      
+
       .score-details {
         flex: 1;
       }
-      
+
       .score-item {
         display: flex;
         justify-content: space-between;
         margin-bottom: 8px;
       }
-      
+
       .score-item .label {
         color: #94a3b8;
         font-size: 14px;
       }
-      
+
       .score-item .value {
         font-weight: 600;
         font-size: 14px;
       }
-      
+
       .distribution-items {
         display: flex;
         flex-direction: column;
         gap: 12px;
       }
-      
+
       .distribution-item {
         display: grid;
         grid-template-columns: 1fr 80px 40px;
         align-items: center;
         gap: 12px;
       }
-      
+
       .category-info {
         display: flex;
         flex-direction: column;
       }
-      
+
       .category-name {
         color: #e2e8f0;
         font-size: 14px;
         font-weight: 500;
       }
-      
+
       .category-count {
         color: #64748b;
         font-size: 12px;
       }
-      
+
       .category-bar {
         height: 8px;
         background: rgba(51, 65, 85, 0.3);
         border-radius: 4px;
         overflow: hidden;
       }
-      
+
       .bar-fill {
         height: 100%;
         background: linear-gradient(90deg, #60a5fa, #3b82f6);
         transition: width 0.3s ease;
       }
-      
+
       .category-percentage {
         text-align: right;
         color: #60a5fa;
         font-size: 12px;
         font-weight: 600;
       }
-      
+
       .issues-list {
         display: flex;
         flex-direction: column;
         gap: 12px;
       }
-      
+
       .issue-item {
         display: flex;
         align-items: center;
@@ -2091,35 +2129,35 @@ class HtmlReporter extends ReporterV3 {
         padding: 12px 16px;
         border-radius: 8px;
       }
-      
+
       .issue-item.critical {
         background: rgba(239, 68, 68, 0.1);
         border: 1px solid rgba(239, 68, 68, 0.3);
       }
-      
+
       .issue-item.warning {
         background: rgba(245, 158, 11, 0.1);
         border: 1px solid rgba(245, 158, 11, 0.3);
       }
-      
+
       .issue-item.resolved {
         background: rgba(16, 185, 129, 0.1);
         border: 1px solid rgba(16, 185, 129, 0.3);
       }
-      
+
       .issue-text {
         flex: 1;
         color: #e2e8f0;
         font-size: 14px;
       }
-      
+
       .issue-severity {
         font-size: 12px;
         font-weight: 600;
         padding: 4px 8px;
         border-radius: 4px;
       }
-      
+
       .critical .issue-severity { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
       .warning .issue-severity { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
       .resolved .issue-severity { background: rgba(16, 185, 129, 0.2); color: #10b981; }
@@ -2131,36 +2169,36 @@ class HtmlReporter extends ReporterV3 {
         gap: 24px;
         margin-bottom: 32px;
       }
-      
+
       .stats-card {
         padding: 24px;
         border-radius: 16px;
       }
-      
+
       .stats-card.full-width {
         grid-column: 1 / -1;
       }
-      
+
       .stats-header {
         display: flex;
         align-items: center;
         gap: 12px;
         margin-bottom: 20px;
       }
-      
+
       .stats-header h3 {
         margin: 0;
         font-size: 18px;
         font-weight: 600;
         color: #e2e8f0;
       }
-      
+
       .coverage-visual {
         display: flex;
         justify-content: center;
         margin-bottom: 20px;
       }
-      
+
       .coverage-circle {
         width: 120px;
         height: 120px;
@@ -2171,7 +2209,7 @@ class HtmlReporter extends ReporterV3 {
         justify-content: center;
         position: relative;
       }
-      
+
       .coverage-circle::before {
         content: '';
         position: absolute;
@@ -2180,7 +2218,7 @@ class HtmlReporter extends ReporterV3 {
         background: #1e293b;
         border-radius: 50%;
       }
-      
+
       .coverage-text {
         position: relative;
         z-index: 1;
@@ -2188,31 +2226,31 @@ class HtmlReporter extends ReporterV3 {
         font-weight: 700;
         color: #3b82f6;
       }
-      
+
       .coverage-details, .performance-metrics {
         display: flex;
         flex-direction: column;
         gap: 12px;
       }
-      
+
       .detail-item, .metric-row {
         display: flex;
         justify-content: space-between;
       }
-      
+
       /* Enhanced Performance Metrics */
       .performance-visual {
         display: flex;
         justify-content: center;
         margin-bottom: 16px;
       }
-      
+
       .metric-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 12px;
       }
-      
+
       .metric-item {
         display: flex;
         flex-direction: column;
@@ -2223,83 +2261,83 @@ class HtmlReporter extends ReporterV3 {
         background: rgba(255, 255, 255, 0.02);
         border: 1px solid rgba(255, 255, 255, 0.05);
       }
-      
+
       .metric-label {
         font-size: 0.75rem;
         color: #9CA3AF;
         text-align: center;
       }
-      
+
       .metric-value {
         font-size: 1.1rem;
         font-weight: 600;
         color: white;
       }
-      
+
       .metric-trend {
         font-size: 0.8rem;
         padding: 2px 4px;
         border-radius: 4px;
       }
-      
+
       .metric-trend.excellent {
         color: #10B981;
         background: rgba(16, 185, 129, 0.1);
       }
-      
+
       .metric-trend.good {
         color: #3B82F6;
         background: rgba(59, 130, 246, 0.1);
       }
-      
+
       .metric-trend.average {
         color: #F59E0B;
         background: rgba(245, 158, 11, 0.1);
       }
-      
+
       .metric-trend.poor {
         color: #EF4444;
         background: rgba(239, 68, 68, 0.1);
       }
-      
+
       /* Distribution Chart Styles */
       .distribution-content {
         display: flex;
         gap: 16px;
         align-items: center;
       }
-      
+
       .distribution-visual {
         flex-shrink: 0;
       }
-      
+
       .distribution-legend {
         flex: 1;
         display: flex;
         flex-direction: column;
         gap: 8px;
       }
-      
+
       .legend-item {
         display: flex;
         align-items: center;
         gap: 8px;
         padding: 4px 0;
       }
-      
+
       .legend-color {
         width: 12px;
         height: 12px;
         border-radius: 2px;
         flex-shrink: 0;
       }
-      
+
       .legend-label {
         flex: 1;
         font-size: 0.875rem;
         color: #E5E7EB;
       }
-      
+
       .legend-count {
         font-size: 0.875rem;
         font-weight: 600;
@@ -2307,18 +2345,18 @@ class HtmlReporter extends ReporterV3 {
         min-width: 20px;
         text-align: right;
       }
-      
+
       /* Quality Score Styles */
       .quality-metrics {
         display: flex;
         gap: 20px;
         align-items: center;
       }
-      
+
       .quality-score {
         flex-shrink: 0;
       }
-      
+
       .score-circle {
         width: 120px;
         height: 120px;
@@ -2336,7 +2374,7 @@ class HtmlReporter extends ReporterV3 {
         justify-content: center;
         position: relative;
       }
-      
+
       .score-circle::before {
         content: '';
         position: absolute;
@@ -2345,40 +2383,40 @@ class HtmlReporter extends ReporterV3 {
         border-radius: 50%;
         background: #1F2937;
       }
-      
+
       .score-text {
         font-size: 1.5rem;
         font-weight: 700;
         color: white;
         z-index: 1;
       }
-      
+
       .score-label {
         font-size: 0.75rem;
         color: #9CA3AF;
         z-index: 1;
       }
-      
+
       .quality-breakdown {
         flex: 1;
         display: flex;
         flex-direction: column;
         gap: 12px;
       }
-      
+
       .quality-item {
         display: flex;
         align-items: center;
         gap: 12px;
       }
-      
+
       .quality-label {
         width: 90px;
         font-size: 0.875rem;
         color: #9CA3AF;
         flex-shrink: 0;
       }
-      
+
       .quality-bar {
         flex: 1;
         height: 8px;
@@ -2386,14 +2424,14 @@ class HtmlReporter extends ReporterV3 {
         border-radius: 4px;
         overflow: hidden;
       }
-      
+
       .quality-fill {
         height: 100%;
         background: linear-gradient(90deg, #10B981, #3B82F6);
         border-radius: 4px;
         transition: width 1s ease-in-out;
       }
-      
+
       .quality-value {
         width: 40px;
         text-align: right;
@@ -2402,105 +2440,105 @@ class HtmlReporter extends ReporterV3 {
         color: white;
         flex-shrink: 0;
       }
-      
+
       /* Enhanced Insights Styles */
       .insight-content {
         margin-left: 28px;
       }
-      
+
       .insight-content h4 {
         margin: 0 0 8px 0;
         font-size: 1rem;
         font-weight: 600;
         color: white;
       }
-      
+
       .insight-content p {
         margin: 0 0 12px 0;
         font-size: 0.875rem;
         color: #D1D5DB;
         line-height: 1.4;
       }
-      
+
       .action-items {
         display: flex;
         flex-direction: column;
         gap: 4px;
       }
-      
+
       .action-item {
         font-size: 0.8rem;
         color: #9CA3AF;
         line-height: 1.3;
       }
-      
+
       .detail-label, .metric-label {
         color: #94a3b8;
         font-size: 14px;
       }
-      
+
       .detail-value, .metric-value {
         color: #e2e8f0;
         font-weight: 600;
         font-size: 14px;
       }
-      
+
       .status-chart {
         display: flex;
         flex-direction: column;
         gap: 16px;
       }
-      
+
       .status-item {
         display: flex;
         align-items: center;
         gap: 12px;
       }
-      
+
       .status-indicator {
         width: 16px;
         height: 16px;
         border-radius: 50%;
       }
-      
+
       .status-indicator.active {
         background: #10b981;
       }
-      
+
       .status-indicator.inactive {
         background: #64748b;
       }
-      
+
       .status-info {
         flex: 1;
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
-      
+
       .status-name {
         color: #e2e8f0;
         font-size: 14px;
       }
-      
+
       .status-count {
         color: #94a3b8;
         font-size: 14px;
         font-weight: 600;
       }
-      
+
       .status-percent {
         color: #60a5fa;
         font-size: 12px;
         font-weight: 600;
       }
-      
+
       .insights-content {
         display: flex;
         flex-direction: column;
         gap: 12px;
       }
-      
+
       .insight {
         display: flex;
         align-items: flex-start;
@@ -2511,31 +2549,31 @@ class HtmlReporter extends ReporterV3 {
         font-size: 14px;
         line-height: 1.5;
       }
-      
+
       .insight.success {
         background: rgba(16, 185, 129, 0.1);
         border-left-color: #10b981;
         color: #10b981;
       }
-      
+
       .insight.warning {
         background: rgba(245, 158, 11, 0.1);
         border-left-color: #f59e0b;
         color: #f59e0b;
       }
-      
+
       .insight.critical {
         background: rgba(239, 68, 68, 0.1);
         border-left-color: #ef4444;
         color: #ef4444;
       }
-      
+
       .insight.info {
         background: rgba(59, 130, 246, 0.1);
         border-left-color: #3b82f6;
         color: #3b82f6;
       }
-      
+
       /* Export Section */
       .export-grid {
         display: grid;
@@ -2543,7 +2581,7 @@ class HtmlReporter extends ReporterV3 {
         gap: 24px;
         margin-bottom: 32px;
       }
-      
+
       .export-card {
         padding: 24px;
         border-radius: 16px;
@@ -2555,17 +2593,17 @@ class HtmlReporter extends ReporterV3 {
         text-align: center;
         gap: 16px;
       }
-      
+
       .export-card:hover {
         transform: translateY(-4px);
         background: rgba(30, 41, 59, 0.6);
         border-color: rgba(59, 130, 246, 0.5);
       }
-      
+
       .export-card.bulk {
         grid-column: span 2;
       }
-      
+
       .export-icon {
         width: 64px;
         height: 64px;
@@ -2576,28 +2614,28 @@ class HtmlReporter extends ReporterV3 {
         background: rgba(51, 65, 85, 0.3);
         font-size: 24px;
       }
-      
+
       .export-content h3 {
         margin: 0 0 8px 0;
         font-size: 20px;
         font-weight: 600;
         color: #e2e8f0;
       }
-      
+
       .export-description {
         margin: 0 0 16px 0;
         color: #94a3b8;
         font-size: 14px;
         line-height: 1.5;
       }
-      
+
       .export-features {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
         justify-content: center;
       }
-      
+
       .feature-tag {
         padding: 4px 8px;
         background: rgba(51, 65, 85, 0.5);
@@ -2606,7 +2644,7 @@ class HtmlReporter extends ReporterV3 {
         color: #94a3b8;
         font-weight: 500;
       }
-      
+
       .export-action {
         margin-top: auto;
         width: 40px;
@@ -2619,21 +2657,21 @@ class HtmlReporter extends ReporterV3 {
         color: #60a5fa;
         font-size: 16px;
       }
-      
+
       .export-status {
         padding: 16px;
         background: rgba(30, 41, 59, 0.8);
         border-radius: 8px;
         text-align: center;
       }
-      
+
       .status-content {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 12px;
       }
-      
+
       .status-text {
         color: #94a3b8;
         font-size: 14px;
@@ -2654,7 +2692,7 @@ class HtmlReporter extends ReporterV3 {
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-                
+
                 <div class="modal-body custom-scrollbar">
                     <div class="location-list" id="locationsList">
                         <!-- Locations will be populated here -->
@@ -2861,7 +2899,7 @@ class HtmlReporter extends ReporterV3 {
                         <i class="fa-solid fa-search search-icon"></i>
                         <input type="text" placeholder="Search keys..." class="search-input" id="searchInput" oninput="applyFilters()">
                     </div>
-                    
+
                     <!-- Category Filter -->
                     <div class="filter-container">
                         <select class="filter-select" id="categoryFilter" onchange="applyFilters()">
@@ -2872,7 +2910,7 @@ class HtmlReporter extends ReporterV3 {
                             <option value="navigation">Navigation</option>
                         </select>
                     </div>
-                    
+
                     <!-- Status Filter -->
                     <div class="filter-container">
                         <select class="filter-select" id="statusFilter" onchange="applyFilters()">
@@ -2883,7 +2921,7 @@ class HtmlReporter extends ReporterV3 {
                     </div>
                 </div>
             </div>
-            
+
             <!-- Keys Table -->
             <div class="keys-table-container">
                 <table class="keys-table">
@@ -2957,7 +2995,7 @@ class HtmlReporter extends ReporterV3 {
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Pagination -->
             <div class="pagination">
                 <div class="pagination-info">
@@ -3044,13 +3082,13 @@ class HtmlReporter extends ReporterV3 {
 // Ensure DOM is loaded before executing functions
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Flutter KeyCheck Report: DOM loaded, initializing...');
-    
+
     // Initialize filters and search functionality
     initializeFilters();
-    
+
     // Initialize charts if on stats page
     initializeCharts();
-    
+
     // Initialize default section
     showSection('dashboard');
 });
@@ -3063,7 +3101,7 @@ function refreshReport() {
     const refreshBtn = document.querySelector('.header-btn');
     refreshBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...';
     refreshBtn.disabled = true;
-    
+
     // Simulate refresh (in real implementation, this would reload data)
     setTimeout(() => {
         location.reload();
@@ -3075,36 +3113,36 @@ function applyFilters() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const categoryFilter = document.getElementById('categoryFilter').value;
     const statusFilter = document.getElementById('statusFilter').value;
-    
+
     const rows = document.querySelectorAll('.table-row');
     let visibleCount = 0;
-    
+
     rows.forEach(row => {
         const keyName = row.dataset.key.toLowerCase();
         const category = row.dataset.category;
         const status = row.dataset.status;
-        
+
         let shouldShow = true;
-        
+
         // Apply search filter
         if (searchTerm && !keyName.includes(searchTerm)) {
             shouldShow = false;
         }
-        
+
         // Apply category filter
         if (categoryFilter && category !== categoryFilter) {
             shouldShow = false;
         }
-        
+
         // Apply status filter
         if (statusFilter && status !== statusFilter) {
             shouldShow = false;
         }
-        
+
         row.style.display = shouldShow ? '' : 'none';
         if (shouldShow) visibleCount++;
     });
-    
+
     // Update pagination info
     updatePaginationInfo(visibleCount);
 }
@@ -3112,7 +3150,7 @@ function applyFilters() {
 function updatePaginationInfo(visibleCount) {
     const paginationInfo = document.querySelector('.pagination-info');
     const totalKeys = document.querySelectorAll('.table-row').length;
-    
+
     paginationInfo.innerHTML = 'Showing <span class="pagination-info-highlight">1-' + visibleCount + '</span> of <span class="pagination-info-highlight">' + totalKeys + '</span> keys';
 }
 
@@ -3122,14 +3160,14 @@ function openLocationsModal(keyName) {
     const modal = document.getElementById('locationsModal');
     const modalTitle = document.getElementById('modalTitle');
     const locationsList = document.getElementById('locationsList');
-    
+
     if (!modal || !modalTitle || !locationsList) {
         console.error('Modal elements not found!', {modal, modalTitle, locationsList});
         return;
     }
-    
+
     modalTitle.textContent = 'Locations for ' + keyName;
-    
+
     const locations = keyLocations[keyName];
     if (!locations || locations.length === 0) {
         locationsList.innerHTML = '<div style="text-align: center; padding: 2rem;"><p style="color: #9CA3AF;">No locations found for this key.</p></div>';
@@ -3138,14 +3176,14 @@ function openLocationsModal(keyName) {
         locations.forEach((location, index) => {
             // Extract relative file path for display
             const relativePath = location.file.replace(/.*[\\/](?:lib|test|example)[\\/]/g, '');
-            
+
             // Apply Dart/Flutter syntax highlighting
             let highlightedContext = applySyntaxHighlighting(location.context);
-            
+
             // Highlight the specific key with emphasis
             const keyPattern = new RegExp("\\b" + escapeRegExp(keyName) + "\\b", 'g');
             highlightedContext = highlightedContext.replace(keyPattern, '<span class="highlighted-key">' + keyName + '</span>');
-            
+
             // Split into lines and highlight the target line
             const lines = highlightedContext.split('\\n');
             let lineHtml = '';
@@ -3158,7 +3196,7 @@ function openLocationsModal(keyName) {
                 lineHtml += line;
                 lineHtml += '</div>';
             });
-            
+
             html += '<div class="location-item">' +
                 '<div class="location-header">' +
                     '<div class="location-info">' +
@@ -3167,7 +3205,7 @@ function openLocationsModal(keyName) {
                             '<span class="file-path">' + relativePath + '</span>' +
                         '</div>' +
                         '<div class="line-info">' +
-                            '<i class="fa-solid fa-location-dot"></i> Line ' + location.line + ', Column ' + location.column + 
+                            '<i class="fa-solid fa-location-dot"></i> Line ' + location.line + ', Column ' + location.column +
                             ' · <span class="detector-info">' + location.detector + '</span>' +
                         '</div>' +
                     '</div>' +
@@ -3180,20 +3218,20 @@ function openLocationsModal(keyName) {
                         '</button>' +
                     '</div>' +
                 '</div>' +
-                '<div class="code-container" data-language="dart">' + 
+                '<div class="code-container" data-language="dart">' +
                     '<div class="code-header">' +
                         '<span class="code-language">Dart/Flutter</span>' +
                         '<button class="code-copy-btn" onclick="copyCodeBlock(this)" data-code="' + escapeHtml(location.context).replaceAll('"', '&quot;') + '">' +
                             '<i class="fa-regular fa-copy"></i>' +
                         '</button>' +
                     '</div>' +
-                    lineHtml + 
+                    lineHtml +
                 '</div>' +
             '</div>';
         });
         locationsList.innerHTML = html;
     }
-    
+
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -3206,7 +3244,7 @@ function closeLocationsModal() {
 
 function showKeyDetails(keyName) {
     console.log('showKeyDetails called with:', keyName);
-    
+
     // Create or show key details modal
     let detailModal = document.getElementById('keyDetailsModal');
     if (!detailModal) {
@@ -3227,22 +3265,22 @@ function showKeyDetails(keyName) {
         `;
         document.body.appendChild(detailModal);
     }
-    
+
     const titleEl = document.getElementById('keyDetailsTitle');
     const bodyEl = document.getElementById('keyDetailsBody');
-    
+
     titleEl.textContent = 'Details for ' + keyName;
-    
+
     const keyData = keyLocations[keyName];
     if (!keyData || keyData.length === 0) {
         bodyEl.innerHTML = '<div style="text-align: center; padding: 2rem;"><p style="color: #9CA3AF;">No data found for this key.</p></div>';
     } else {
         let html = '<div class="key-details-grid">';
-        
+
         // Key statistics
         html += '<div class="detail-section"><h3><i class="fa-solid fa-chart-bar"></i> Statistics</h3>';
         html += '<div class="stat-item">Total Locations: <strong>' + keyData.length + '</strong></div>';
-        
+
         // Group by files
         const fileGroups = {};
         keyData.forEach(loc => {
@@ -3250,19 +3288,19 @@ function showKeyDetails(keyName) {
             if (!fileGroups[file]) fileGroups[file] = [];
             fileGroups[file].push(loc);
         });
-        
+
         html += '<div class="stat-item">Files: <strong>' + Object.keys(fileGroups).length + '</strong></div>';
-        
+
         // Group by detector
         const detectorGroups = {};
         keyData.forEach(loc => {
             if (!detectorGroups[loc.detector]) detectorGroups[loc.detector] = [];
             detectorGroups[loc.detector].push(loc);
         });
-        
+
         html += '<div class="stat-item">Detection Methods: <strong>' + Object.keys(detectorGroups).length + '</strong></div>';
         html += '</div>';
-        
+
         // File breakdown
         html += '<div class="detail-section"><h3><i class="fa-regular fa-folder"></i> File Breakdown</h3>';
         Object.entries(fileGroups).forEach(([file, locs]) => {
@@ -3272,40 +3310,40 @@ function showKeyDetails(keyName) {
             html += '</div>';
         });
         html += '</div>';
-        
+
         html += '</div>';
-        
+
         // Add CSS for the details modal
         if (!document.getElementById('keyDetailsStyles')) {
             const styles = document.createElement('style');
             styles.id = 'keyDetailsStyles';
             styles.textContent = `
                 .key-details-grid { display: flex; flex-direction: column; gap: 20px; }
-                .detail-section { 
-                    background: rgba(30, 41, 59, 0.3); 
-                    border: 1px solid rgba(51, 65, 85, 0.4); 
-                    border-radius: 12px; 
-                    padding: 20px; 
+                .detail-section {
+                    background: rgba(30, 41, 59, 0.3);
+                    border: 1px solid rgba(51, 65, 85, 0.4);
+                    border-radius: 12px;
+                    padding: 20px;
                 }
-                .detail-section h3 { 
-                    color: #f1f5f9; 
-                    margin: 0 0 16px 0; 
-                    display: flex; 
-                    align-items: center; 
-                    gap: 8px; 
+                .detail-section h3 {
+                    color: #f1f5f9;
+                    margin: 0 0 16px 0;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
                     font-size: 18px;
                 }
-                .stat-item { 
-                    color: #cbd5e1; 
-                    margin-bottom: 8px; 
-                    display: flex; 
+                .stat-item {
+                    color: #cbd5e1;
+                    margin-bottom: 8px;
+                    display: flex;
                     justify-content: space-between;
                 }
-                .file-breakdown-item { 
-                    display: flex; 
-                    justify-content: space-between; 
-                    align-items: center; 
-                    padding: 8px 0; 
+                .file-breakdown-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 8px 0;
                     border-bottom: 1px solid rgba(51, 65, 85, 0.3);
                 }
                 .file-breakdown-item:last-child { border-bottom: none; }
@@ -3314,10 +3352,10 @@ function showKeyDetails(keyName) {
             `;
             document.head.appendChild(styles);
         }
-        
+
         bodyEl.innerHTML = html;
     }
-    
+
     detailModal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -3332,29 +3370,29 @@ function closeKeyDetailsModal() {
 
 function showSection(sectionName) {
     console.log('showSection called with:', sectionName);
-    
+
     // Remove active class from all nav items
     document.querySelectorAll('.sidebar-nav-item').forEach(item => {
         item.classList.remove('active');
     });
-    
+
     // Add active class to clicked nav item
     const activeItem = document.querySelector(`[onclick="showSection('\${sectionName}')"]`);
     if (activeItem) {
         activeItem.classList.add('active');
     }
-    
+
     // Hide all content sections
     document.querySelectorAll('.content-section').forEach(section => {
         section.style.display = 'none';
     });
-    
+
     // Show the requested section
     const targetSection = document.getElementById(`\${sectionName}-section`);
     if (targetSection) {
         targetSection.style.display = 'block';
     }
-    
+
     // Update page title
     const pageTitle = document.querySelector('.page-title');
     if (pageTitle) {
@@ -3366,15 +3404,15 @@ function showSection(sectionName) {
         };
         pageTitle.textContent = sectionTitles[sectionName] || 'Report Dashboard';
     }
-    
+
     // Show toast notification
     const sectionNames = {
         'dashboard': '📊 Dashboard',
         'analysis': '🔑 Keys Analysis',
-        'stats': '📈 Statistics',  
+        'stats': '📈 Statistics',
         'export': '📤 Export Options'
     };
-    
+
     showToast(`Switched to \${sectionNames[sectionName] || sectionName}`, 'info');
 }
 
@@ -3385,8 +3423,8 @@ function initializeCharts() {
     if (performanceCanvas) {
         drawPerformanceChart(performanceCanvas);
     }
-    
-    // Distribution Chart  
+
+    // Distribution Chart
     const distributionCanvas = document.getElementById('distributionChart');
     if (distributionCanvas) {
         drawDistributionChart(distributionCanvas);
@@ -3397,34 +3435,34 @@ function drawPerformanceChart(canvas) {
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
-    
+
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
-    
+
     // Sample performance data (you can make this dynamic)
     const data = [65, 80, 90, 75, 85];
     const labels = ['Scan', 'Parse', 'Analyze', 'Filter', 'Report'];
     const maxValue = Math.max(...data);
-    
+
     // Draw bars
     const barWidth = width / data.length - 10;
     const barSpacing = 10;
-    
+
     data.forEach((value, index) => {
         const barHeight = (value / maxValue) * (height - 30);
         const x = index * (barWidth + barSpacing) + 5;
         const y = height - barHeight - 15;
-        
+
         // Draw bar
         ctx.fillStyle = '#3B82F6';
         ctx.fillRect(x, y, barWidth, barHeight);
-        
+
         // Draw label
         ctx.fillStyle = '#9CA3AF';
         ctx.font = '10px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(labels[index], x + barWidth/2, height - 5);
-        
+
         // Draw value
         ctx.fillStyle = '#E5E7EB';
         ctx.fillText(value + '%', x + barWidth/2, y - 5);
@@ -3436,10 +3474,10 @@ function drawDistributionChart(canvas) {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const radius = Math.min(centerX, centerY) - 20;
-    
+
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     // Sample distribution data (you can make this dynamic)
     const data = [
         { label: 'Buttons', value: 35, color: '#3b82f6' },
@@ -3448,13 +3486,13 @@ function drawDistributionChart(canvas) {
         { label: 'Modals', value: 15, color: '#8b5cf6' },
         { label: 'Lists', value: 5, color: '#ef4444' }
     ];
-    
+
     const total = data.reduce((sum, item) => sum + item.value, 0);
     let currentAngle = -Math.PI / 2; // Start at top
-    
+
     data.forEach(item => {
         const sliceAngle = (item.value / total) * 2 * Math.PI;
-        
+
         // Draw slice
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
@@ -3462,15 +3500,15 @@ function drawDistributionChart(canvas) {
         ctx.closePath();
         ctx.fillStyle = item.color;
         ctx.fill();
-        
+
         // Draw border
         ctx.strokeStyle = '#1F2937';
         ctx.lineWidth = 2;
         ctx.stroke();
-        
+
         currentAngle += sliceAngle;
     });
-    
+
     // Draw center circle
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius * 0.4, 0, 2 * Math.PI);
@@ -3480,13 +3518,13 @@ function drawDistributionChart(canvas) {
 
 function initializeFilters() {
     console.log('Initializing filters...');
-    
+
     // Ensure DOM is loaded
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initializeFilters);
         return;
     }
-    
+
     // Initialize search input
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
@@ -3497,42 +3535,42 @@ function initializeFilters() {
             }
         });
     }
-    
+
     // Initialize filter dropdowns
     const categoryFilter = document.getElementById('categoryFilter');
     const statusFilter = document.getElementById('statusFilter');
-    
+
     if (categoryFilter) {
         categoryFilter.addEventListener('change', applyFilters);
     }
-    
+
     if (statusFilter) {
         statusFilter.addEventListener('change', applyFilters);
     }
-    
+
     // Debug: check if table rows exist
     const rows = document.querySelectorAll('.table-row');
     console.log('Found table rows:', rows.length);
-    
+
     if (rows.length === 0) {
         console.warn('No table rows found with .table-row class');
         // Try alternative selector
         const trRows = document.querySelectorAll('tbody tr');
         console.log('Found tbody tr rows:', trRows.length);
     }
-    
+
     // Apply initial filters
     applyFilters();
 }
 
 function exportReport(format) {
     console.log('exportReport called with format:', format);
-    
+
     const timestamp = new Date().toISOString().split('T')[0];
     let filename = 'flutter-keycheck-report-' + timestamp;
     let content = '';
     let mimeType = '';
-    
+
     switch (format) {
         case 'html':
             filename += '.html';
@@ -3540,7 +3578,7 @@ function exportReport(format) {
             // Get the current HTML document
             content = document.documentElement.outerHTML;
             break;
-            
+
         case 'json':
             filename += '.json';
             mimeType = 'application/json';
@@ -3552,7 +3590,7 @@ function exportReport(format) {
                     keys: {}
                 }
             };
-            
+
             // Add key data
             Object.entries(keyLocations).forEach(([keyName, locations]) => {
                 jsonData.report.keys[keyName] = {
@@ -3567,10 +3605,10 @@ function exportReport(format) {
                     }))
                 };
             });
-            
+
             content = JSON.stringify(jsonData, null, 2);
             break;
-            
+
         case 'md':
             filename += '.md';
             mimeType = 'text/markdown';
@@ -3580,27 +3618,27 @@ function exportReport(format) {
             content += `- **Total Keys Found**: \${Object.keys(keyLocations).length}\\n`;
             content += `- **Report Date**: \${timestamp}\\n\\n`;
             content += `## Key Details\\n\\n`;
-            
+
             Object.entries(keyLocations).forEach(([keyName, locations]) => {
                 content += `### \$keyName\\n\\n`;
                 content += `- **Locations**: \${locations.length}\\n`;
                 content += `- **Files**:\\n`;
-                
+
                 const files = {};
                 locations.forEach(loc => {
                     const file = loc.file.replace(/.*[\\\\/](?:lib|test|example)[\\\\/]/g, '');
                     if (!files[file]) files[file] = [];
                     files[file].push(loc);
                 });
-                
+
                 Object.entries(files).forEach(([file, locs]) => {
                     content += `  - \${file}: \${locs.length} occurrence(s)\\n`;
                 });
-                
+
                 content += `\\n`;
             });
             break;
-            
+
         case 'ci':
             filename += '.txt';
             mimeType = 'text/plain';
@@ -3608,7 +3646,7 @@ function exportReport(format) {
             content += '=' + '='.repeat(40) + '\\n\\n';
             content += `Generated: \${new Date().toISOString()}\\n`;
             content += `Total Keys: \${Object.keys(keyLocations).length}\\n\\n`;
-            
+
             Object.entries(keyLocations).forEach(([keyName, locations]) => {
                 content += `[\$keyName] \${locations.length} location(s)\\n`;
                 locations.forEach(loc => {
@@ -3618,7 +3656,7 @@ function exportReport(format) {
                 content += '\\n';
             });
             break;
-            
+
         case 'text':
             filename += '.txt';
             mimeType = 'text/plain';
@@ -3626,7 +3664,7 @@ function exportReport(format) {
             content += '='.repeat(30) + '\\n\\n';
             content += `Report Generated: \${new Date().toLocaleString()}\\n`;
             content += `Total Keys Found: \${Object.keys(keyLocations).length}\\n\\n`;
-            
+
             Object.entries(keyLocations).forEach(([keyName, locations]) => {
                 content += `Key: \$keyName\\n`;
                 content += `Locations: \${locations.length}\\n`;
@@ -3638,7 +3676,7 @@ function exportReport(format) {
             });
             break;
     }
-    
+
     // Create download
     try {
         const blob = new Blob([content], { type: mimeType });
@@ -3650,7 +3688,7 @@ function exportReport(format) {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        
+
         showToast(`📥 Downloaded: \${filename}`, 'success');
     } catch (error) {
         console.error('Export failed:', error);
@@ -3692,14 +3730,14 @@ function copyCodeBlock(buttonElement) {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = codeText;
         const plainText = tempDiv.textContent || tempDiv.innerText || '';
-        
+
         copyToClipboard(plainText);
-        
+
         // Visual feedback
         const originalHtml = buttonElement.innerHTML;
         buttonElement.innerHTML = '<i class="fa-solid fa-check"></i>';
         buttonElement.classList.add('copied');
-        
+
         setTimeout(() => {
             buttonElement.innerHTML = originalHtml;
             buttonElement.classList.remove('copied');
@@ -3713,20 +3751,20 @@ function showToast(message, type = 'info') {
     if (existingToast) {
         existingToast.remove();
     }
-    
+
     // Create new toast
     const toast = document.createElement('div');
     toast.className = 'toast toast-' + type;
     toast.textContent = message;
-    
+
     // Add toast to document
     document.body.appendChild(toast);
-    
+
     // Animate in
     setTimeout(() => {
         toast.classList.add('show');
     }, 100);
-    
+
     // Remove after 3 seconds
     setTimeout(() => {
         toast.classList.remove('show');
@@ -3751,7 +3789,7 @@ document.addEventListener('keydown', function(event) {
         closeLocationsModal();
         return;
     }
-    
+
     // Handle Ctrl+F for search focus
     if (event.ctrlKey && event.key === 'f') {
         event.preventDefault();
@@ -3763,21 +3801,21 @@ document.addEventListener('keydown', function(event) {
         }
         return;
     }
-    
+
     // Handle Ctrl+R for refresh
     if (event.ctrlKey && event.key === 'r') {
         event.preventDefault();
         refreshReport();
         return;
     }
-    
+
     // Handle ? key for shortcuts toggle
     if (event.key === '?' && !event.ctrlKey && !event.altKey) {
         event.preventDefault();
         toggleKeyboardShortcuts();
         return;
     }
-    
+
     // Handle Enter in search
     if (event.key === 'Enter' && event.target.id === 'searchInput') {
         applyFilters();
@@ -3814,13 +3852,13 @@ function escapeHtml(text) {
 
 function applySyntaxHighlighting(code) {
     if (!code) return '';
-    
+
     // Escape HTML first
     let highlighted = escapeHtml(code);
-    
+
     // Enhanced Dart/Flutter Keywords with direct replacement
     const keywords = [
-        'class', 'const', 'final', 'var', 'static', 'void', 'if', 'else', 
+        'class', 'const', 'final', 'var', 'static', 'void', 'if', 'else',
         'for', 'while', 'return', 'import', 'library', 'export', 'part',
         'abstract', 'extends', 'implements', 'with', 'enum', 'async', 'await',
         'try', 'catch', 'throw', 'new', 'this', 'super', 'null', 'true', 'false'
@@ -3830,7 +3868,7 @@ function applySyntaxHighlighting(code) {
         const regex = new RegExp(pattern, 'g');
         highlighted = highlighted.replace(regex, '<span class="dart-keyword">' + keyword + '</span>');
     });
-    
+
     // Flutter/Dart Types and Widgets
     const types = [
         'Widget', 'StatelessWidget', 'StatefulWidget', 'State', 'BuildContext',
@@ -3845,7 +3883,7 @@ function applySyntaxHighlighting(code) {
         const regex = new RegExp(pattern, 'g');
         highlighted = highlighted.replace(regex, '<span class="dart-type">' + type + '</span>');
     });
-    
+
     // Simple patterns with safe replacement
     // String literals
     highlighted = highlighted.replace(/'/g, function(match, offset, string) {
@@ -3856,49 +3894,49 @@ function applySyntaxHighlighting(code) {
         }
         return match;
     });
-    
+
     // Numbers - simple pattern
     highlighted = highlighted.replace(/\\b\\d+\\b/g, function(match) {
         return '<span class="dart-number">' + match + '</span>';
     });
-    
+
     // Comments - line comments
     highlighted = highlighted.replace(/\\/\\/[^\\r\\n]*/g, function(match) {
         return '<span class="dart-comment">' + match + '</span>';
     });
-    
+
     // Function calls - simple pattern
     highlighted = highlighted.replace(/\\b\\w+(?=\\()/g, function(match) {
         return '<span class="dart-function">' + match + '</span>';
     });
-    
+
     // Annotations
     highlighted = highlighted.replace(/@\\w+/g, function(match) {
         return '<span class="dart-annotation">' + match + '</span>';
     });
-    
+
     return highlighted;
 }
 
 function analyzeDuplicates(keyName) {
     console.log('Analyzing duplicates for key:', keyName);
-    
+
     // Find all duplicate rows for this key
     const duplicateRows = document.querySelectorAll(`tr[data-key="\$keyName"]`);
-    
+
     if (duplicateRows.length === 0) {
         showToast('❌ Key not found in duplicates table', 'error');
         return;
     }
-    
+
     // Get key data from keyLocations
     const locations = keyLocations[keyName];
-    
+
     if (!locations || locations.length <= 1) {
         showToast('ℹ️ Key has no duplicates', 'info');
         return;
     }
-    
+
     // Create analysis content
     let analysisContent = `<div class="duplicate-analysis">`;
     analysisContent += `<h4 style="margin-top: 0; color: #fb923c;">Duplicate Analysis: \$keyName</h4>`;
@@ -3906,10 +3944,10 @@ function analyzeDuplicates(keyName) {
     analysisContent += `<p><strong>Total References:</strong> \${locations.length}</p>`;
     analysisContent += `<p><strong>Impact Level:</strong> \${locations.length > 5 ? '<span class="high">High</span>' : locations.length > 3 ? '<span class="medium">Medium</span>' : '<span class="low">Low</span>'}</p>`;
     analysisContent += `</div>`;
-    
+
     analysisContent += `<h5>All Locations:</h5>`;
     analysisContent += `<div class="locations-list">`;
-    
+
     locations.forEach((loc, index) => {
         const shortFile = loc.file.replace(/.*[\\\\/](?:lib|test|example)[\\\\/]/g, '');
         analysisContent += `<div class="location-detail">`;
@@ -3924,7 +3962,7 @@ function analyzeDuplicates(keyName) {
         }
         analysisContent += `</div>`;
     });
-    
+
     analysisContent += `</div>`;
     analysisContent += `<div class="analysis-actions">`;
     analysisContent += `<button onclick="openLocationsModal('\$keyName')" class="action-btn primary">`;
@@ -3932,7 +3970,7 @@ function analyzeDuplicates(keyName) {
     analysisContent += `</button>`;
     analysisContent += `</div>`;
     analysisContent += `</div>`;
-    
+
     // Show in modal
     showModal('Duplicate Key Analysis', analysisContent);
 }
@@ -4394,7 +4432,7 @@ function analyzeDuplicates(keyName) {
                 <h3>Duplicate Keys Analysis</h3>
                 <span class="duplicate-count">${duplicateKeysList.length} keys with multiple references</span>
             </div>
-            
+
             <div class="duplicate-keys-table-container">
                 <table class="duplicate-keys-table">
                     <thead>
@@ -5129,7 +5167,7 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
                 <h3>Duplicate Keys Analysis</h3>
                 <span class="duplicate-count">${duplicateKeysList.length} keys with multiple references</span>
             </div>
-            
+
             <div class="duplicate-keys-table-container">
                 <table class="duplicate-keys-table">
                     <thead>
@@ -5491,5 +5529,38 @@ ${gates.map((gate) => '  ${gate['status'] == 'PASS' ? '✓' : '✗'} ${gate['nam
     }
 
     return insights.join('\n');
+  }
+}
+
+/// Premium reporter wrapper for dashboard reporter
+class PremiumReporter extends ReporterV3 {
+  final String format;
+
+  PremiumReporter([this.format = 'html']);
+
+  @override
+  Future<void> generateScanReport(
+    ScanResult result,
+    File outputFile, {
+    bool includeMetrics = true,
+    bool includeLocations = false,
+  }) async {
+    final content = PremiumDashboardReporter().generateReport(result);
+    await outputFile.writeAsString(content);
+  }
+
+  @override
+  Future<void> generateValidationReport(
+    ValidationResult result,
+    File outputFile, {
+    bool includeMetrics = true,
+  }) async {
+    // Basic premium validation report
+    final buffer = StringBuffer();
+    buffer.writeln('# Premium Validation Report');
+    buffer.writeln('Status: ${result.hasViolations ? "FAILED" : "PASSED"}');
+    buffer.writeln('Total Keys: ${result.summary.totalKeys}');
+    buffer.writeln('Violations: ${result.violations.length}');
+    await outputFile.writeAsString(buffer.toString());
   }
 }

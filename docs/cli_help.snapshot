@@ -13,7 +13,7 @@ Available commands:
   scan        Build current snapshot of keys
   baseline    Create or update baseline
   diff        Compare snapshots
-  validate    CI gate enforcement (alias: ci-validate)
+  validate    CI gate enforcement
   sync        Pull/push from external registry
   report      Generate reports
 

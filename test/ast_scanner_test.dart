@@ -2,6 +2,7 @@ import 'package:flutter_keycheck/src/ast_scanner.dart';
 import 'package:test/test.dart';
 import 'dart:io';
 import 'package:path/path.dart' as path;
+import 'test_constants.dart';
 
 void main() {
   group('AstScanner', () {
@@ -33,7 +34,7 @@ class TestWidget extends StatelessWidget {
       children: [
         Container(key: Key('container_key')),
         Text('Test', key: ValueKey('text_key')),
-        ElevatedButton(
+        ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
           key: Key('button_key'),
           onPressed: () {},
           child: Text('Button'),

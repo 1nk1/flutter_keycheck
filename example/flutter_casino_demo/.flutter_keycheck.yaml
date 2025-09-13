@@ -1,0 +1,66 @@
+# Flutter KeyCheck Configuration for Casino Demo
+# Demonstration configuration focusing on tracked keys
+
+# Project Configuration
+project_name: "Flutter Casino Demo"
+version: "1.0.0"
+
+# Scan Configuration
+scan:
+  include_patterns:
+    - "lib/**/*.dart"
+    - "test/**/*.dart"
+    - "integration_test/**/*.dart"
+  exclude_patterns:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/generated/**"
+  
+  # Key Detection Settings
+  detectors:
+    key_constructor: true
+    value_key_constructor: true
+    key_constants: true
+    global_key: true
+    finder_patterns: false  # Exclude test finder patterns
+
+# Tracked Keys Configuration (Critical subset for focused validation)
+tracked_keys:
+  - slotsGameCard
+  - rouletteGameCard  
+  - blackjackGameCard
+  - demoModeCard
+  - spinButton
+  - spinRouletteButton
+  - dealButton
+  - hitButton
+  - standButton
+  - runDemoButton
+
+# Validation Rules
+validation:
+  strict_mode: true
+  fail_on_missing: true
+  fail_on_extra: false
+  max_drift_percentage: 10
+  
+  # Protected tags cannot be removed
+  protected_tags:
+    - "critical"
+    - "automation"
+    - "e2e"
+
+# Reporting Configuration
+reports:
+  output_formats:
+    - "json"
+    - "html" 
+    - "md"
+  output_directory: "reports"
+  include_context: true
+  
+# Quality Gates
+quality_gates:
+  minimum_key_coverage: 90
+  maximum_duplicate_keys: 0
+  require_tracked_keys: true

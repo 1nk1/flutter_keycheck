@@ -1,3 +1,28 @@
+version: 1
+baselines:
+  coverage:
+    overall: 0.80
+    unit: 0.80
+    integration: 0.70
+    widget: 0.75
+  premium_metrics:
+    score: 0.90
+    errors: 0
+    compatibility: 0.90
+tests:
+  - name: complex_key_scenarios_test.dart
+    expected_coverage: 0.95
+    tags: [complex, scenarios]
+    no_regressions: true
+  - name: premium_test.dart
+    expected_coverage: 0.90
+    tags: [premium]
+    metrics:
+      score: 0.90
+  - name: version_matrix_test.dart
+    expected_coverage: 0.85
+    tags: [compatibility]
+    no_regressions: true
 keys:
   - id: test_key
     package: main

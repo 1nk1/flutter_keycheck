@@ -1,3 +1,34 @@
+/// Test Coverage Guardian Agent for Claude Code
+///
+/// Mission: Ensure critical UI elements with keys are covered by automated tests 
+/// and traceable to step definitions.
+///
+/// Primary Responsibilities:
+/// - Link keys to test steps/handlers (Flutter Integration Driver, WDIO, Appium)
+/// - Compute coverage by feature/step_id and trend it over time
+/// - Emit red/yellow/green gates for CI pipelines
+///
+/// Inputs:
+/// - AST key map, test repo paths, step_id taxonomy, CI context
+///
+/// Outputs:
+/// - reports/coverage/summary.json, reports/coverage/trends.md, Allure attachments
+///
+/// Hooks & Triggers:
+/// - pre-task: load last coverage snapshot to compute delta
+/// - post-command: push metrics to CI artifact store
+///
+/// MCP Tools:
+/// - workflow_create, metrics_collect, trend_analysis, usage_stats
+///
+/// KPIs:
+/// - ≥ 80% of critical keys covered within first release cycle
+/// - Coverage drift detected within one commit
+///
+/// Safeguards:
+/// - Exempt lists for non-testable keys
+/// - Heuristic mapping verified by deterministic fallbacks
+///
 import 'dart:convert';
 import 'package:path/path.dart' as path;
 import 'package:flutter_keycheck/src/models/scan_result.dart';

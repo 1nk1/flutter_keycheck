@@ -1,5 +1,8 @@
 version: 1
 thresholds:
-  file_coverage: 0.80
-  widget_coverage: 0.05
+  unit: 0.80
+  integration: 0.70
+  widget: 0.75
+  reporter: 0.85
+  compatibility: 0.90
 fail_on_lost: true

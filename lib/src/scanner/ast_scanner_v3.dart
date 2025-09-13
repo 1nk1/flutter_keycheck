@@ -10,6 +10,40 @@ import 'package:flutter_keycheck/src/scanner/key_detectors_v3.dart';
 import 'package:flutter_keycheck/src/cache/dependency_cache.dart';
 import 'package:path/path.dart' as path;
 
+/// Flutter AST Auditor Agent for Claude Code
+/// 
+/// Mission: Guarantee precise, scalable analysis of Flutter/Dart source and dependent packages
+/// to detect, map, and validate widget keys.
+/// 
+/// Primary Responsibilities:
+/// - Parse lib/** and discovered dependencies for Key/ValueKey usage (including GlobalKey, UniqueKey)
+/// - Build key ↔ widget ↔ file:line map and link to test handlers when available
+/// - Detect duplicates, collisions, and missing keys on critical widgets
+/// - Emit machine-readable reports (JSON) and human reports (Markdown/HTML)
+/// 
+/// Inputs:
+/// - Root directory, pubspec.yaml, dependency graph, include/exclude globs, policy config
+/// 
+/// Outputs:
+/// - reports/ast/keys.json, reports/ast/findings.md, SARIF-compatible issues (optional)
+/// 
+/// Hooks & Triggers:
+/// - pre-task: collect include/exclude and dependency graph
+/// - post-edit: re-scan changed files only (incremental)
+/// - session-end: persist scan summary to memory
+/// 
+/// MCP Tools:
+/// - pattern_recognize, memory_namespace, memory_persist, neural_explain, dependency_scan
+/// 
+/// KPIs:
+/// - AST scan time < 90s for mono-repo
+/// - Duplicate detection precision/recall ≥ 0.99/0.98
+/// - Zero false positives on non-widget keys
+/// 
+/// Safeguards:
+/// - File-level incremental indexing with checksum cache
+/// - Respect .keycheckignore and project allowlists
+///
 /// Package scanning scope
 enum ScanScope {
   workspaceOnly('workspace-only'),
@@ -27,6 +61,37 @@ enum ScanScope {
   }
 }
 
+/// Cross-Package Tracker Agent for Claude Code
+///
+/// Mission: Provide holistic visibility and de-duplication of keys across all 
+/// dependent packages used by the app.
+///
+/// Primary Responsibilities:
+/// - Resolve and scan dependencies listed in pubspec.yaml (local path, git, hosted)
+/// - Detect cross-package duplicate keys and namespace conflicts
+/// - Maintain a federated index of package → keys → locations
+///
+/// Inputs:
+/// - Dependency graph (locked), per-package include/exclude rules
+///
+/// Outputs:
+/// - reports/crosspkg/index.json, reports/crosspkg/duplicates.md
+///
+/// Hooks & Triggers:
+/// - pre-task: dependency snapshot capture
+/// - session-restore: load previous index to diff changes
+///
+/// MCP Tools:
+/// - memory_search, dependency_scan, coordination_sync, memory_backup
+///
+/// KPIs:
+/// - Cross-package index freshness: updated within 5 minutes after dep change
+/// - Duplicate conflict time-to-detect < 1 PR cycle
+///
+/// Safeguards:
+/// - Cache by package@version
+/// - Fallback to partial scan if a package fails to resolve
+///
 /// Text-based heuristics for widget and handler detection
 class _Heuristics {
   final int widgetHits;
@@ -1305,6 +1370,103 @@ class KeyVisitorV3 extends RecursiveAstVisitor<void> {
   }
 
   String _getContext(AstNode node) {
+    try {
+      // Get the source file content
+      final file = File(filePath);
+      if (!file.existsSync()) {
+        // Fallback to old method if file not found
+        return _getSimpleContext(node);
+      }
+      
+      final content = file.readAsStringSync();
+      final lines = content.split('\n');
+      
+      // Get line info from AST
+      final lineInfo = (node.root as CompilationUnit).lineInfo;
+      final location = lineInfo.getLocation(node.offset);
+      final currentLineIndex = location.lineNumber - 1;
+      
+      // Find the complete component/function/widget boundaries
+      final bounds = _findLogicalBounds(lines, currentLineIndex);
+      
+      final contextLines = <String>[];
+      for (int i = bounds.start; i <= bounds.end; i++) {
+        if (i < lines.length && i >= 0) {
+          contextLines.add(lines[i]);
+        }
+      }
+      
+      return contextLines.join('\n');
+    } catch (e) {
+      // Fallback to simple context on any error
+      return _getSimpleContext(node);
+    }
+  }
+
+  /// Find logical boundaries from opening brace to closing brace, max 30 lines
+  ({int start, int end}) _findLogicalBounds(List<String> lines, int targetLine) {
+    int startLine = targetLine;
+    int endLine = targetLine;
+    
+    // Look backwards to find the nearest opening brace (much further back)
+    bool foundStartBrace = false;
+    for (int i = targetLine; i >= 0 && (targetLine - i < 50); i--) {
+      final line = lines[i];
+      if (line.contains('{')) {
+        startLine = i;
+        foundStartBrace = true;
+        break;
+      }
+    }
+    
+    // If found opening brace, look forward for matching closing brace
+    if (foundStartBrace) {
+      int braceDepth = 0;
+      
+      // Start scanning from the line with opening brace
+      for (int i = startLine; i < lines.length; i++) {
+        final line = lines[i];
+        
+        // Count all braces on this line
+        for (int j = 0; j < line.length; j++) {
+          final char = line[j];
+          if (char == '{') {
+            braceDepth++;
+          } else if (char == '}') {
+            braceDepth--;
+            // Found matching closing brace
+            if (braceDepth == 0) {
+              endLine = i;
+              // Limit to 30 lines maximum
+              if (endLine - startLine > 29) {
+                endLine = startLine + 29;
+              }
+              return (start: startLine, end: endLine);
+            }
+          }
+        }
+        
+        // Stop if we've gone too far (30 lines)
+        if (i - startLine >= 29) {
+          endLine = startLine + 29;
+          return (start: startLine, end: endLine);
+        }
+      }
+    }
+    
+    // Fallback: show much more context around target
+    startLine = (targetLine - 15).clamp(0, lines.length - 1);
+    endLine = (targetLine + 15).clamp(0, lines.length - 1);
+    
+    // Ensure we don't exceed 30 lines
+    if (endLine - startLine > 29) {
+      endLine = startLine + 29;
+    }
+    
+    return (start: startLine, end: endLine);
+  }
+
+  String _getSimpleContext(AstNode node) {
     AstNode? current = node.parent;
     while (current != null) {
       if (current is MethodDeclaration) {

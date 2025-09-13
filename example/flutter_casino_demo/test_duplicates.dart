@@ -6,13 +6,13 @@ class TestDuplicates extends StatelessWidget {
     return Column(
       children: [
         // Duplicate key 1
-        ElevatedButton(
+        ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
           key: ValueKey('duplicate_button'),
           onPressed: () {},
           child: Text('Button 1'),
         ),
         // Duplicate key 1 - same key!
-        ElevatedButton(
+        ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
           key: ValueKey('duplicate_button'),
           onPressed: () {},
           child: Text('Button 2'),

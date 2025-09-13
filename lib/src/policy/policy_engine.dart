@@ -59,9 +59,16 @@ class PolicyEngine {
     // Check lost keys
     if (lostKeys.isNotEmpty) {
       for (final key in lostKeys) {
-        final usage = baseline.keyUsages[key]!;
+        final usage = baseline.keyUsages[key];
+        if (usage == null) continue; // Skip if key usage not found
+        
         final isProtected = _hasProtectedTag(usage.tags, config.protectedTags);
         final isCritical = isProtected || usage.tags.contains('critical');
+        
+        // Get location safely
+        final location = usage.locations.isNotEmpty 
+            ? usage.locations.first.file 
+            : 'unknown';
 
         if (config.failOnLost && isCritical) {
           violations.add(Violation(
@@ -69,9 +76,9 @@ class PolicyEngine {
             severity: isProtected ? 'error' : 'warning',
             key: KeyInfo(
               id: key,
-              package: _getPackageFromPath(usage.locations.first.file),
+              package: _getPackageFromPath(location),
               tags: usage.tags.toList(),
-              lastSeen: usage.locations.first.file,
+              lastSeen: location,
               status: usage.status,
             ),
             message: isProtected
@@ -89,9 +96,16 @@ class PolicyEngine {
     // Check renamed keys
     if (renamedKeys.isNotEmpty) {
       for (final entry in renamedKeys.entries) {
-        final usage = baseline.keyUsages[entry.key]!;
+        final usage = baseline.keyUsages[entry.key];
+        if (usage == null) continue; // Skip if key usage not found
+        
         final isProtected = _hasProtectedTag(usage.tags, config.protectedTags);
         final isCritical = isProtected || usage.tags.contains('critical');
+        
+        // Get location safely
+        final location = usage.locations.isNotEmpty 
+            ? usage.locations.first.file 
+            : 'unknown';
 
         if (config.failOnRename && isCritical) {
           violations.add(Violation(
@@ -99,9 +113,9 @@ class PolicyEngine {
             severity: isProtected ? 'error' : 'warning',
             key: KeyInfo(
               id: entry.key,
-              package: _getPackageFromPath(usage.locations.first.file),
+              package: _getPackageFromPath(location),
               tags: usage.tags.toList(),
-              lastSeen: usage.locations.first.file,
+              lastSeen: location,
               status: usage.status,
             ),
             message: "Key '${entry.key}' renamed to '${entry.value}'",
@@ -118,14 +132,21 @@ class PolicyEngine {
     // Check extra keys
     if (config.failOnExtra && addedKeys.isNotEmpty) {
       for (final key in addedKeys) {
+        final usage = current.keyUsages[key];
+        if (usage == null) continue; // Skip if key usage not found
+        
+        // Get location safely
+        final location = usage.locations.isNotEmpty 
+            ? usage.locations.first.file 
+            : 'unknown';
+            
         violations.add(Violation(
           type: 'extra',
           severity: 'warning',
           key: KeyInfo(
             id: key,
-            package: _getPackageFromPath(
-                current.keyUsages[key]!.locations.first.file),
-            tags: current.keyUsages[key]!.tags.toList(),
+            package: _getPackageFromPath(location),
+            tags: usage.tags.toList(),
             status: 'new',
           ),
           message: "Extra key '$key' found",

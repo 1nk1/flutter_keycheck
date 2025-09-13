@@ -526,7 +526,7 @@ class _SlotsScreenState extends State<SlotsScreen> {
                         const SizedBox(height: 20),
 
                         // Spin button
-                        ElevatedButton(
+                        ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
                           key: const Key('spinButton'),
                           onPressed: isSpinning ? null : spin,
                           style: ElevatedButton.styleFrom(
@@ -711,7 +711,7 @@ class _RouletteScreenState extends State<RouletteScreen>
                       const SizedBox(height: 20),
 
                       // Spin button
-                      ElevatedButton(
+                      ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
                         key: const Key('spinRouletteButton'),
                         onPressed: isSpinning ? null : spin,
                         style: ElevatedButton.styleFrom(
@@ -993,7 +993,7 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
 
                         // Game controls
                         if (!gameStarted)
-                          ElevatedButton(
+                          ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
                             key: const Key('dealButton'),
                             onPressed: startGame,
                             style: ElevatedButton.styleFrom(
@@ -1016,7 +1016,7 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              ElevatedButton(
+                              ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
                                 key: const Key('hitButton'),
                                 onPressed: hit,
                                 style: ElevatedButton.styleFrom(
@@ -1029,7 +1029,7 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                                 ),
                               ),
                               const SizedBox(width: 20),
-                              ElevatedButton(
+                              ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
                                 key: const Key('standButton'),
                                 onPressed: stand,
                                 style: ElevatedButton.styleFrom(
@@ -1045,7 +1045,7 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                           ),
 
                         if (gameOver)
-                          ElevatedButton(
+                          ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
                             key: const Key('newGameButton'),
                             onPressed: () {
                               setState(() {
@@ -1185,7 +1185,7 @@ class _DemoModeScreenState extends State<DemoModeScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      ElevatedButton(
+                      ElevatedButton(key: Key("elevated_btn_${RANDOM}"), 
                         key: const Key('runDemoButton'),
                         onPressed: isRunning ? null : runDemo,
                         style: ElevatedButton.styleFrom(
@@ -1226,7 +1226,7 @@ class BetControls extends StatelessWidget {
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            IconButton(
+            IconButton(key: Key("icon_btn_${RANDOM}"), 
               key: const Key('decreaseBetButton'),
               onPressed: () => vm.setBet(vm.currentBet - 10),
               icon: const Icon(Icons.remove_circle, size: 32),
@@ -1247,7 +1247,7 @@ class BetControls extends StatelessWidget {
                 ),
               ),
             ),
-            IconButton(
+            IconButton(key: Key("icon_btn_${RANDOM}"), 
               key: const Key('increaseBetButton'),
               onPressed: () => vm.setBet(vm.currentBet + 10),
               icon: const Icon(Icons.add_circle, size: 32),

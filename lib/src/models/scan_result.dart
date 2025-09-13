@@ -141,9 +141,9 @@ class ScanMetrics {
     metrics.scannedFiles = map['scanned_files'] ?? 0;
     metrics.totalLines = map['total_lines'] ?? 0;
     metrics.analyzedNodes = map['analyzed_nodes'] ?? 0;
-    metrics.fileCoverage = (map['file_coverage'] ?? 0).toDouble();
-    metrics.widgetCoverage = (map['widget_coverage'] ?? 0).toDouble();
-    metrics.handlerCoverage = (map['handler_coverage'] ?? 0).toDouble();
+    metrics.fileCoverage = _toDouble(map['file_coverage']);
+    metrics.widgetCoverage = _toDouble(map['widget_coverage']);
+    metrics.handlerCoverage = _toDouble(map['handler_coverage']);
     metrics.detectorHits = Map<String, int>.from(map['detector_hits'] ?? {});
     metrics.errors = List<ScanError>.from(
       (map['errors'] ?? []).map((x) => ScanError.fromMap(x)),
@@ -154,11 +154,24 @@ class ScanMetrics {
     metrics.cacheHits = map['cache_hits'] ?? 0;
     metrics.cacheMisses = map['cache_misses'] ?? 0;
     metrics.largeFilesProcessed = map['large_files_processed'] ?? 0;
-    metrics.avgFileSizeKB = (map['avg_file_size_kb'] ?? 0).toDouble();
+    metrics.avgFileSizeKB = _toDouble(map['avg_file_size_kb']);
     metrics.totalScanTime =
         Duration(milliseconds: map['total_scan_time_ms'] ?? 0);
     metrics.dependencyTree = map['dependency_tree'];
     return metrics;
+  }
+  
+  /// Helper method to convert various types to double
+  static double _toDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      // Handle string numbers like "12.5" or "0%"
+      final cleaned = value.replaceAll('%', '').trim();
+      return double.tryParse(cleaned) ?? 0.0;
+    }
+    return 0.0;
   }
 }
 

@@ -22,6 +22,12 @@ class SyncCommand extends BaseCommandV3 {
         defaultsTo: 'pull',
       )
       ..addOption(
+        'registry',
+        help: 'Registry type',
+        allowed: ['git', 'pkg', 'storage'],
+        defaultsTo: 'git',
+      )
+      ..addOption(
         'repo',
         help: 'Git repository URL for registry',
       )

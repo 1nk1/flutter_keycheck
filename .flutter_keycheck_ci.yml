@@ -58,14 +58,25 @@ ci_integration:
     parallel_jobs: true
     notification_on_failure: true
     
+  # Test Matrix for Analyzer Versions
+  test_matrix:
+    analyzer_versions:
+      - 3.2.x
+      - 3.3.x
+      - 3.4.x
+    commands:
+      - flutter test --coverage
+      - generate_premium_reports: true
+    
   # Pipeline stages
   stages:
     - validate    # KeyCheck validation with quality gates
-    - test        # Unit tests and static analysis  
+    - test        # Unit tests and static analysis
     - integrate   # Integration tests and regression
     - quality     # Quality assessment and security scan
     - performance # Performance benchmarking
     - report      # Report generation and analysis
+    - premium_report  # Premium report generation in HTML/JSON/MD formats
     - deploy      # Deployment gates and publishing
 
 # ==================================================
@@ -77,8 +88,11 @@ reporting:
   formats:
     - json        # Machine readable for CI/CD
     - markdown    # Human readable reports
+    - premium_json  # Premium JSON metrics
     - junit       # CI/CD integration format
     - html        # Enterprise dashboard format
+    - premium_html  # Premium HTML dashboard
+    - premium_md   # Premium Markdown summary
     
   # Report content
   include:

@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "env": {
+        "DEFAULT_MINIMUM_TOKENS": ""
+      },
+      "alwaysAllow": [
+        "resolve-library-id",
+        "get-library-docs"
+      ]
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "alwaysAllow": [
+        "create_entities",
+        "create_relations",
+        "add_observations",
+        "delete_entities",
+        "delete_relations",
+        "delete_observations",
+        "search_nodes",
+        "read_graph",
+        "open_nodes"
+      ]
+    },
+    "qdrant": {
+      "command": "npx",
+      "args": [
+        "@smithery/cli",
+        "install",
+        "mcp-server-qdrant",
+        "--client",
+        "claude"
+      ],
+      "disabled": true,
+      "alwaysAllow": []
+    }
+  }
+}

@@ -16,10 +16,14 @@ This example demonstrates how to use the `flutter_keycheck` CLI tool to validate
 dart pub global activate flutter_keycheck
 ```
 
-1. Run the validation:
+2. Run the validation:
 
 ```bash
-flutter_keycheck --keys expected_keys.yaml --path sample_flutter_app --verbose
+# Scan the sample Flutter app
+flutter_keycheck scan --project-root sample_flutter_app --report json
+
+# Validate against expected keys
+flutter_keycheck validate --baseline expected_keys.yaml --project-root sample_flutter_app --verbose
 ```
 
 ## Expected Output

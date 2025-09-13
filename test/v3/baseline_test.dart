@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
+import '../test_constants.dart';
 
 void main() {
   late Directory tempDir;
@@ -26,7 +27,7 @@ class MyWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ElevatedButton(
+        ElevatedButton(key: Key("elevated_btn_${RANDOM}"),
           key: Key('login_button'),
           onPressed: () {},
           child: Text('Login'),

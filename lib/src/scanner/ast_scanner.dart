@@ -6,6 +6,8 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:path/path.dart' as path;
 
+import 'key_detectors.dart';
+
 /// AST-based scanner with full coverage metrics
 class AstScanner {
   final String projectPath;
@@ -413,6 +415,107 @@ class KeyVisitor extends RecursiveAstVisitor<void> {
   }
 
   String _getContext(AstNode node) {
+    try {
+      // Get the source file content
+      final file = File(filePath);
+      if (!file.existsSync()) {
+        // Fallback to old method if file not found
+        return _getSimpleContext(node);
+      }
+      
+      final content = file.readAsStringSync();
+      final lines = content.split('\n');
+      
+      // Get line info from AST
+      final lineInfo = (node.root as CompilationUnit?)?.lineInfo;
+      if (lineInfo == null) {
+        return _getSimpleContext(node);
+      }
+      
+      final location = lineInfo.getLocation(node.offset);
+      final currentLineIndex = location.lineNumber - 1;
+      
+      // Find the complete component/function/widget boundaries
+      final bounds = _findLogicalBounds(lines, currentLineIndex);
+      
+      final contextLines = <String>[];
+      for (int i = bounds.start; i <= bounds.end; i++) {
+        if (i < lines.length && i >= 0) {
+          contextLines.add(lines[i]);
+        }
+      }
+      
+      return contextLines.join('\n');
+    } catch (e) {
+      // Fallback to simple context on any error
+      return _getSimpleContext(node);
+    }
+  }
+
+  /// Find logical boundaries from opening brace to closing brace, max 30 lines
+  ({int start, int end}) _findLogicalBounds(List<String> lines, int targetLine) {
+    int startLine = targetLine;
+    int endLine = targetLine;
+    
+    // Look backwards to find the nearest opening brace (much further back)
+    bool foundStartBrace = false;
+    for (int i = targetLine; i >= 0 && (targetLine - i < 50); i--) {
+      final line = lines[i];
+      if (line.contains('{')) {
+        startLine = i;
+        foundStartBrace = true;
+        break;
+      }
+    }
+    
+    // If found opening brace, look forward for matching closing brace
+    if (foundStartBrace) {
+      int braceDepth = 0;
+      
+      // Start scanning from the line with opening brace
+      for (int i = startLine; i < lines.length; i++) {
+        final line = lines[i];
+        
+        // Count all braces on this line
+        for (int j = 0; j < line.length; j++) {
+          final char = line[j];
+          if (char == '{') {
+            braceDepth++;
+          } else if (char == '}') {
+            braceDepth--;
+            // Found matching closing brace
+            if (braceDepth == 0) {
+              endLine = i;
+              // Limit to 30 lines maximum
+              if (endLine - startLine > 29) {
+                endLine = startLine + 29;
+              }
+              return (start: startLine, end: endLine);
+            }
+          }
+        }
+        
+        // Stop if we've gone too far (30 lines)
+        if (i - startLine >= 29) {
+          endLine = startLine + 29;
+          return (start: startLine, end: endLine);
+        }
+      }
+    }
+    
+    // Fallback: show much more context around target
+    startLine = (targetLine - 15).clamp(0, lines.length - 1);
+    endLine = (targetLine + 15).clamp(0, lines.length - 1);
+    
+    // Ensure we don't exceed 30 lines
+    if (endLine - startLine > 29) {
+      endLine = startLine + 29;
+    }
+    
+    return (start: startLine, end: endLine);
+  }
+
+  String _getSimpleContext(AstNode node) {
     // Get surrounding context (widget name, method, etc.)
     AstNode? current = node.parent;
     while (current != null) {

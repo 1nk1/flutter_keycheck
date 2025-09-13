@@ -14,13 +14,13 @@ void main() {
   testWidgets('Casino demo app loads without crashing',
       (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const CasinoDemoApp());
+    await tester.pumpWidget(const CasinoApp());
 
     // Allow initial frame to render
     await tester.pump();
 
     // Verify that our casino app loads properly.
-    expect(find.text('Premium Casino'), findsOneWidget);
-    expect(find.text('Balance'), findsOneWidget);
+    expect(find.text('BALANCE'), findsOneWidget);
+    expect(find.text('SLOTS'), findsOneWidget);
   });
 }

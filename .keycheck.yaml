@@ -1,0 +1,118 @@
+# GoKeyCheck Configuration File
+# This is an example configuration showing all available options
+
+scanner:
+  # File patterns to include in scanning
+  include:
+    - "**/*.dart"
+  
+  # File patterns to exclude from scanning
+  exclude:
+    - "**/*.g.dart"
+    - "**/build/**"
+    - "**/.dart_tool/**"
+    - "**/test/**"
+  
+  # Whether to follow symbolic links
+  follow_symlinks: false
+  
+  # Maximum directory depth to scan
+  max_depth: 10
+  
+  # Parallel processing settings
+  parallel:
+    enabled: true
+    workers: 0  # 0 = auto-detect based on CPU cores
+    buffer_size: 100
+
+# Policy validation rules
+policies:
+  # Required key policies
+  required_keys:
+    - name: "ListView requires keys"
+      description: "ListView widgets should have keys for performance"
+      widgets: ["ListView", "ListView.builder", "ListView.separated"]
+      contexts: ["stateful", "stateless"]
+      severity: "warning"
+      
+    - name: "GridView requires keys"
+      description: "GridView widgets should have keys for performance"
+      widgets: ["GridView", "GridView.builder", "GridView.count"]
+      contexts: ["stateful"]
+      severity: "warning"
+  
+  # Naming convention policies
+  naming_conventions:
+    - name: "Camel case keys"
+      description: "Key names should follow camelCase convention"
+      pattern: "^[a-z][a-zA-Z0-9]*Key$"
+      key_types: ["ValueKey", "ObjectKey"]
+      severity: "warning"
+      
+    - name: "GlobalKey naming"
+      description: "GlobalKeys should have descriptive names"
+      pattern: "^_?[a-z][a-zA-Z0-9]*GlobalKey$"
+      key_types: ["GlobalKey", "LabeledGlobalKey"]
+      severity: "error"
+  
+  # Uniqueness policies
+  uniqueness:
+    - name: "Global key uniqueness"
+      description: "GlobalKeys must be unique within their scope"
+      scope: "global"
+      key_types: ["GlobalKey", "LabeledGlobalKey"]
+      severity: "error"
+      
+    - name: "ValueKey file uniqueness"
+      description: "ValueKeys should be unique within each file"
+      scope: "file"
+      key_types: ["ValueKey", "ObjectKey"]
+      severity: "warning"
+  
+  # Performance policies
+  performance:
+    - name: "Reasonable key usage"
+      description: "Avoid excessive key usage that may impact performance"
+      max_keys_per_widget: 5
+      max_nesting_level: 10
+      avoid_key_widgets: ["Text", "Icon", "Container"]
+      severity: "warning"
+
+# Report generation settings
+reporter:
+  # Default output format
+  default_format: "json"
+  
+  # Whether to include source code snippets in reports
+  include_snippets: true
+  
+  # Maximum length of code snippets
+  max_snippet_length: 150
+  
+  # Custom templates for different formats
+  templates:
+    html:
+      # Optional: path to custom HTML template
+      # template_path: "custom_template.html"
+      
+      # Template variables
+      variables:
+        title: "Flutter Key Analysis Report"
+        company: "Your Company"
+
+# Caching configuration
+cache:
+  # Whether caching is enabled
+  enabled: true
+  
+  # Cache directory (relative to project root)
+  directory: ".gokeycheck_cache"
+  
+  # Cache TTL in seconds (1 hour)
+  ttl: 3600
+  
+  # Maximum cache size in MB
+  max_size: 100
+  
+  # Cache key strategy: "file_hash", "file_path", or "timestamp"
+  key_strategy: "file_hash"

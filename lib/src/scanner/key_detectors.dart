@@ -97,7 +97,7 @@ class ValueKeyDetector extends KeyDetector {
 
   String? _extractStringValue(Expression expr) {
     if (expr is SimpleStringLiteral) {
-      return expr.value;
+      return expr.stringValue;
     }
     if (expr is StringInterpolation) {
       // Handle string interpolation
@@ -170,7 +170,7 @@ class BasicKeyDetector extends KeyDetector {
   String? _extractStringValue(Expression expr) {
     // Same implementation as ValueKeyDetector
     if (expr is SimpleStringLiteral) {
-      return expr.value;
+      return expr.stringValue;
     }
     // ... other cases
     return null;
@@ -210,7 +210,7 @@ class FindByKeyDetector extends KeyDetector {
         // Handle direct string
         if (firstArg is SimpleStringLiteral) {
           extractCount++;
-          final key = firstArg.value;
+          final key = firstArg.stringValue;
           matchedPatterns.add('find.byKey("$key")');
           return key;
         }
@@ -220,7 +220,7 @@ class FindByKeyDetector extends KeyDetector {
           final innerArgs = firstArg.argumentList.arguments;
           if (innerArgs.isNotEmpty && innerArgs.first is StringLiteral) {
             extractCount++;
-            final key = (innerArgs.first as StringLiteral).value;
+            final key = (innerArgs.first as StringLiteral).stringValue;
             matchedPatterns.add('find.byKey(Key("$key"))');
             return key;
           }
@@ -329,7 +329,7 @@ class SemanticsDetector extends KeyDetector {
 
       if (labelArg?.expression is StringLiteral) {
         extractCount++;
-        final label = (labelArg!.expression as StringLiteral).value;
+        final label = (labelArg!.expression as StringLiteral).stringValue;
         matchedPatterns.add('Semantics(label: "$label")');
         return 'semantics:$label';
       }

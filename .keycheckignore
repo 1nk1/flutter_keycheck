@@ -1,0 +1,5 @@
+**/*.g.dart
+**/generated/**
+**/build/**
+**/.dart_tool/**
+test/**/fixtures/**

@@ -28,6 +28,10 @@ dev_dependencies:
   test: ^1.25.8
   collection: ^1.18.0
   lints: ^4.0.0
+  mockito: ^5.4.2
+  build_runner: ^2.4.7
+  pdf: ^3.10.8
+  flutter_lints: ^4.0.0
 
 executables:
   flutter_keycheck: flutter_keycheck

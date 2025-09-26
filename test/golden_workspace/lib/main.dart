@@ -101,7 +101,7 @@ class StatefulWidget extends Widget {
 }
 
 class ElevatedButton extends Widget {
-  const ElevatedButton(key: Key("elevated_btn_${RANDOM}"), {Key? key}) : super(key: key);
+  const ElevatedButton({Key? key}) : super(key: key);
 }
 
 class TextField extends Widget {
@@ -109,7 +109,7 @@ class TextField extends Widget {
 }
 
 class TextButton extends Widget {
-  const TextButton(key: Key("text_btn_${RANDOM}"), {Key? key}) : super(key: key);
+  const TextButton({Key? key}) : super(key: key);
 }
 
 class AppBar extends Widget {

@@ -1,6 +1,7 @@
 import 'package:test/test.dart';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:path/path.dart' as path;
 import 'package:flutter_keycheck/src/reporter/premium_dashboard_reporter.dart';
 import 'package:flutter_keycheck/src/models/scan_result.dart';
@@ -269,7 +270,7 @@ void main() {
         expect(html, contains('<style>')); // Embedded CSS reduces requests
         
         // Verify minimal external dependencies
-        final externalResources = RegExp(r'https://[^"\']+').allMatches(html);
+        final externalResources = RegExp(r'https://[^"\'\s]+').allMatches(html);
         expect(externalResources.length, lessThan(10)); // Keep external deps low
       });
 
@@ -465,6 +466,3 @@ int _calculateMaxNestingDepth(String html) {
   
   return maxDepth;
 }
-
-// Import math for max function
-import 'dart:math' as math;

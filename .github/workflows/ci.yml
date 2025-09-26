@@ -45,7 +45,7 @@ jobs:
 
       # Cache dependencies
       - name: Cache pub dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache
@@ -87,7 +87,7 @@ jobs:
 
       - name: Upload coverage
         if: matrix.sdk == 'stable'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: coverage/lcov.info
@@ -108,7 +108,7 @@ jobs:
           sdk: stable
 
       - name: Cache pub dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache
@@ -162,7 +162,7 @@ jobs:
           sdk: stable
 
       - name: Cache pub dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache
@@ -216,7 +216,7 @@ jobs:
           sdk: stable
 
       - name: Cache pub dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache

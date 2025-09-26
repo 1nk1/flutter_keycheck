@@ -36,7 +36,7 @@ jobs:
           sdk: ${{ env.DART_SDK }}
 
       - name: Cache pub dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache
@@ -127,7 +127,7 @@ jobs:
           sdk: ${{ env.DART_SDK }}
 
       - name: Cache pub dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache

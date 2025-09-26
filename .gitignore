@@ -6,11 +6,14 @@
 .packages
 .pub/
 build/
+spec-kit
+node_modules
 
 .swarm/
 memory/
 coordination/
 reports/
+claude-flow
 
 
 .bmad-core
